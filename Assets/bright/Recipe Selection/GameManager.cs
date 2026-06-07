@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     public int selectedRecipeIndex;
     public string selectedAgeGroup; // "วัยรุ่น" / "วัยทำงาน" / "ผู้สูงอายุ"
+    public string selectedRecipeName;
 
     void Awake()
     {
