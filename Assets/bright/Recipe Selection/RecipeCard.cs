@@ -1,4 +1,3 @@
-// RecipeCard.cs — ติดกับ Prefab การ์ดแต่ละใบ
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -9,7 +8,7 @@ public class RecipeCard : MonoBehaviour
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI kcalText;
     public TextMeshProUGUI diffText;
-    public Image[] stars; // 5 star images
+    public Image[] stars;
     public Image cardBorder;
 
     public Color selectedColor;

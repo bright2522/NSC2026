@@ -7,7 +7,7 @@ public class IngredientCard : MonoBehaviour
 {
     public Image foodImage;
     public TextMeshProUGUI nameText;
-    public GameObject selectedOverlay; // Image สีเขียวโปร่งใส
+    public GameObject selectedOverlay;
 
     private bool isSelected = false;
     private string ingredientName;

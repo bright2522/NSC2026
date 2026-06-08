@@ -11,9 +11,11 @@ public class RecipeResultCard : MonoBehaviour
     public Button selectButton;
 
     private Action<SmartFridgeManager.Recipe> onSelect;
+    private SmartFridgeManager.Recipe recipeData;
 
     public void Setup(SmartFridgeManager.Recipe data, Action<SmartFridgeManager.Recipe> callback)
     {
+        recipeData = data;
         foodImage.sprite = data.image;
         nameText.text = data.name;
         kcalText.text = data.kcal + " kcal";
@@ -23,7 +25,6 @@ public class RecipeResultCard : MonoBehaviour
 
     void OnSelectClick()
     {
-        SmartFridgeManager.Recipe recipe = null;
-        onSelect?.Invoke(recipe);
+        onSelect?.Invoke(recipeData);
     }
 }

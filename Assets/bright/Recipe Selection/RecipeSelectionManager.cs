@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using TMPro;
+using System.Collections.Generic;
 
 public class RecipeSelectionManager : MonoBehaviour
 {
@@ -19,9 +19,10 @@ public class RecipeSelectionManager : MonoBehaviour
     {
         public string name;
         public int kcal;
-        public string difficulty; // "ง่าย" / "ปานกลาง" / "ยาก"
-        public int healthStar;   // 1-5
+        public string difficulty;
+        public int healthStar;
         public Sprite foodImage;
+        public List<string> requiredIngredients;
     }
 
     public RecipeData[] recipes;
@@ -33,7 +34,7 @@ public class RecipeSelectionManager : MonoBehaviour
 
         for (int i = 0; i < recipes.Length; i++)
         {
-            int index = i; // capture for lambda
+            int index = i;
             GameObject obj = Instantiate(recipeCardPrefab, cardContainer);
             RecipeCard card = obj.GetComponent<RecipeCard>();
             card.Setup(recipes[i]);
@@ -44,7 +45,6 @@ public class RecipeSelectionManager : MonoBehaviour
 
     void SelectCard(int index)
     {
-        // deselect เก่า
         if (selectedIndex >= 0)
             cards[selectedIndex].SetSelected(false);
 
@@ -53,13 +53,14 @@ public class RecipeSelectionManager : MonoBehaviour
         selectedLabel.text = "เลือก: " + recipes[index].name;
         startButton.interactable = true;
 
-        // บันทึกเมนูที่เลือกไว้ใน GameManager
         GameManager.Instance.selectedRecipeIndex = index;
+        GameManager.Instance.selectedRecipeName = recipes[index].name;
+        GameManager.Instance.requiredIngredients = recipes[index].requiredIngredients;
     }
 
     public void OnStartButton()
     {
         if (selectedIndex < 0) return;
-        SceneManager.LoadScene("CookingGameplay");
+        GameManager.Instance.GoToSmartFridge();
     }
 }

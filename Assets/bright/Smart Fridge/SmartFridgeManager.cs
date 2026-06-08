@@ -15,7 +15,6 @@ public class SmartFridgeManager : MonoBehaviour
     public GameObject recipeResultCardPrefab;
     public Transform resultContainer;
 
-    // ข้อมูลวัตถุดิบทั้งหมด
     [System.Serializable]
     public class Ingredient
     {
@@ -23,13 +22,12 @@ public class SmartFridgeManager : MonoBehaviour
         public Sprite image;
     }
 
-    // ข้อมูลเมนูและวัตถุดิบที่ต้องใช้
     [System.Serializable]
     public class Recipe
     {
         public string name;
         public Sprite image;
-        public string[] requiredIngredients; // ชื่อวัตถุดิบที่ต้องใช้
+        public string[] requiredIngredients;
         public int kcal;
     }
 
@@ -65,10 +63,7 @@ public class SmartFridgeManager : MonoBehaviour
     public void OnConfirmButton()
     {
         if (selectedIngredients.Count == 0) return;
-
-        // Greedy Algorithm หาเมนูที่ทำได้
         List<Recipe> matchedRecipes = FindMatchingRecipes();
-
         ShowResults(matchedRecipes);
     }
 
@@ -85,13 +80,11 @@ public class SmartFridgeManager : MonoBehaviour
                     matchCount++;
             }
 
-            // ถ้ามีวัตถุดิบครบ 70% ขึ้นไปถือว่าทำได้
             float matchRatio = (float)matchCount / recipe.requiredIngredients.Length;
             if (matchRatio >= 0.7f)
                 results.Add(recipe);
         }
 
-        // เรียงจากที่ match มากสุดก่อน (Greedy)
         results.Sort((a, b) => {
             int countA = CountMatch(a);
             int countB = CountMatch(b);
@@ -112,7 +105,6 @@ public class SmartFridgeManager : MonoBehaviour
 
     void ShowResults(List<Recipe> recipes)
     {
-        // ล้างผลเก่า
         foreach (Transform child in resultContainer)
             Destroy(child.gameObject);
 
@@ -120,7 +112,6 @@ public class SmartFridgeManager : MonoBehaviour
 
         if (recipes.Count == 0)
         {
-            // ไม่มีเมนูที่ทำได้ — แสดงข้อความแนะนำ
             // TODO: แสดงร้านค้าใกล้เคียง
             return;
         }
@@ -136,6 +127,6 @@ public class SmartFridgeManager : MonoBehaviour
     void OnSelectRecipe(Recipe recipe)
     {
         GameManager.Instance.selectedRecipeName = recipe.name;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("CookingGameplay");
+        GameManager.Instance.GoToCooking();
     }
 }
