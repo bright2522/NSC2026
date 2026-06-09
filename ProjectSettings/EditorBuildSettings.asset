@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/bright/bright.unity
+    guid: 4d7dc944c152e324d93cd15521e89837
+  - enabled: 1
+    path: Assets/bright/Smart Fridge/Smart Fridge.unity
+    guid: 739a57d91116544479fea91afccacba7
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

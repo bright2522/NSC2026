@@ -26,6 +26,21 @@ public class RecipeSelectionManager : MonoBehaviour
     }
 
     public RecipeData[] recipes;
+    public void Setup(RecipeSelectionManager.RecipeData data)
+    {
+        if (foodImage != null) foodImage.sprite = data.foodImage;
+        if (nameText != null)  nameText.text = data.name;
+        if (kcalText != null)  kcalText.text = data.kcal + " kcal";
+        if (diffText != null)  diffText.text = data.difficulty;
+
+        for (int i = 0; i < stars.Length; i++)
+        {
+            if (stars[i] != null)
+             stars[i].color = i < data.healthStar
+                    ? new Color(0.91f, 0.58f, 0.43f)
+                    : new Color(0.85f, 0.85f, 0.85f);
+        }
+    }
 
     void Start()
     {
@@ -34,9 +49,17 @@ public class RecipeSelectionManager : MonoBehaviour
 
         for (int i = 0; i < recipes.Length; i++)
         {
+            Debug.Log($"Recipe[{i}] name={recipes[i].name} kcal={recipes[i].kcal} image={recipes[i].foodImage}");
             int index = i;
             GameObject obj = Instantiate(recipeCardPrefab, cardContainer);
+            Debug.Log("Instantiated: " + obj.name);
             RecipeCard card = obj.GetComponent<RecipeCard>();
+            Debug.Log("RecipeCard component: " + card);
+            if (card == null)
+            {
+                Debug.LogError("RecipeCard component not found on Prefab!");
+                return;
+            }
             card.Setup(recipes[i]);
             card.GetComponent<Button>().onClick.AddListener(() => SelectCard(index));
             cards[i] = card;
