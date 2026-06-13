@@ -1,0 +1,200 @@
+================================================================================
+NSC2026 — TODO ของ PEP (Programmer)
+อัปเดต: 2026-06-13
+================================================================================
+
+บทบาท PEP (scope งาน)
+---------------------
+  ✅ Coding — Managers, State Machine, Minigame logic, Data (SO)
+  ✅ UI mock จาก code — Slider, ProgressBar, Timer, panel สร้าง/runtime wire ใน script
+  ❌ ไม่รับผิดชอบ — Scene setup, Build Settings, wire prefab ใน Editor, 3D level design
+  → งาน scene / flow ข้าม scene = bright / coco / คนอื่นในทีม
+
+โฟกัสหลักตาม planning
+---------------------
+  Core Managers (code) → Minigame states + UI mock → Scoring/Nutrition (code+UI mock)
+  Integration adapters (เรียก API เพื่อน ไม่แก้ folder เพื่อน)
+
+
+================================================================================
+สิ่งที่เพื่อนทำไปแล้ว (อ้างอิงเวลา integrate — ไม่ใช่งาน PEP)
+================================================================================
+
+[Bright]  bright/Recipe Selection + Smart Fridge + GameManager (scene navigation)
+  - GameManager, RecipeSelectionManager, SmartFridgeManager
+  - FridgeUI + recipe match 70% (Greedy-like)
+
+[Coco]  coco/Scripts/ — Cooking minigame + RecipeDatabase
+  - CookingGameManager, CookingMinigameBase, 5 minigames
+  - Chopping / Stirring / Grilling / Seasoning / Pounding (UI slider ส่วนใหญ่)
+
+[Folk]  folk/ — หั่น 3D (EzySlice + KnifeMovement) แยกจาก coco/ChoppingMinigame
+
+
+================================================================================
+Mapping: planning.txt vs สถานะ — เฉพาะส่วน PEP (prog)
+================================================================================
+
+[1] Core Managers (code)
+  GameStateMachine (logic/event)     ❌  PEP ทำ — ไม่รวม SceneManager.LoadScene
+  PlayerDataManager + Save             ❌
+  InventoryManager                     ❌
+  ScoringManager                       ❌
+  RewardManager                        ❌
+
+[2] Smart Fridge (logic)
+  IngredientSO + Recommendation        ❌ / 🟡 bright มี UI+match แล้ว
+  ShopNearby (static data)             ❌
+
+[3] Recipe data (code)
+  IngredientSO + RecipeSO              ❌  รวม 3 ชุดข้อมูล
+
+[4] Mini-game (code + UI mock)
+  PreparationState                     ❌
+  Chopping                             🟡  adapter / หรือ UI mock ใหม่
+  CookingState (fire slider+shake)     ❌  งานหลัก prog
+  PresentationState                    ❌
+
+[5] Nutrition / Result (code + UI mock)  ❌ P2
+[6–8] Community / Competition / Shop   ❌ P3
+
+
+================================================================================
+PEP ต้องทำ (เรียง priority — ไม่มีงาน scene)
+================================================================================
+
+─── P1: Core + Minigame (prog) ───
+
+[ ] 1. GameStateMachine (code only)
+      - enum states + event/callback ระหว่างระบบ
+      - ไม่โหลด scene — ส่ง event ให้ bright/coco เรียกต่อเอง
+      folder: pep/Scripts/Core/
+
+[ ] 2. PlayerDataManager + Save/Load
+      folder: pep/Scripts/Core/
+
+[ ] 3. InventoryManager — logic วัตถุดิบ (sync กับ SmartFridge API)
+      folder: pep/Scripts/SmartFridge/
+
+[ ] 4. ScoringManager — รับ score จาก minigame / coco
+      folder: pep/Scripts/Scoring/
+
+[ ] 5. IngredientSO + RecipeSO + data models
+      folder: pep/Scripts/Recipe/ + pep/ScriptableObjects/
+
+[ ] 6. Integration adapters (bright / coco / folk)
+      folder: pep/Scripts/Integration/
+
+[ ] 7. Smart Fridge logic — recommendation + ShopNearby (static)
+      folder: pep/Scripts/SmartFridge/
+
+[ ] 8. CookingState — ปรับไฟเตา gas (งานหลัก UI mock จาก code)
+      - Slider ควบคุมไฟ, ProgressBar ความสุก, Timer, Input.acceleration shake
+      - สร้าง/wire UI ใน script (เหมือน pattern coco/ChoppingMinigame)
+      folder: pep/Scripts/Minigames/Cooking/
+
+[ ] 9. PreparationState — drag logic + UI mock
+      folder: pep/Scripts/Minigames/Preparation/
+
+[ ] 10. PresentationState — plating logic + UI mock
+       folder: pep/Scripts/Minigames/Presentation/
+
+[ ] 11. Chopping adapter / UI mock (รอทีมเลือก folk 3D vs coco slider)
+       folder: pep/Scripts/Minigames/Chopping/
+
+─── P2 ───
+
+[ ] 12. NutritionDisplayUI + Post-Cook Evaluation (code + UI mock)
+[ ] 13. RewardManager + Result screen (code + UI mock)
+
+─── P3 ───
+
+[ ] 14. Shop + Equip
+[ ] 15. Community
+[ ] 16. Competition 1v1
+
+
+================================================================================
+Integration contract (เรียก code เพื่อน — ไม่แตะ scene)
+================================================================================
+
+  bright/GameManager          → selectedRecipeName, requiredIngredients
+  bright/SmartFridgeManager   → OnConfirm, FindMatchingRecipes
+  coco/CookingGameManager     → OnStepCompleted, totalRecipeScore
+  coco/CookingMinigameBase    → pattern อ้างอิง minigame + slider UI
+  folk/SliceableFood          → (optional) adapter score
+
+
+================================================================================
+Out of scope — ทีม/คนอื่นดูแล (ไม่ใส่ใน todo PEP)
+================================================================================
+
+  - Scene สร้าง/ประกอบใน Unity Editor (CookingGameplay, map.unity, ...)
+  - EditorBuildSettings / scene name ใน GoToCooking()
+  - Wire prefab / Canvas ใน Inspector (PEP ทำแค่ code ที่ generate หรือ [SerializeField] optional)
+  - 3D assets, kitchen layout, lighting
+
+
+================================================================================
+Folder Structure (pep/) — prog
+================================================================================
+
+pep/
+├── Scripts/
+│   ├── Core/
+│   ├── Data/              ← PepPlanningData.cs
+│   ├── Integration/
+│   ├── SmartFridge/
+│   ├── Recipe/
+│   ├── Minigames/
+│   │   ├── Preparation/
+│   │   ├── Chopping/
+│   │   ├── Cooking/       ← fire slider + shake
+│   │   └── Presentation/
+│   ├── Nutrition/
+│   ├── Scoring/
+│   ├── Reward/
+│   ├── Community/
+│   └── Competition/
+├── ScriptableObjects/
+│   ├── Ingredients/
+│   ├── Recipes/
+│   └── Items/
+└── Prefabs/               ← optional runtime prefab จาก code
+
+
+================================================================================
+Planning Data (code) — pep/Scripts/Data/PepPlanningData.cs
+================================================================================
+
+// งานวันนี้ (2026-06-13) — prog focus
+GetTodayTasks() =>
+  [01] PEP-001 |  0% | NotStarted | GameStateMachine (code only)
+  [08] PEP-008 |  0% | NotStarted | CookingState gas slider + shake + UI mock
+  [11] PEP-011 |  0% | Blocked    | Chopping adapter
+
+// ทั้งหมดเรียง step
+step | id      | prog | status     | deadline   | P  | title
+-----|---------|------|------------|------------|----|------------------------------
+  0  | PEP-000 | 100% | Done       | 2026-06-13 | P1 | Research + folder setup
+  1  | PEP-001 |   0% | NotStarted | 2026-06-13 | P1 | GameStateMachine (code)
+  2  | PEP-002 |   0% | NotStarted | 2026-06-14 | P1 | PlayerDataManager + Save
+  3  | PEP-003 |   0% | NotStarted | 2026-06-14 | P1 | InventoryManager
+  4  | PEP-004 |   0% | NotStarted | 2026-06-15 | P1 | ScoringManager
+  5  | PEP-005 |   0% | NotStarted | 2026-06-15 | P1 | IngredientSO + RecipeSO
+  6  | PEP-006 |   0% | NotStarted | 2026-06-16 | P1 | Integration adapters
+  7  | PEP-007 |   0% | NotStarted | 2026-06-17 | P1 | Smart Fridge recommendation
+  8  | PEP-008 |   0% | NotStarted | 2026-06-13 | P1 | CookingState + UI mock
+  9  | PEP-009 |   0% | NotStarted | 2026-06-18 | P1 | PreparationState + UI mock
+ 10  | PEP-010 |   0% | NotStarted | 2026-06-20 | P1 | PresentationState + UI mock
+ 11  | PEP-011 |   0% | Blocked    | 2026-06-13 | P1 | Chopping adapter
+ 12  | PEP-012 |   0% | NotStarted | 2026-06-21 | P2 | NutritionDisplayUI
+ 13  | PEP-013 |   0% | NotStarted | 2026-06-22 | P2 | RewardManager + Result UI
+ 14  | PEP-014 |   0% | NotStarted | 2026-06-25 | P3 | Shop + Equip
+ 15  | PEP-015 |   0% | NotStarted | 2026-06-28 | P3 | Community
+ 16  | PEP-016 |   0% | NotStarted | 2026-06-30 | P3 | Competition 1v1
+
+Pep.Planning.PepPlanningData.Tasks
+Pep.Planning.PepPlanningData.GetTodayTasks()
+
+================================================================================
