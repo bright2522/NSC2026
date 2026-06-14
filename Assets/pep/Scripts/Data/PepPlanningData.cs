@@ -35,7 +35,7 @@ namespace Pep.Planning
 
     public static class PepPlanningData
     {
-        public const string Today = "2026-06-13";
+        public const string Today = "2026-06-14";
         public const string UpdatedAt = "2026-06-14";
         public const string Role = "Programmer — coding + UI mock from code (no scene setup)";
 
@@ -48,7 +48,7 @@ namespace Pep.Planning
                 title = "Research + folder setup",
                 folder = "pep/",
                 priority = PepPriority.P1,
-                deadline = Today,
+                deadline = "2026-06-13",
                 status = PepTaskStatus.Done,
                 progressPercent = 100,
                 notes = "scan Assets/, จัด pep/Scripts/",
@@ -62,7 +62,7 @@ namespace Pep.Planning
                 title = "GameStateMachine (code only — enum/events, ไม่โหลด scene)",
                 folder = "pep/Scripts/Core/",
                 priority = PepPriority.P1,
-                deadline = Today,
+                deadline = "2026-06-13",
                 status = PepTaskStatus.Done,
                 progressPercent = 100,
                 notes = "เสร็จ: state enum + event/callback + transition API",
@@ -77,9 +77,9 @@ namespace Pep.Planning
                 folder = "pep/Scripts/Core/",
                 priority = PepPriority.P1,
                 deadline = "2026-06-14",
-                status = PepTaskStatus.NotStarted,
-                progressPercent = 0,
-                notes = "progress, inventory snapshot, score",
+                status = PepTaskStatus.Done,
+                progressPercent = 100,
+                notes = "เสร็จ: save/load ด้วย PlayerPrefs + data snapshot",
                 dependsOnFriends = Array.Empty<string>()
             },
 
@@ -91,9 +91,9 @@ namespace Pep.Planning
                 folder = "pep/Scripts/SmartFridge/",
                 priority = PepPriority.P1,
                 deadline = "2026-06-14",
-                status = PepTaskStatus.NotStarted,
-                progressPercent = 0,
-                notes = "รับ selected ingredients จาก bright API",
+                status = PepTaskStatus.Done,
+                progressPercent = 100,
+                notes = "เสร็จ: stock logic + consume + sync selected ingredients",
                 dependsOnFriends = new[] { "bright/SmartFridgeManager.cs" }
             },
 
@@ -105,9 +105,9 @@ namespace Pep.Planning
                 folder = "pep/Scripts/Scoring/",
                 priority = PepPriority.P1,
                 deadline = "2026-06-15",
-                status = PepTaskStatus.NotStarted,
-                progressPercent = 0,
-                notes = "OnStepCompleted + totalRecipeScore",
+                status = PepTaskStatus.Done,
+                progressPercent = 100,
+                notes = "เสร็จ: report step score + sync totalRecipeScore + final average",
                 dependsOnFriends = new[] { "coco/CookingGameManager.cs" }
             },
 
@@ -160,7 +160,7 @@ namespace Pep.Planning
                 title = "CookingState — gas fire Slider + ProgressBar + Timer + Shake + UI mock",
                 folder = "pep/Scripts/Minigames/Cooking/",
                 priority = PepPriority.P1,
-                deadline = Today,
+                deadline = "2026-06-13",
                 status = PepTaskStatus.Done,
                 progressPercent = 100,
                 notes = "เสร็จ: gas slider + cook progress + timer + shake + runtime UI",
@@ -202,7 +202,7 @@ namespace Pep.Planning
                 title = "Chopping — adapter / UI mock",
                 folder = "pep/Scripts/Minigames/Chopping/",
                 priority = PepPriority.P1,
-                deadline = Today,
+                deadline = "2026-06-13",
                 status = PepTaskStatus.Blocked,
                 progressPercent = 0,
                 notes = "รอทีมเลือก folk 3D vs coco slider",
