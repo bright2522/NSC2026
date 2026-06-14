@@ -1,6 +1,6 @@
 ================================================================================
 NSC2026 — TODO ของ PEP (Programmer)
-อัปเดต: 2026-06-13
+อัปเดต: 2026-06-14
 ================================================================================
 
 บทบาท PEP (scope งาน)
@@ -36,7 +36,7 @@ Mapping: planning.txt vs สถานะ — เฉพาะส่วน PEP (pr
 ================================================================================
 
 [1] Core Managers (code)
-  GameStateMachine (logic/event)     ❌  PEP ทำ — ไม่รวม SceneManager.LoadScene
+  GameStateMachine (logic/event)     ✅  PEP ทำ — ไม่รวม SceneManager.LoadScene
   PlayerDataManager + Save             ❌
   InventoryManager                     ❌
   ScoringManager                       ❌
@@ -52,7 +52,7 @@ Mapping: planning.txt vs สถานะ — เฉพาะส่วน PEP (pr
 [4] Mini-game (code + UI mock)
   PreparationState                     ❌
   Chopping                             🟡  adapter / หรือ UI mock ใหม่
-  CookingState (fire slider+shake)     ❌  งานหลัก prog
+  CookingState (fire slider+shake)     ✅  งานหลัก prog
   PresentationState                    ❌
 
 [5] Nutrition / Result (code + UI mock)  ❌ P2
@@ -65,7 +65,7 @@ PEP ต้องทำ (เรียง priority — ไม่มีงาน sc
 
 ─── P1: Core + Minigame (prog) ───
 
-[ ] 1. GameStateMachine (code only)
+[x] 1. GameStateMachine (code only)
       - enum states + event/callback ระหว่างระบบ
       - ไม่โหลด scene — ส่ง event ให้ bright/coco เรียกต่อเอง
       folder: pep/Scripts/Core/
@@ -88,7 +88,7 @@ PEP ต้องทำ (เรียง priority — ไม่มีงาน sc
 [ ] 7. Smart Fridge logic — recommendation + ShopNearby (static)
       folder: pep/Scripts/SmartFridge/
 
-[ ] 8. CookingState — ปรับไฟเตา gas (งานหลัก UI mock จาก code)
+[x] 8. CookingState — ปรับไฟเตา gas (งานหลัก UI mock จาก code)
       - Slider ควบคุมไฟ, ProgressBar ความสุก, Timer, Input.acceleration shake
       - สร้าง/wire UI ใน script (เหมือน pattern coco/ChoppingMinigame)
       folder: pep/Scripts/Minigames/Cooking/
@@ -167,24 +167,24 @@ pep/
 Planning Data (code) — pep/Scripts/Data/PepPlanningData.cs
 ================================================================================
 
-// งานวันนี้ (2026-06-13) — prog focus
+// งานวันนี้ (2026-06-14) — prog focus
 GetTodayTasks() =>
-  [01] PEP-001 |  0% | NotStarted | GameStateMachine (code only)
-  [08] PEP-008 |  0% | NotStarted | CookingState gas slider + shake + UI mock
+  [01] PEP-001 | 100% | Done       | GameStateMachine (code only)
+  [08] PEP-008 | 100% | Done       | CookingState gas slider + shake + UI mock
   [11] PEP-011 |  0% | Blocked    | Chopping adapter
 
 // ทั้งหมดเรียง step
 step | id      | prog | status     | deadline   | P  | title
 -----|---------|------|------------|------------|----|------------------------------
   0  | PEP-000 | 100% | Done       | 2026-06-13 | P1 | Research + folder setup
-  1  | PEP-001 |   0% | NotStarted | 2026-06-13 | P1 | GameStateMachine (code)
+  1  | PEP-001 | 100% | Done       | 2026-06-13 | P1 | GameStateMachine (code)
   2  | PEP-002 |   0% | NotStarted | 2026-06-14 | P1 | PlayerDataManager + Save
   3  | PEP-003 |   0% | NotStarted | 2026-06-14 | P1 | InventoryManager
   4  | PEP-004 |   0% | NotStarted | 2026-06-15 | P1 | ScoringManager
   5  | PEP-005 |   0% | NotStarted | 2026-06-15 | P1 | IngredientSO + RecipeSO
   6  | PEP-006 |   0% | NotStarted | 2026-06-16 | P1 | Integration adapters
   7  | PEP-007 |   0% | NotStarted | 2026-06-17 | P1 | Smart Fridge recommendation
-  8  | PEP-008 |   0% | NotStarted | 2026-06-13 | P1 | CookingState + UI mock
+  8  | PEP-008 | 100% | Done       | 2026-06-13 | P1 | CookingState + UI mock
   9  | PEP-009 |   0% | NotStarted | 2026-06-18 | P1 | PreparationState + UI mock
  10  | PEP-010 |   0% | NotStarted | 2026-06-20 | P1 | PresentationState + UI mock
  11  | PEP-011 |   0% | Blocked    | 2026-06-13 | P1 | Chopping adapter

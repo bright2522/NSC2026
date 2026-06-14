@@ -36,7 +36,7 @@ namespace Pep.Planning
     public static class PepPlanningData
     {
         public const string Today = "2026-06-13";
-        public const string UpdatedAt = "2026-06-13";
+        public const string UpdatedAt = "2026-06-14";
         public const string Role = "Programmer — coding + UI mock from code (no scene setup)";
 
         public static readonly List<PepTaskEntry> Tasks = new List<PepTaskEntry>
@@ -63,9 +63,9 @@ namespace Pep.Planning
                 folder = "pep/Scripts/Core/",
                 priority = PepPriority.P1,
                 deadline = Today,
-                status = PepTaskStatus.NotStarted,
-                progressPercent = 0,
-                notes = "logic layer — bright/coco รับ event ไปเปลี่ยน scene เอง",
+                status = PepTaskStatus.Done,
+                progressPercent = 100,
+                notes = "เสร็จ: state enum + event/callback + transition API",
                 dependsOnFriends = new[] { "bright/GameManager.cs", "coco/CookingGameManager.cs" }
             },
 
@@ -161,9 +161,9 @@ namespace Pep.Planning
                 folder = "pep/Scripts/Minigames/Cooking/",
                 priority = PepPriority.P1,
                 deadline = Today,
-                status = PepTaskStatus.NotStarted,
-                progressPercent = 0,
-                notes = "UI สร้าง/wire จาก code — อ้าง pattern coco minigame",
+                status = PepTaskStatus.Done,
+                progressPercent = 100,
+                notes = "เสร็จ: gas slider + cook progress + timer + shake + runtime UI",
                 dependsOnFriends = new[] { "coco/CookingMinigameBase.cs", "coco/GrillingMinigame.cs" }
             },
 
