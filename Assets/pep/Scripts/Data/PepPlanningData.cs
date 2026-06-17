@@ -115,13 +115,13 @@ namespace Pep.Planning
             {
                 step = 5,
                 id = "PEP-005",
-                title = "IngredientSO + RecipeSO — data models",
+                title = "IngredientSO + RecipeSO + RecipeCatalogManager + Editor",
                 folder = "pep/Scripts/Recipe/",
                 priority = PepPriority.P1,
                 deadline = "2026-06-15",
-                status = PepTaskStatus.NotStarted,
-                progressPercent = 0,
-                notes = "source of truth — bright/coco อ้างอิงภายหลัง",
+                status = PepTaskStatus.Done,
+                progressPercent = 100,
+                notes = "เสร็จ: data SO + catalog lookup by id + custom inspector",
                 dependsOnFriends = new[] { "bright/RecipeSelectionManager.cs", "coco/RecipeDatabase.cs" }
             },
 
