@@ -4,38 +4,41 @@ using TMPro; // สำคัญมาก! ต้องใส่บรรทั�
 
 public class CookingSystem3D : MonoBehaviour
 {
-    [Header("UI References")]
+    [Header("UI References (ลาก UI มาใส่ที่นี่)")]
     public RectTransform gaugeRect;         
     public Image arrowIndicator;            
     public Image cookingFillImage;          
-    
-    [Header("New Timer Text (ลาก TimerText มาใส่ที่นี่)")]
-    public TextMeshProUGUI timerText;       // ตัวเลขจับเวลาแบบข้อความดิจิทัล
+    public TextMeshProUGUI timerText;          // ตัวเลขจับเวลาแบบข้อความดิจิทัล
+    public TextMeshProUGUI cookingValueText;   // ตัวเลขเปอร์เซ็นต์ค่าความสุก
+    [Tooltip("ลาก IdealZoneOverlay ที่คุณจัดตำแหน่งไว้ใน Editor มาใส่ที่นี่")]
+    public RectTransform idealZoneOverlay;     // แถบเป้าหมาย UI
 
-    [Header("3D Food Settings")]
+    [Header("3D Food Settings (ลากโมเดลอาหารมาใส่)")]
     public Renderer foodRenderer;           
     public Color normalColor = Color.white; 
     public Color burntColor = new Color(0.15f, 0.08f, 0.08f); 
 
-    [Header("Cooking Speed Settings")]
-    public float lowHeatProgressSpeed = 0.15f;  
-    public float midHeatProgressSpeed = 2.4f;   
-    public float highHeatProgressSpeed = 5.0f;  
+    [Header("Cooking Speed Settings (ปรับความเร็ว)")]
+    [Tooltip("ความเร็วการทำอาหารปกติเมื่ออยู่ในโซนอุดมคติ")]
+    public float idealProgressSpeed = 3.0f;  
+    [Tooltip("ความเร็วการทำอาหารที่ช้าลงอย่างมากเมื่ออยู่นอกโซน")]
+    public float slowProgressSpeed = 0.15f;  
 
     [Header("Time Settings (ตั้งเวลาเกมเป็นวินาที)")]
-    public float maxCookingTime = 35f;      // ตั้งไว้ 35 วินาทีตามภาพเรฟของคุณ
+    public float maxCookingTime = 35f;      
     private float currentTimer;
 
     [Header("Arrow Smooth Settings")]
     public float arrowSmoothSpeed = 60f; 
 
-    [Header("Gameplay Settings")]
+    [Header("Gameplay Settings (ดูค่าสถานะในเกม)")]
     public float currentHeat = 0f; 
     [HideInInspector] public float targetHeat = 0f; 
 
-    [Header("Cooking Status")]
+    [Header("Cooking Status (ดูค่าสถานะในเกม)")]
     [SerializeField] private float cookingProgress = 0f;
     private float maxCookingProgress = 100f;
+    [Tooltip("เวลาชีวิตถ้าบิดไฟแรงเกินโซน (3 วินาทีก่อนไหม้)")]
     [SerializeField] private float burnTimer = 3f;   
     private float maxBurnTime = 3f;
 
@@ -43,52 +46,39 @@ public class CookingSystem3D : MonoBehaviour
     private bool isCooked = false;
     private bool isTimeOut = false; 
 
+    // ตัวแปรภายในสำหรับเก็บค่าโซนที่คำนวณได้จากตำแหน่ง UI จริง
+    private float idealMin;
+    private float idealMax;
+
     void Start()
     {
         if (foodRenderer != null) 
             foodRenderer.material.color = normalColor;
 
         currentTimer = maxCookingTime;
+
+        // --- เรียกฟังก์ชันคำนวณโซนจากตำแหน่ง UI ที่คุณจัดไว้ ---
+        CalculateZonesFromUI();
     }
 
     void Update()
     {
         if (isCooked || isBurnt || isTimeOut) return;
 
-        // --- ระบบนับเวลาถอยหลัง ---
+        // --- ระบบจับเวลาและควบคุมลูกศร (เดิม) ---
         currentTimer -= Time.deltaTime;
-        
-        // บังคับไม่ให้เวลาต่ำกว่า 0
         if (currentTimer < 0) currentTimer = 0;
-
-        // อัปเดตตัวเลขดิจิทัลบนหน้าจอ (แปลงจากวินาที เป็น นาที:วินาที)
         UpdateTimerTextDisplay();
+        if (currentTimer <= 0) { TriggerTimeOut(); return; }
 
-        // ถ้าเวลาหมด = แพ้
-        if (currentTimer <= 0)
-        {
-            TriggerTimeOut();
-            return;
-        }
-
-        // --- ระบบควบคุมลูกศรหน่วง ---
         currentHeat = Mathf.MoveTowards(currentHeat, targetHeat, arrowSmoothSpeed * Time.deltaTime);
         UpdateHeatUI();
 
-        // --- ตรรกะความเร็วการทำอาหาร ---
-        if (currentHeat <= 40f) 
+        // --- ตรรกะการทำอาหารและไหม้เกรียม (อ้างอิงตามโซนจาก UI จริง) ---
+        if (currentHeat > idealMax)
         {
-            cookingProgress += lowHeatProgressSpeed * Time.deltaTime; 
-            CooldownBurnColor(); 
-        }
-        else if (currentHeat > 40f && currentHeat <= 80f) 
-        {
-            cookingProgress += midHeatProgressSpeed * Time.deltaTime; 
-            CooldownBurnColor();
-        }
-        else if (currentHeat > 80f) 
-        {
-            cookingProgress += highHeatProgressSpeed * Time.deltaTime; 
+            // --- 1. โซนไฟแรงเกินแถบเป้าหมาย ---
+            cookingProgress += slowProgressSpeed * Time.deltaTime; 
             burnTimer -= Time.deltaTime; 
 
             if (foodRenderer != null)
@@ -99,28 +89,75 @@ public class CookingSystem3D : MonoBehaviour
 
             if (burnTimer <= 0) TriggerBurnt();
         }
-
-        // อัปเดตหลอดความสุก
-        if (cookingFillImage != null) 
+        else if (currentHeat >= idealMin)
         {
-            cookingFillImage.fillAmount = cookingProgress / maxCookingProgress; 
+            // --- 2. โซนในอุดมคติ (อยู่ภายในแถบพอดี) ---
+            cookingProgress += idealProgressSpeed * Time.deltaTime; 
+            CooldownBurnColor(); 
+        }
+        else
+        {
+            // --- 3. โซนไฟอ่อนเกินแถบเป้าหมาย ---
+            cookingProgress += slowProgressSpeed * Time.deltaTime; 
+            CooldownBurnColor(); 
         }
 
-        if (cookingProgress >= maxCookingProgress && !isBurnt) 
+        // --- อัปเดต UI ความสุก ---
+        if (cookingFillImage != null) cookingFillImage.fillAmount = cookingProgress / maxCookingProgress; 
+        UpdateCookingValueDisplay();
+
+        if (cookingProgress >= maxCookingProgress && !isBurnt) TriggerCooked();
+    }
+
+    // --- ฟังก์ชันใหม่: อ่านค่าตำแหน่งและขนาดของ UI จริงเพื่อแปลงเป็นค่าความร้อน 0-100 ---
+    void CalculateZonesFromUI()
+    {
+        if (idealZoneOverlay != null && gaugeRect != null)
         {
-            TriggerCooked();
+            float gaugeHeight = gaugeRect.rect.height;
+
+            // หาตำแหน่ง Y ของขอบบนและขอบล่างของแถบเป้าหมายจริงใน Unity Editor
+            float overlayY = idealZoneOverlay.localPosition.y;
+            float overlayHeight = idealZoneOverlay.rect.height;
+
+            float yTop = overlayY + (overlayHeight / 2f);
+            float yBottom = overlayY - (overlayHeight / 2f);
+
+            // แปลงค่าพิกัดพิกเซล Y กลับมาเป็นค่าอุณหภูมิระบบเกม (0 - 100)
+            idealMax = ((yTop + (gaugeHeight / 2f)) / gaugeHeight) * 100f;
+            idealMin = ((yBottom + (gaugeHeight / 2f)) / gaugeHeight) * 100f;
+
+            // ป้องกันไม่ให้ค่าหลุดขอบเกินโครงสร้างเกจ
+            idealMax = Mathf.Clamp(idealMax, 0f, 100f);
+            idealMin = Mathf.Clamp(idealMin, 0f, 100f);
+
+            Debug.Log($"<color=cyan>ตั้งค่าโซนสำเร็จ! -> โซนปกติอยู่ที่อุณหภูมิเกม: {idealMin:F1} ถึง {idealMax:F1}</color>");
+        }
+        else
+        {
+            // ค่าสำรองกรณีลืมลาก UI มาใส่
+            idealMin = 50f;
+            idealMax = 70f;
         }
     }
 
-    // ฟังก์ชันคำนวณและแปลงค่าเวลาให้ออกมาเป็นรูปแบบ 00:35
+    // --- ฟังก์ชันอัปเดต UI อื่นๆ ---
+    void UpdateCookingValueDisplay()
+    {
+        if (cookingValueText != null)
+        {
+            int value = Mathf.RoundToInt(cookingProgress);
+            value = Mathf.Clamp(value, 0, 100);
+            cookingValueText.text = value.ToString();
+        }
+    }
+
     void UpdateTimerTextDisplay()
     {
         if (timerText != null)
         {
             int minutes = Mathf.FloorToInt(currentTimer / 60f);
             int seconds = Mathf.FloorToInt(currentTimer % 60f);
-            
-            // ใช้ string.Format ล็อกให้แสดงผลเป็นตัวเลข 2 หลักเสมอ
             timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
         }
     }
@@ -140,29 +177,13 @@ public class CookingSystem3D : MonoBehaviour
         {
             float height = gaugeRect.rect.height;
             float targetY = ((currentHeat / 100f) * height) - (height / 2f);
-            
             Vector3 newPos = arrowIndicator.rectTransform.localPosition;
             newPos.y = targetY;
             arrowIndicator.rectTransform.localPosition = newPos;
         }
     }
 
-    void TriggerBurnt()
-    {
-        isBurnt = true;
-        if (foodRenderer != null) foodRenderer.material.color = burntColor; 
-        Debug.Log("<color=red><b>อาหารไหม้เกรียม! Game Over</b></color>");
-    }
-
-    void TriggerCooked()
-    {
-        isCooked = true;
-        Debug.Log("<color=green><b>ทำอาหารเสร็จสมบูรณ์! Win!</b></color>");
-    }
-
-    void TriggerTimeOut()
-    {
-        isTimeOut = true;
-        Debug.Log("<color=yellow><b>หมดเวลาทำอาหาร! Game Over</b></color>");
-    }
+    void TriggerBurnt() { isBurnt = true; if (foodRenderer != null) foodRenderer.material.color = burntColor; Debug.Log("<color=red><b>อาหารไหม้เกรียม! Game Over</b></color>"); }
+    void TriggerCooked() { isCooked = true; Debug.Log("<color=green><b>ทำอาหารเสร็จสมบูรณ์! Win!</b></color>"); }
+    void TriggerTimeOut() { isTimeOut = true; Debug.Log("<color=yellow><b>หมดเวลาทำอาหาร! Game Over</b></color>"); }
 }
