@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "com.ivanmurzak.unity.mcp": "0.79.1",
+    "com.ivanmurzak.unity.mcp": "0.81.1",
+    "com.ivanmurzak.unity.mcp.inputsystem": "1.0.5",
     "com.unity.ai.navigation": "2.0.9",
     "com.unity.cloud.gltfast": "6.19.0",
     "com.unity.collab-proxy": "2.10.0",
@@ -44,8 +45,7 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0",
-    "com.ivanmurzak.unity.mcp.inputsystem": "1.0.5"
+    "com.unity.modules.xr": "1.0.0"
   },
   "scopedRegistries": [
     {
