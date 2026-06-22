@@ -35,8 +35,8 @@ namespace Pep.Planning
 
     public static class PepPlanningData
     {
-        public const string Today = "2026-06-14";
-        public const string UpdatedAt = "2026-06-14";
+        public const string Today = "2026-06-22";
+        public const string UpdatedAt = "2026-06-22";
         public const string Role = "Programmer — coding + UI mock from code (no scene setup)";
 
         public static readonly List<PepTaskEntry> Tasks = new List<PepTaskEntry>
@@ -277,6 +277,62 @@ namespace Pep.Planning
                 progressPercent = 0,
                 notes = "P3",
                 dependsOnFriends = Array.Empty<string>()
+            },
+
+            new PepTaskEntry
+            {
+                step = 17,
+                id = "PEP-017",
+                title = "Mobile sensor input layer (accelerometer + flick + tilt)",
+                folder = "pep/Scripts/Input/",
+                priority = PepPriority.P1,
+                deadline = "2026-06-23",
+                status = PepTaskStatus.InProgress,
+                progressPercent = 60,
+                notes = "new: AccelerometerGestureDetector + FlickDetector + TiltPourReader",
+                dependsOnFriends = Array.Empty<string>()
+            },
+
+            new PepTaskEntry
+            {
+                step = 18,
+                id = "PEP-018",
+                title = "Pan Flick minigame",
+                folder = "pep/Scripts/Minigames/Cooking/",
+                priority = PepPriority.P1,
+                deadline = "2026-06-23",
+                status = PepTaskStatus.InProgress,
+                progressPercent = 45,
+                notes = "new: PanFlickMinigame + scoring hook",
+                dependsOnFriends = new[] { "coco/CookingGameManager.cs" }
+            },
+
+            new PepTaskEntry
+            {
+                step = 19,
+                id = "PEP-019",
+                title = "Tilt Pour minigame + IngredientSO extension",
+                folder = "pep/Scripts/Minigames/Preparation/",
+                priority = PepPriority.P1,
+                deadline = "2026-06-24",
+                status = PepTaskStatus.InProgress,
+                progressPercent = 55,
+                notes = "new: TiltPourMinigame + pourable/fragile fields",
+                dependsOnFriends = new[] { "coco/CookingGameManager.cs" }
+            },
+
+            new PepTaskEntry
+            {
+                step = 20,
+                id = "PEP-020",
+                title = "Cockroach disturbance event",
+                folder = "pep/Scripts/GameplayEvents/",
+                priority = PepPriority.P1,
+                deadline = "2026-06-24",
+                status = PepTaskStatus.InProgress,
+                progressPercent = 40,
+                notes = "new: KitchenDisturbanceManager + CockroachRunner",
+                dependsOnFriends = new[] { "pep/Scripts/Core/GameStateMachine.cs", "pep/Scripts/Scoring/ScoringManager.cs" }
             }
         };
 

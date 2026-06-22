@@ -1,0 +1,60 @@
+ไฟล์ที่อัปเดต
+pep/Scripts/Recipe/IngredientSO.cs
+เพิ่มข้อมูลสำหรับระบบเท: IsPourable, IsFragile, IdealPourMin, IdealPourMax, FragileMaxTiltVelocity
+
+pep/Scripts/Input/AccelerometerGestureDetector.cs
+ตัวอ่าน sensor กลาง (accelerometer + editor fallback) และ calibrate neutral
+
+pep/Scripts/Input/FlickDetector.cs
+ตรวจ flick จาก jerk + cooldown + fallback กด Space ใน Editor
+
+pep/Scripts/Input/TiltPourReader.cs
+แปลง tilt เป็น PourRate และ TiltVelocity สำหรับ minigame เทของ
+
+pep/Scripts/Minigames/Preparation/TiltPourMinigame.cs
+minigame เอียงมือถือเพื่อเท (รองรับของแตกง่าย + ส่งคะแนนเข้า ScoringManager)
+
+pep/Scripts/Minigames/Cooking/PanFlickMinigame.cs
+minigame ร่อนกระทะ (จับ flick + timing score + ส่งคะแนน)
+
+pep/Scripts/GameplayEvents/CockroachRunner.cs
+logic แมลงสาบวิ่งตามเส้นทางและรับ tap
+
+pep/Scripts/GameplayEvents/KitchenDisturbanceManager.cs
+สุ่ม spawn แมลงสาบตาม state (Preparation/Chopping) และส่งผลคะแนน
+
+pep/Scripts/Data/PepPlanningData.cs
+อัปเดต task ใหม่ PEP-017 ถึง PEP-020
+
+pep/pep_todolist.txt
+เพิ่ม planning รายละเอียด gameplay events
+
+pep/Scripts/Minigames/Cooking/CookingState.cs
+แก้ namespace ชน Input โดยใช้ UnityEngine.Input alias
+
+
+------------------------------------------------------------
+
+
+วิธีใช้ (ใน Unity)
+ใส่ ScoringManager และ GameStateMachine ใน scene ก่อน
+สำหรับระบบ input/minigame ให้สร้าง GameObject เช่น PepMobileInput แล้วใส่:
+AccelerometerGestureDetector
+FlickDetector
+TiltPourReader
+GameObject ของเทของ:
+ใส่ TiltPourMinigame
+ลาก TiltPourReader และ ScoringManager เข้าช่องอ้างอิง
+ตั้ง currentIngredient เป็น IngredientSO ที่ต้องการ
+GameObject ของร่อนกระทะ:
+ใส่ PanFlickMinigame
+ลาก FlickDetector และ ScoringManager
+ระบบแมลงสาบ:
+ใส่ KitchenDisturbanceManager
+ลาก GameStateMachine, ScoringManager
+ตั้ง runPath อย่างน้อย 2 จุด (Transforms)
+ถ้ายังไม่มี prefab ให้ปล่อย cockroachPrefab ว่างได้ ระบบจะใช้ placeholder cube
+ทดสอบใน Editor:
+Tilt fallback: WASD/แกนเมาส์ตามที่ script รองรับ
+Flick fallback: กด Space
+ถ้าต้องการ ผมต่อให้เลยขั้นถัดไป: ผูก TiltPourMinigame เข้า PreparationState และผูก PanFlickMinigame เข้า flow ของ CookingState ให้จบ end-to-end.

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityInput = UnityEngine.Input;
 
 namespace Pep.Minigames.Cooking
 {
@@ -133,12 +134,12 @@ namespace Pep.Minigames.Cooking
 
         private void CollectShakeInput()
         {
-            var acceleration = Input.acceleration;
+            var acceleration = UnityInput.acceleration;
             var sensorMagnitude = acceleration.magnitude;
             if (sensorMagnitude < 0.01f) sensorMagnitude = 0f;
 
             float keyboardShake = 0f;
-            if (Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0))
+            if (UnityInput.GetKey(KeyCode.Space) || UnityInput.GetMouseButton(0))
             {
                 keyboardShake = 1f;
             }
