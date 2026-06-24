@@ -17,3 +17,8 @@ MonoBehaviour:
   category: vegie
   kcal: 1000
   icon: {fileID: 21300000, guid: be5ec57f6966d1c479030a9ff52d8fb5, type: 3}
+  isPourable: 1
+  isFragile: 0
+  idealPourMin: 65
+  idealPourMax: 85
+  fragileMaxTiltVelocity: 2.5

@@ -30,6 +30,25 @@ namespace Pep.GameplayEvents
         private CockroachRunner activeRunner;
         private bool enabledByState;
 
+        public void Configure(GameStateMachine gsm, ScoringManager sm)
+        {
+            gameStateMachine = gsm;
+            scoringManager = sm;
+
+            if (!isActiveAndEnabled || gameStateMachine == null) return;
+            gameStateMachine.OnStateEntered -= HandleStateEntered;
+            gameStateMachine.OnStateExited -= HandleStateExited;
+            gameStateMachine.OnStateEntered += HandleStateEntered;
+            gameStateMachine.OnStateExited += HandleStateExited;
+            enabledByState = IsActiveState(gameStateMachine.CurrentState);
+            RefreshSpawnLoop();
+        }
+
+        public void SetRunPath(List<Transform> points)
+        {
+            runPath = points ?? new List<Transform>();
+        }
+
         private void Awake()
         {
             if (gameStateMachine == null)

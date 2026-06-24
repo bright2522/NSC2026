@@ -56,7 +56,10 @@ namespace Pep.Minigames.Preparation
         private void Start()
         {
             if (createUiOnStart) BuildRuntimeUi();
-            Begin();
+            if (isRunning)
+                panelRoot?.gameObject.SetActive(true);
+            else
+                Begin();
         }
 
         private void Update()
@@ -99,13 +102,21 @@ namespace Pep.Minigames.Preparation
             remainingTime = Mathf.Max(2f, totalDuration);
             didBreakFragile = false;
             isRunning = true;
+            if (panelRoot != null) panelRoot.gameObject.SetActive(true);
             UpdateUi();
         }
 
         public void Stop()
         {
             isRunning = false;
+            if (panelRoot != null) panelRoot.gameObject.SetActive(false);
             UpdateUi();
+        }
+
+        public void Configure(TiltPourReader reader, ScoringManager manager)
+        {
+            tiltReader = reader;
+            scoringManager = manager;
         }
 
         private void Finish()
@@ -119,8 +130,9 @@ namespace Pep.Minigames.Preparation
                 scoringManager.ReportStepScore("pep/TiltPour", "Tilt Pour", score);
             }
 
-            OnPourCompleted?.Invoke(score, didBreakFragile);
             UpdateUi();
+            if (panelRoot != null) panelRoot.gameObject.SetActive(false);
+            OnPourCompleted?.Invoke(score, didBreakFragile);
         }
 
         private float CalculateScore()
@@ -195,8 +207,9 @@ namespace Pep.Minigames.Preparation
             titleText = CreateText("Title", panelRoot, "Tilt Pour", 38, new Vector2(0f, 155f));
             titleText.alignment = TextAnchor.MiddleCenter;
 
-            statusText = CreateText("Status", panelRoot, "Ready", 26, new Vector2(0f, 108f));
+            statusText = CreateText("Status", panelRoot, "Ready", 22, new Vector2(0f, 100f));
             statusText.alignment = TextAnchor.MiddleCenter;
+            statusText.GetComponent<RectTransform>().sizeDelta = new Vector2(680f, 52f);
 
             timerText = CreateText("Timer", panelRoot, "00.0s", 30, new Vector2(0f, 68f));
             timerText.alignment = TextAnchor.MiddleCenter;
@@ -210,6 +223,7 @@ namespace Pep.Minigames.Preparation
             timerSlider = CreateSlider("TimerSlider", panelRoot, new Vector2(0f, -130f), new Vector2(560f, 22f), 0f, totalDuration, totalDuration, false);
             CreateText("TimerLabel", panelRoot, "Time", 18, new Vector2(0f, -102f)).alignment = TextAnchor.MiddleCenter;
 
+            panelRoot.gameObject.SetActive(false);
             uiBuilt = true;
         }
 
@@ -236,7 +250,8 @@ namespace Pep.Minigames.Preparation
             if (tiltText != null)
             {
                 float tiltPercent = tiltReader != null ? tiltReader.PourRate * 100f : 0f;
-                tiltText.text = $"Tilt {tiltPercent:0}%";
+                string mouseHeld = UnityEngine.Input.GetMouseButton(0) ? " [LMB]" : "";
+                tiltText.text = $"Tilt {tiltPercent:0}%{mouseHeld}";
             }
 
             if (titleText != null)
@@ -248,7 +263,8 @@ namespace Pep.Minigames.Preparation
             {
                 if (isRunning)
                 {
-                    statusText.text = IsFragile() ? "Pour slowly to avoid break" : "Hold steady tilt in ideal zone";
+                    string action = IsFragile() ? "Pour slowly to avoid break" : "Hold steady tilt in ideal zone";
+                    statusText.text = $"{action}\n[PC: hold LMB — mouse right = pour more]";
                 }
                 else if (didBreakFragile)
                 {
@@ -273,11 +289,18 @@ namespace Pep.Minigames.Preparation
             rect.anchoredPosition = anchoredPosition;
 
             var textComp = textObject.GetComponent<Text>();
-            textComp.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            textComp.font = GetDefaultFont();
             textComp.text = text;
             textComp.fontSize = size;
             textComp.color = Color.white;
             return textComp;
+        }
+
+        private static Font GetDefaultFont()
+        {
+            var f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (f == null) f = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            return f;
         }
 
         private Slider CreateSlider(

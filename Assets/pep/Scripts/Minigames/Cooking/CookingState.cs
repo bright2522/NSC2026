@@ -50,7 +50,10 @@ namespace Pep.Minigames.Cooking
         private void Start()
         {
             if (createUiOnStart) BuildRuntimeUi();
-            BeginCooking();
+            if (isRunning)
+                panelRoot?.gameObject.SetActive(true);
+            else
+                BeginCooking();
         }
 
         private void Update()
@@ -75,12 +78,14 @@ namespace Pep.Minigames.Cooking
             burnValue = 0f;
             shakeInputValue = 0f;
             isRunning = true;
+            if (panelRoot != null) panelRoot.gameObject.SetActive(true);
             UpdateUi();
         }
 
         public void StopCooking()
         {
             isRunning = false;
+            if (panelRoot != null) panelRoot.gameObject.SetActive(false);
             UpdateUi();
         }
 
@@ -129,6 +134,7 @@ namespace Pep.Minigames.Cooking
             timerSlider = CreateSlider("TimerSlider", panelRoot, new Vector2(0f, -160f), new Vector2(560f, 22f), 0f, totalDuration, totalDuration, false);
             CreateText("TimeBarText", panelRoot, "Timer", 20, new Vector2(0f, -132f)).alignment = TextAnchor.MiddleCenter;
 
+            panelRoot.gameObject.SetActive(false);
             uiBuilt = true;
         }
 
@@ -189,8 +195,9 @@ namespace Pep.Minigames.Cooking
             float score = Mathf.Clamp01(cookedRatio - burnRatio * 0.65f) * 100f;
             bool success = score >= 55f;
 
-            OnCookingCompleted?.Invoke(score, success);
             UpdateUi();
+            if (panelRoot != null) panelRoot.gameObject.SetActive(false);
+            OnCookingCompleted?.Invoke(score, success);
         }
 
         private void UpdateUi()
@@ -239,11 +246,18 @@ namespace Pep.Minigames.Cooking
             rect.anchoredPosition = anchoredPosition;
 
             var textComp = textObject.GetComponent<Text>();
-            textComp.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            textComp.font = GetDefaultFont();
             textComp.text = text;
             textComp.fontSize = size;
             textComp.color = Color.white;
             return textComp;
+        }
+
+        private static Font GetDefaultFont()
+        {
+            var f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (f == null) f = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            return f;
         }
 
         private Slider CreateSlider(

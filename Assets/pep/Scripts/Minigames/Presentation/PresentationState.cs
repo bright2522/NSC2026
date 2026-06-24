@@ -1,159 +1,113 @@
 using System;
-using Pep.Input;
 using Pep.Scoring;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityInput = UnityEngine.Input;
 
-namespace Pep.Minigames.Cooking
+namespace Pep.Minigames.Presentation
 {
-    public class PanFlickMinigame : MonoBehaviour
+    public class PresentationState : MonoBehaviour
     {
-        [Header("Session")]
         [SerializeField] private float totalDuration = 8f;
-        [SerializeField] private int requiredFlickCount = 1;
-        [SerializeField] private float idealWindowStart = 0.25f;
-        [SerializeField] private float idealWindowEnd = 0.7f;
-
-        [Header("Runtime")]
+        [SerializeField] private float targetPlateScore = 100f;
+        [SerializeField] private float gainPerSecond = 30f;
         [SerializeField] private bool createUiOnStart = true;
-        [SerializeField] private FlickDetector flickDetector;
+        [SerializeField] private bool autoStartOnEnable = false;
         [SerializeField] private ScoringManager scoringManager;
 
-        public event Action<float, bool> OnPanFlickCompleted;
+        public event Action<float, bool> OnPresentationCompleted;
 
-        public bool IsRunning => isRunning;
-        public int FlickCount => flickCount;
+        public bool IsRunning { get; private set; }
+        public float PlateValue { get; private set; }
 
         private Canvas rootCanvas;
         private RectTransform panelRoot;
-        private Text statusText;
-        private Text timerText;
-        private Text counterText;
+        private Slider plateSlider;
         private Slider timerSlider;
+        private Text statusText;
         private bool uiBuilt;
-        private bool isRunning;
         private float remainingTime;
-        private float firstFlickRatio = -1f;
-        private int flickCount;
 
-        private void Awake()
+        private void OnEnable()
         {
-            if (flickDetector == null)
+            if (autoStartOnEnable)
             {
-                flickDetector = GetComponent<FlickDetector>();
-            }
-        }
-
-        private void Start()
-        {
-            if (createUiOnStart) BuildRuntimeUi();
-            if (isRunning)
-                panelRoot?.gameObject.SetActive(true);
-            else
                 Begin();
+            }
         }
 
         private void Update()
         {
-            if (!isRunning) return;
+            if (!IsRunning) return;
 
             remainingTime -= Time.deltaTime;
-            HandleFlickInput();
+
+            float input = 0f;
+            if (UnityInput.GetMouseButton(0)) input += 1f;
+            if (UnityInput.GetKey(KeyCode.Space)) input += 1f;
+            input = Mathf.Clamp01(input);
+
+            PlateValue = Mathf.Clamp(PlateValue + input * gainPerSecond * Time.deltaTime, 0f, targetPlateScore);
             UpdateUi();
 
-            if (flickCount >= Mathf.Max(1, requiredFlickCount) || remainingTime <= 0f)
+            if (PlateValue >= targetPlateScore || remainingTime <= 0f)
             {
                 Finish();
             }
         }
 
+        public void Configure(ScoringManager manager)
+        {
+            scoringManager = manager;
+        }
+
         public void Begin()
         {
-            if (flickDetector != null)
+            if (createUiOnStart && !uiBuilt)
             {
-                flickDetector.Calibrate();
+                BuildRuntimeUi();
             }
 
             remainingTime = Mathf.Max(1f, totalDuration);
-            flickCount = 0;
-            firstFlickRatio = -1f;
-            isRunning = true;
+            PlateValue = 0f;
+            IsRunning = true;
             if (panelRoot != null) panelRoot.gameObject.SetActive(true);
             UpdateUi();
         }
 
         public void Stop()
         {
-            isRunning = false;
+            if (!IsRunning) return;
+            IsRunning = false;
             if (panelRoot != null) panelRoot.gameObject.SetActive(false);
-            UpdateUi();
         }
 
-        public void Configure(FlickDetector detector, ScoringManager manager)
+        public void ForceComplete(float score = 75f)
         {
-            flickDetector = detector;
-            scoringManager = manager;
-        }
-
-        private void HandleFlickInput()
-        {
-            if (flickDetector != null && flickDetector.ConsumeFlick(out _, out _))
-            {
-                RegisterFlick();
-            }
-        }
-
-        private void RegisterFlick()
-        {
-            flickCount++;
-            if (firstFlickRatio < 0f)
-            {
-                float elapsed = totalDuration - remainingTime;
-                firstFlickRatio = totalDuration > 0f ? Mathf.Clamp01(elapsed / totalDuration) : 1f;
-            }
+            if (!IsRunning) return;
+            Complete(score);
         }
 
         private void Finish()
         {
-            if (!isRunning) return;
-            isRunning = false;
+            float ratio = targetPlateScore <= 0f ? 1f : Mathf.Clamp01(PlateValue / targetPlateScore);
+            float score = Mathf.Clamp(ratio * 100f, 0f, 100f);
+            Complete(score);
+        }
 
-            float score = CalculateScore();
-            bool success = score >= 55f;
+        private void Complete(float score)
+        {
+            IsRunning = false;
+            bool success = score >= 50f;
 
             if (scoringManager != null)
             {
-                scoringManager.ReportStepScore("pep/PanFlick", "Pan Flick", score);
+                scoringManager.ReportStepScore("pep/Presentation", "Presentation", score);
             }
 
             UpdateUi();
             if (panelRoot != null) panelRoot.gameObject.SetActive(false);
-            OnPanFlickCompleted?.Invoke(score, success);
-        }
-
-        private float CalculateScore()
-        {
-            if (flickCount <= 0) return 0f;
-
-            float timingScore;
-            if (firstFlickRatio >= idealWindowStart && firstFlickRatio <= idealWindowEnd)
-            {
-                timingScore = 100f;
-            }
-            else if (firstFlickRatio < idealWindowStart)
-            {
-                float t = Mathf.Clamp01(firstFlickRatio / Mathf.Max(0.001f, idealWindowStart));
-                timingScore = Mathf.Lerp(35f, 90f, t);
-            }
-            else
-            {
-                float denom = Mathf.Max(0.001f, 1f - idealWindowEnd);
-                float t = Mathf.Clamp01((firstFlickRatio - idealWindowEnd) / denom);
-                timingScore = Mathf.Lerp(90f, 30f, t);
-            }
-
-            float countScore = Mathf.Clamp01((float)flickCount / Mathf.Max(1, requiredFlickCount));
-            return Mathf.Clamp(timingScore * countScore, 0f, 100f);
+            OnPresentationCompleted?.Invoke(score, success);
         }
 
         public void BuildRuntimeUi()
@@ -163,7 +117,7 @@ namespace Pep.Minigames.Cooking
             rootCanvas = FindObjectOfType<Canvas>();
             if (rootCanvas == null)
             {
-                var canvasObject = new GameObject("PepPanFlickCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                var canvasObject = new GameObject("PepPresentationCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
                 rootCanvas = canvasObject.GetComponent<Canvas>();
                 rootCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 var scaler = canvasObject.GetComponent<CanvasScaler>();
@@ -171,30 +125,23 @@ namespace Pep.Minigames.Cooking
                 scaler.referenceResolution = new Vector2(1920f, 1080f);
             }
 
-            var panelObject = new GameObject("PepPanFlickPanel", typeof(RectTransform), typeof(Image));
+            var panelObject = new GameObject("PepPresentationPanel", typeof(RectTransform), typeof(Image));
             panelRoot = panelObject.GetComponent<RectTransform>();
             panelRoot.SetParent(rootCanvas.transform, false);
-            panelRoot.anchorMin = new Vector2(0.5f, 0.5f);
-            panelRoot.anchorMax = new Vector2(0.5f, 0.5f);
-            panelRoot.pivot = new Vector2(0.5f, 0.5f);
-            panelRoot.sizeDelta = new Vector2(740f, 320f);
-            panelRoot.anchoredPosition = new Vector2(0f, 0f);
+            panelRoot.anchorMin = new Vector2(0.5f, 0f);
+            panelRoot.anchorMax = new Vector2(0.5f, 0f);
+            panelRoot.pivot = new Vector2(0.5f, 0f);
+            panelRoot.sizeDelta = new Vector2(720f, 180f);
+            panelRoot.anchoredPosition = new Vector2(0f, 20f);
             panelObject.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
 
-            var titleText = CreateText("Title", panelRoot, "Pan Flick", 34, new Vector2(0f, 108f));
+            var titleText = CreateText("Title", panelRoot, "Presentation", 30, new Vector2(0f, 140f));
             titleText.alignment = TextAnchor.MiddleCenter;
-
-            statusText = CreateText("Status", panelRoot, "Flick your phone", 22, new Vector2(0f, 62f));
+            statusText = CreateText("Status", panelRoot, "Hold mouse/space to plate", 22, new Vector2(0f, 104f));
             statusText.alignment = TextAnchor.MiddleCenter;
-            statusText.GetComponent<RectTransform>().sizeDelta = new Vector2(620f, 52f);
 
-            counterText = CreateText("Counter", panelRoot, "0 / 1", 28, new Vector2(0f, 16f));
-            counterText.alignment = TextAnchor.MiddleCenter;
-
-            timerText = CreateText("Timer", panelRoot, "00.0s", 26, new Vector2(0f, -30f));
-            timerText.alignment = TextAnchor.MiddleCenter;
-
-            timerSlider = CreateSlider("TimerSlider", panelRoot, new Vector2(0f, -86f), new Vector2(560f, 22f), 0f, totalDuration, totalDuration, false);
+            plateSlider = CreateSlider("PlateSlider", panelRoot, new Vector2(0f, 62f), new Vector2(560f, 26f), 0f, targetPlateScore, 0f, false);
+            timerSlider = CreateSlider("TimerSlider", panelRoot, new Vector2(0f, 26f), new Vector2(560f, 18f), 0f, totalDuration, totalDuration, false);
 
             panelRoot.gameObject.SetActive(false);
             uiBuilt = true;
@@ -204,25 +151,23 @@ namespace Pep.Minigames.Cooking
         {
             if (!uiBuilt) return;
 
+            if (plateSlider != null)
+            {
+                plateSlider.maxValue = Mathf.Max(1f, targetPlateScore);
+                plateSlider.value = PlateValue;
+            }
+
             if (timerSlider != null)
             {
                 timerSlider.maxValue = totalDuration;
                 timerSlider.value = Mathf.Clamp(remainingTime, 0f, totalDuration);
             }
 
-            if (timerText != null)
-            {
-                timerText.text = $"{Mathf.Clamp(remainingTime, 0f, totalDuration):00.0}s";
-            }
-
-            if (counterText != null)
-            {
-                counterText.text = $"{flickCount} / {Mathf.Max(1, requiredFlickCount)}";
-            }
-
             if (statusText != null)
             {
-                statusText.text = isRunning ? "Flick once quickly\n[PC: Space or F key]" : "Completed";
+                statusText.text = IsRunning
+                    ? $"Plate {PlateValue:0}/{targetPlateScore:0}"
+                    : "Presentation completed";
             }
         }
 
@@ -271,11 +216,11 @@ namespace Pep.Minigames.Cooking
             rootRect.sizeDelta = size;
             rootRect.anchoredPosition = anchoredPosition;
 
-            CreateImageChild(rootRect, "Background", new Color(1f, 1f, 1f, 0.25f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            var fillArea = CreateRectChild(rootRect, "Fill Area", new Vector2(8f, 6f), new Vector2(-8f, -6f));
-            var fill = CreateImageChild(fillArea, "Fill", new Color(0.9f, 0.7f, 0.1f, 0.95f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            var handleArea = CreateRectChild(rootRect, "Handle Slide Area", new Vector2(8f, 5f), new Vector2(-8f, -5f));
-            var handle = CreateImageChild(handleArea, "Handle", new Color(1f, 1f, 1f, 0.95f), new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(-10f, -10f), new Vector2(20f, 20f));
+            CreateImageChild(rootRect, "Background", new Color(1f, 1f, 1f, 0.2f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var fillArea = CreateRectChild(rootRect, "Fill Area", new Vector2(8f, 4f), new Vector2(-8f, -4f));
+            var fill = CreateImageChild(fillArea, "Fill", new Color(0.9f, 0.55f, 0.2f, 0.95f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            var handleArea = CreateRectChild(rootRect, "Handle Slide Area", new Vector2(8f, 4f), new Vector2(-8f, -4f));
+            var handle = CreateImageChild(handleArea, "Handle", new Color(1f, 1f, 1f, 0.95f), new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(-9f, -9f), new Vector2(18f, 18f));
 
             var slider = root.AddComponent<Slider>();
             slider.minValue = minValue;

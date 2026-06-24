@@ -44,12 +44,13 @@ namespace Pep.Input
                 return;
             }
 
-#if UNITY_EDITOR
-            if (allowEditorSpaceFallback && UnityInput.GetKeyDown(KeyCode.Space) && cooldownRemaining <= 0f)
+            if (allowEditorSpaceFallback && cooldownRemaining <= 0f)
             {
-                RegisterFlick(Vector3.up, flickThreshold);
+                if (UnityInput.GetKeyDown(KeyCode.Space) || UnityInput.GetKeyDown(KeyCode.F))
+                {
+                    RegisterFlick(Vector3.up, flickThreshold);
+                }
             }
-#endif
         }
 
         public void Calibrate()
@@ -59,6 +60,12 @@ namespace Pep.Input
                 sensor.CalibrateNeutral();
                 previousRelative = sensor.RelativeAcceleration;
             }
+        }
+
+        public void Configure(AccelerometerGestureDetector detector)
+        {
+            sensor = detector;
+            Calibrate();
         }
 
         public bool ConsumeFlick(out Vector3 direction, out float intensity)
