@@ -334,8 +334,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 964674619}
-  openBoolParam: IsOpen
-  startOpen: 0
+  openBoolParam: open
+  startOpen: 1
+  enableMouseClick: 1
+  enableTouch: 1
 --- !u!65 &964674623
 BoxCollider:
   m_ObjectHideFlags: 0
