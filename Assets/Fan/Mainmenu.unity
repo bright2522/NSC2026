@@ -1975,7 +1975,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bb84b9801d302a448833f1fb2f6166c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  transition: {fileID: 11400000, guid: 9710edcf009d00943af961dd2a7ca7d3, type: 2}
+  transition: {fileID: 11400000, guid: 057babd6f13132c449650d99e3c4e99c, type: 2}
   startDelay: 0
 --- !u!1 &1263603072
 GameObject:
