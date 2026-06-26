@@ -20,6 +20,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Fan/Mainmenu.unity
     guid: 77d04571125d7144592e3edc4c7c15de
+  - enabled: 1
+    path: Assets/Fan/Solo+yourself.unity
+    guid: b6f9d27220b38e9408407ff1efa0b3ce
+  - enabled: 1
+    path: Assets/Fan/Solo+Learn.unity
+    guid: d1c85bd5effb4184f87a5ad6b7a03e0c
+  - enabled: 1
+    path: Assets/Fan/WithFriend+Learn.unity
+    guid: 54ecb74f032d2b24daba5d163e228b2a
+  - enabled: 1
+    path: Assets/Fan/WithFriend+yourself.unity
+    guid: 1b2d2bef55976174f975296ffc41e416
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
