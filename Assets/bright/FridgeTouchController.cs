@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // ติดสคริปต์นี้ไว้ที่ตัวโมเดลตู้เย็น (ตัวที่มี Collider)
-// ทำหน้าที่: แตะจอ -> เล่นอนิเมชั่นเปิดประตู / แตะอีกที -> ปิด
+// ทำหน้าที่: แตะจอ/คลิกเมาส์ -> เล่นอนิเมชั่นเปิดประตู / แตะอีกที -> ปิด
 [RequireComponent(typeof(Collider))]
 public class FridgeTouchController : MonoBehaviour
 {
@@ -11,6 +11,8 @@ public class FridgeTouchController : MonoBehaviour
 
     [Header("Options")]
     public bool startOpen = false;          // เริ่มมาเปิดอยู่ไหม
+    public bool enableMouseClick = true;    // ✅ ติ๊กไว้ = ใช้เมาส์คลิกทดสอบได้ใน Editor / PC
+    public bool enableTouch = true;         // ✅ ติ๊กไว้ = ใช้นิ้วแตะได้บนมือถือ
 
     private Camera cam;
     private bool isOpen;
@@ -27,20 +29,20 @@ public class FridgeTouchController : MonoBehaviour
     void Update()
     {
         // --- รองรับจอสัมผัส (มือถือ/touch screen) ---
-        if (Input.touchCount > 0)
+        if (enableTouch && Input.touchCount > 0)
         {
             Touch t = Input.GetTouch(0);
             if (t.phase == TouchPhase.Began)
                 TryTouch(t.position);
         }
-        // --- รองรับเมาส์ (ไว้ทดสอบใน Editor) ---
-        else if (Input.GetMouseButtonDown(0))
+        // --- รองรับเมาส์ (ทดสอบใน Editor หรือเล่นบน PC) ---
+        else if (enableMouseClick && Input.GetMouseButtonDown(0))
         {
             TryTouch(Input.mousePosition);
         }
     }
 
-    // ยิงรังสีจากจุดที่แตะ เช็คว่าโดนตู้เย็นไหม
+    // ยิงรังสีจากจุดที่แตะ/คลิก เช็คว่าโดนตู้เย็นไหม
     void TryTouch(Vector2 screenPos)
     {
         if (cam == null) cam = Camera.main;
