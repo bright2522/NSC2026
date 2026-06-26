@@ -29,7 +29,13 @@ public class CookingSystem3D : MonoBehaviour
     private float currentTimer;
 
     [Header("Arrow Smooth Settings")]
-    public float arrowSmoothSpeed = 60f; 
+    public float arrowSmoothSpeed = 60f;
+
+    [Header("UI Smooth Settings (LeanTween)")]
+    public float cookingFillSmoothTime = 0.22f;
+    public float arrowTweenSmoothTime = 0.14f;
+    public float foodColorSmoothTime = 0.35f;
+    public LeanTweenType uiEase = LeanTweenType.easeOutQuad;
 
     [Header("Gameplay Settings (ดูค่าสถานะในเกม)")]
     public float currentHeat = 0f; 
@@ -50,6 +56,11 @@ public class CookingSystem3D : MonoBehaviour
     private float idealMin;
     private float idealMax;
 
+    private float displayedCookingFill;
+    private int cookingFillTweenId = -1;
+    private int heatArrowTweenId = -1;
+    private int foodColorTweenId = -1;
+
     void Start()
     {
         if (foodRenderer != null) 
@@ -59,6 +70,15 @@ public class CookingSystem3D : MonoBehaviour
 
         // --- เรียกฟังก์ชันคำนวณโซนจากตำแหน่ง UI ที่คุณจัดไว้ ---
         CalculateZonesFromUI();
+        displayedCookingFill = cookingProgress / maxCookingProgress;
+        if (cookingFillImage != null) cookingFillImage.fillAmount = displayedCookingFill;
+    }
+
+    void OnDestroy()
+    {
+        CancelTween(ref cookingFillTweenId);
+        CancelTween(ref heatArrowTweenId);
+        CancelTween(ref foodColorTweenId);
     }
 
     void Update()
@@ -72,7 +92,9 @@ public class CookingSystem3D : MonoBehaviour
         if (currentTimer <= 0) { TriggerTimeOut(); return; }
 
         currentHeat = Mathf.MoveTowards(currentHeat, targetHeat, arrowSmoothSpeed * Time.deltaTime);
-        UpdateHeatUI();
+        SmoothArrowPosition(currentHeat);
+
+        Color foodTargetColor = normalColor;
 
         // --- ตรรกะการทำอาหารและไหม้เกรียม (อ้างอิงตามโซนจาก UI จริง) ---
         if (currentHeat > idealMax)
@@ -81,11 +103,8 @@ public class CookingSystem3D : MonoBehaviour
             cookingProgress += slowProgressSpeed * Time.deltaTime; 
             burnTimer -= Time.deltaTime; 
 
-            if (foodRenderer != null)
-            {
-                float burnRatio = 1f - (burnTimer / maxBurnTime);
-                foodRenderer.material.color = Color.Lerp(normalColor, burntColor, burnRatio);
-            }
+            float burnRatio = 1f - (burnTimer / maxBurnTime);
+            foodTargetColor = Color.Lerp(normalColor, burntColor, burnRatio);
 
             if (burnTimer <= 0) TriggerBurnt();
         }
@@ -93,18 +112,17 @@ public class CookingSystem3D : MonoBehaviour
         {
             // --- 2. โซนในอุดมคติ (อยู่ภายในแถบพอดี) ---
             cookingProgress += idealProgressSpeed * Time.deltaTime; 
-            CooldownBurnColor(); 
+            burnTimer = maxBurnTime;
         }
         else
         {
             // --- 3. โซนไฟอ่อนเกินแถบเป้าหมาย ---
             cookingProgress += slowProgressSpeed * Time.deltaTime; 
-            CooldownBurnColor(); 
+            burnTimer = maxBurnTime;
         }
 
-        // --- อัปเดต UI ความสุก ---
-        if (cookingFillImage != null) cookingFillImage.fillAmount = cookingProgress / maxCookingProgress; 
-        UpdateCookingValueDisplay();
+        SmoothFoodColor(foodTargetColor);
+        SmoothCookingFill(cookingProgress / maxCookingProgress);
 
         if (cookingProgress >= maxCookingProgress && !isBurnt) TriggerCooked();
     }
@@ -141,15 +159,86 @@ public class CookingSystem3D : MonoBehaviour
         }
     }
 
-    // --- ฟังก์ชันอัปเดต UI อื่นๆ ---
-    void UpdateCookingValueDisplay()
+    void CancelTween(ref int tweenId)
     {
-        if (cookingValueText != null)
-        {
-            int value = Mathf.RoundToInt(cookingProgress);
-            value = Mathf.Clamp(value, 0, 100);
-            cookingValueText.text = value.ToString();
-        }
+        if (tweenId < 0) return;
+        LeanTween.cancel(tweenId);
+        tweenId = -1;
+    }
+
+    void SmoothCookingFill(float targetFill)
+    {
+        targetFill = Mathf.Clamp01(targetFill);
+        if (Mathf.Approximately(displayedCookingFill, targetFill)) return;
+
+        if (cookingFillTweenId >= 0 && LeanTween.isTweening(cookingFillTweenId))
+            LeanTween.cancel(cookingFillTweenId);
+
+        float startFill = displayedCookingFill;
+        cookingFillTweenId = LeanTween.value(gameObject, startFill, targetFill, cookingFillSmoothTime)
+            .setEase(uiEase)
+            .setOnUpdate((float value) =>
+            {
+                displayedCookingFill = value;
+                if (cookingFillImage != null) cookingFillImage.fillAmount = value;
+                UpdateCookingValueDisplay(value);
+            })
+            .id;
+    }
+
+    void SmoothArrowPosition(float heat)
+    {
+        if (arrowIndicator == null || gaugeRect == null) return;
+
+        float targetY = HeatToGaugeY(heat);
+        float currentY = arrowIndicator.rectTransform.localPosition.y;
+        if (Mathf.Approximately(currentY, targetY)) return;
+
+        if (heatArrowTweenId >= 0 && LeanTween.isTweening(heatArrowTweenId))
+            LeanTween.cancel(heatArrowTweenId);
+
+        heatArrowTweenId = LeanTween.moveY(arrowIndicator.rectTransform, targetY, arrowTweenSmoothTime)
+            .setEase(uiEase)
+            .id;
+    }
+
+    void SmoothFoodColor(Color targetColor)
+    {
+        if (foodRenderer == null) return;
+
+        Color currentColor = foodRenderer.material.color;
+        if (ColorsAreClose(currentColor, targetColor)) return;
+
+        if (foodColorTweenId >= 0 && LeanTween.isTweening(foodColorTweenId))
+            LeanTween.cancel(foodColorTweenId);
+
+        foodColorTweenId = LeanTween.value(gameObject, currentColor, targetColor, foodColorSmoothTime)
+            .setEase(uiEase)
+            .setOnUpdate((Color color) => foodRenderer.material.color = color)
+            .id;
+    }
+
+    float HeatToGaugeY(float heat)
+    {
+        float height = gaugeRect.rect.height;
+        return ((heat / 100f) * height) - (height / 2f);
+    }
+
+    static bool ColorsAreClose(Color a, Color b)
+    {
+        return Mathf.Approximately(a.r, b.r)
+            && Mathf.Approximately(a.g, b.g)
+            && Mathf.Approximately(a.b, b.b)
+            && Mathf.Approximately(a.a, b.a);
+    }
+
+    void UpdateCookingValueDisplay(float progressValue)
+    {
+        if (cookingValueText == null) return;
+
+        int value = Mathf.RoundToInt(progressValue * maxCookingProgress);
+        value = Mathf.Clamp(value, 0, (int)maxCookingProgress);
+        cookingValueText.text = value.ToString();
     }
 
     void UpdateTimerTextDisplay()
@@ -162,28 +251,13 @@ public class CookingSystem3D : MonoBehaviour
         }
     }
 
-    void CooldownBurnColor()
+    void TriggerBurnt()
     {
-        burnTimer = maxBurnTime; 
-        if (foodRenderer != null)
-        {
-            foodRenderer.material.color = Color.Lerp(foodRenderer.material.color, normalColor, Time.deltaTime * 2f);
-        }
+        isBurnt = true;
+        CancelTween(ref foodColorTweenId);
+        if (foodRenderer != null) foodRenderer.material.color = burntColor;
+        Debug.Log("<color=red><b>อาหารไหม้เกรียม! Game Over</b></color>");
     }
-
-    void UpdateHeatUI()
-    {
-        if (arrowIndicator != null && gaugeRect != null)
-        {
-            float height = gaugeRect.rect.height;
-            float targetY = ((currentHeat / 100f) * height) - (height / 2f);
-            Vector3 newPos = arrowIndicator.rectTransform.localPosition;
-            newPos.y = targetY;
-            arrowIndicator.rectTransform.localPosition = newPos;
-        }
-    }
-
-    void TriggerBurnt() { isBurnt = true; if (foodRenderer != null) foodRenderer.material.color = burntColor; Debug.Log("<color=red><b>อาหารไหม้เกรียม! Game Over</b></color>"); }
     void TriggerCooked() { isCooked = true; Debug.Log("<color=green><b>ทำอาหารเสร็จสมบูรณ์! Win!</b></color>"); }
     void TriggerTimeOut() { isTimeOut = true; Debug.Log("<color=yellow><b>หมดเวลาทำอาหาร! Game Over</b></color>"); }
 }
