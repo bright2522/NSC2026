@@ -13,12 +13,21 @@ namespace Pep.Minigames.Plating
         [SerializeField] private bool allowDuplicateItemIds = false;
         [SerializeField] private bool showGizmos = true;
 
+        [Header("Snap Indicator")]
+        [SerializeField] private GameObject snapIndicatorPrefab;
+        [SerializeField] private float indicatorScale = 0.35f;
+        [SerializeField] private float indicatorHeightAbovePlate = 0.02f;
+
         public event Action<DraggablePlateItem> OnItemPlaced;
         public event Action<DraggablePlateItem> OnItemRemoved;
         public event Action OnPlateChanged;
 
         private readonly List<DraggablePlateItem> placedItems = new List<DraggablePlateItem>();
         private readonly List<Vector3> occupiedSnapPoints = new List<Vector3>();
+
+        private GameObject snapIndicator;
+        private Renderer indicatorRenderer;
+        private int indicatorTweenId = -1;
 
         public IReadOnlyList<DraggablePlateItem> PlacedItems => placedItems;
         public int ItemCount => placedItems.Count;
@@ -27,6 +36,126 @@ namespace Pep.Minigames.Plating
         {
             var col = GetComponent<Collider>();
             col.isTrigger = true;
+
+            BuildSnapIndicator();
+        }
+
+        private void BuildSnapIndicator()
+        {
+            if (snapIndicatorPrefab != null)
+            {
+                snapIndicator = Instantiate(snapIndicatorPrefab, transform);
+            }
+            else
+            {
+                snapIndicator = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                snapIndicator.name = "SnapIndicator";
+                Destroy(snapIndicator.GetComponent<Collider>());
+                snapIndicator.transform.SetParent(transform);
+                snapIndicator.transform.localScale = new Vector3(indicatorScale, 0.004f, indicatorScale);
+            }
+
+            indicatorRenderer = snapIndicator.GetComponent<Renderer>();
+            if (indicatorRenderer != null)
+                indicatorRenderer.material = BuildHoloMaterial();
+
+            snapIndicator.SetActive(false);
+        }
+
+        private Material BuildHoloMaterial()
+        {
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader);
+
+            bool isUrp = shader.name.Contains("Universal");
+
+            if (isUrp)
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_Blend", 0f);
+                mat.SetFloat("_AlphaClip", 0f);
+                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetInt("_ZWrite", 0);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3000;
+            }
+            else
+            {
+                mat.SetFloat("_Mode", 3f);
+                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetInt("_ZWrite", 0);
+                mat.DisableKeyword("_ALPHATEST_ON");
+                mat.EnableKeyword("_ALPHABLEND_ON");
+                mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                mat.renderQueue = 3000;
+            }
+
+            mat.color = new Color(0.02f, 0.02f, 0.04f, 0.45f);
+
+            if (mat.HasProperty("_EmissionColor"))
+            {
+                mat.EnableKeyword("_EMISSION");
+                mat.SetColor("_EmissionColor", new Color(0f, 0.05f, 0.12f, 1f));
+            }
+
+            return mat;
+        }
+
+        public void ShowSnapPreview(DraggablePlateItem item)
+        {
+            if (snapIndicator == null) return;
+            snapIndicator.SetActive(true);
+
+            if (indicatorTweenId != -1) LeanTween.cancel(indicatorTweenId);
+            snapIndicator.transform.localScale = Vector3.zero;
+            indicatorTweenId = LeanTween.scale(snapIndicator,
+                new Vector3(indicatorScale, 0.004f, indicatorScale), 0.18f)
+                .setEaseOutBack()
+                .setOnComplete(StartHoloPulse).id;
+
+            UpdateSnapPreview(item);
+        }
+
+        private void StartHoloPulse()
+        {
+            if (indicatorRenderer == null) return;
+            LeanTween.value(snapIndicator, 0.2f, 0.6f, 0.7f)
+                .setEaseInOutSine()
+                .setLoopPingPong()
+                .setOnUpdate((float a) =>
+                {
+                    if (indicatorRenderer == null) return;
+                    Color c = indicatorRenderer.material.color;
+                    c.a = a;
+                    indicatorRenderer.material.color = c;
+                });
+        }
+
+        public void UpdateSnapPreview(DraggablePlateItem item)
+        {
+            if (snapIndicator == null || !snapIndicator.activeSelf) return;
+
+            Vector3 snapPos = ComputeSnapPosition(item);
+            Vector3 indicatorPos = new Vector3(snapPos.x,
+                transform.position.y + plateYOffset + indicatorHeightAbovePlate,
+                snapPos.z);
+
+            snapIndicator.transform.position = Vector3.Lerp(
+                snapIndicator.transform.position, indicatorPos, Time.deltaTime * 18f);
+        }
+
+        public void HideSnapPreview()
+        {
+            if (snapIndicator == null) return;
+
+            if (indicatorTweenId != -1) LeanTween.cancel(indicatorTweenId);
+            indicatorTweenId = LeanTween.scale(snapIndicator, Vector3.zero, 0.12f)
+                .setEaseInBack()
+                .setOnComplete(() => snapIndicator.SetActive(false)).id;
+
         }
 
         public bool TryDrop(DraggablePlateItem item)

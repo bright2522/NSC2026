@@ -889,7 +889,7 @@ MonoBehaviour:
   completeScoreThreshold: 60
   autoStartOnEnable: 0
   createUiOnStart: 1
-  plateRenderer: {fileID: 2062799299058730267}
+  plateRenderer: {fileID: 0}
   idleColor: {r: 1, g: 1, b: 1, a: 1}
   hoverColor: {r: 0.6, g: 1, b: 0.6, a: 1}
 --- !u!4 &1627741707
@@ -1091,6 +1091,9 @@ MonoBehaviour:
   plateYOffset: 0.05
   allowDuplicateItemIds: 1
   showGizmos: 1
+  snapIndicatorPrefab: {fileID: 0}
+  indicatorScale: 0.35
+  indicatorHeightAbovePlate: 0.02
 --- !u!65 &1816758445
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1728,11 +1731,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   liftHeight: 1.8
   liftAnimDuration: 0.18
+  dragFollowSpeed: 20
   pickupScaleMultiplier: 1.2
-  pickupAnimDuration: 0.12
+  tiltAmount: 18
+  tiltSpeed: 10
+  bobAmplitude: 0.025
+  bobFrequency: 2.2
   landFreezeDelay: 0.15
   landFreezeVelocityThreshold: 0.08
   returnAnimDuration: 0.25
+  holdToRemoveDuration: 1
 --- !u!1001 &8938927351104997374
 PrefabInstance:
   m_ObjectHideFlags: 0
