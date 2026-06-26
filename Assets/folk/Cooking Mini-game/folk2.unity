@@ -3870,6 +3870,10 @@ MonoBehaviour:
   slowProgressSpeed: 0.15
   maxCookingTime: 60
   arrowSmoothSpeed: 100
+  cookingFillSmoothTime: 0.22
+  arrowTweenSmoothTime: 0.14
+  foodColorSmoothTime: 0.35
+  uiEase: 2
   currentHeat: 0
   targetHeat: 0
   cookingProgress: 0
@@ -4019,7 +4023,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8829451551789304536, guid: e91fa0fac941e714e8c4d5709097019f, type: 3}
       propertyPath: InitialModule.startSpeed.scalar
-      value: 100000
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8829451551789304536, guid: e91fa0fac941e714e8c4d5709097019f, type: 3}
       propertyPath: InitialModule.startLifetime.scalar
