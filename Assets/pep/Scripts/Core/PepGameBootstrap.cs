@@ -23,7 +23,7 @@ namespace Pep.Core
         [SerializeField] private float bootDelay = 1f;
         [SerializeField] private float recipeSelectionDelay = 1f;
         [SerializeField] private float fridgeDelay = 1f;
-        [SerializeField] private bool keepAliveOnLoad = true;
+        [SerializeField] private bool keepAliveOnLoad = false;
 
         [Header("Managers")]
         [SerializeField] private GameStateMachine gameStateMachine;
@@ -64,14 +64,6 @@ namespace Pep.Core
         private string selectedRecipeId = "stew";
         private bool hasCompletedRun;
         private PepGameBootstrapDebugView debugView;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void EnsureBootstrapInScene()
-        {
-            if (FindObjectOfType<PepGameBootstrap>() != null) return;
-            var bootstrapObject = new GameObject("PepGameBootstrap");
-            bootstrapObject.AddComponent<PepGameBootstrap>();
-        }
 
         private void Awake()
         {
