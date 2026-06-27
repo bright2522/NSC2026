@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Pep.Recipe;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,7 @@ namespace Pep.Minigames.Plating
         [SerializeField] private bool createUiOnStart = true;
         [SerializeField] private bool showFinishButton = true;
         [SerializeField] private RecipeCatalogManager recipeCatalog;
+        [SerializeField] private TMP_FontAsset fontAsset;
 
         public event Action OnFinishRequested;
 
@@ -18,11 +20,11 @@ namespace Pep.Minigames.Plating
         private Canvas rootCanvas;
         private RectTransform panelRoot;
         private RectTransform checklistRoot;
-        private Text titleText;
-        private Text timerText;
-        private Text scoreText;
-        private Text statusText;
-        private Text hintText;
+        private TextMeshProUGUI titleText;
+        private TextMeshProUGUI timerText;
+        private TextMeshProUGUI scoreText;
+        private TextMeshProUGUI statusText;
+        private TextMeshProUGUI hintText;
         private Image progressFill;
         private Image timerFill;
         private Button finishButton;
@@ -34,7 +36,7 @@ namespace Pep.Minigames.Plating
         {
             public string ingredientId;
             public string displayName;
-            public Text label;
+            public TextMeshProUGUI label;
             public Image icon;
         }
 
@@ -64,10 +66,10 @@ namespace Pep.Minigames.Plating
                 new Vector2(860f, 210f), new Vector2(0f, -12f),
                 new Color(0f, 0f, 0f, 0.62f));
 
-            titleText = CreateText("Title", panelRoot, "Plating", 30, new Vector2(0f, -24f), 760f, TextAnchor.MiddleCenter);
-            timerText = CreateText("Timer", panelRoot, "Time: 60s", 22, new Vector2(-300f, -62f), 220f, TextAnchor.MiddleLeft);
-            scoreText = CreateText("Score", panelRoot, "Score: 0", 22, new Vector2(300f, -62f), 220f, TextAnchor.MiddleRight);
-            statusText = CreateText("Status", panelRoot, "Drag items onto the plate", 20, new Vector2(0f, -62f), 360f, TextAnchor.MiddleCenter);
+            titleText = CreateText("Title", panelRoot, "Plating", 30, new Vector2(0f, -24f), 760f, TextAlignmentOptions.Center);
+            timerText = CreateText("Timer", panelRoot, "Time: 60s", 22, new Vector2(-300f, -62f), 220f, TextAlignmentOptions.MidlineLeft);
+            scoreText = CreateText("Score", panelRoot, "Score: 0", 22, new Vector2(300f, -62f), 220f, TextAlignmentOptions.MidlineRight);
+            statusText = CreateText("Status", panelRoot, "Drag items onto the plate", 20, new Vector2(0f, -62f), 360f, TextAlignmentOptions.Center);
 
             timerFill = CreateBar("TimerBar", panelRoot, new Vector2(0f, -88f), new Vector2(780f, 10f),
                 new Color(1f, 1f, 1f, 0.12f), new Color(0.95f, 0.75f, 0.2f, 0.95f));
@@ -89,7 +91,7 @@ namespace Pep.Minigames.Plating
             checklistLayout.childForceExpandHeight = false;
 
             hintText = CreateText("Hint", panelRoot, "Hold placed item to remove", 16,
-                new Vector2(0f, -188f), 760f, TextAnchor.MiddleCenter);
+                new Vector2(0f, -188f), 760f, TextAlignmentOptions.Center);
             hintText.color = new Color(1f, 1f, 1f, 0.55f);
 
             if (showFinishButton)
@@ -269,7 +271,7 @@ namespace Pep.Minigames.Plating
                 iconImage.preserveAspect = true;
             }
 
-            var text = CreateText("Label", rowRect, label, 18, Vector2.zero, 220f, TextAnchor.MiddleLeft);
+            var text = CreateText("Label", rowRect, label, 18, Vector2.zero, 220f, TextAlignmentOptions.MidlineLeft);
             text.color = done ? new Color(0.75f, 1f, 0.78f) : new Color(1f, 1f, 1f, 0.85f);
 
             checklistRows.Add(new ChecklistRow
@@ -289,7 +291,7 @@ namespace Pep.Minigames.Plating
             if (row.label != null)
             {
                 row.label.color = done ? new Color(0.75f, 1f, 0.78f) : new Color(1f, 1f, 1f, 0.85f);
-                row.label.text = done ? $"✓ {row.displayName}" : $"○ {row.displayName}";
+                row.label.text = done ? $"<color=#BFFFC7>✓</color> {row.displayName}" : $"○ {row.displayName}";
             }
         }
 
@@ -321,6 +323,46 @@ namespace Pep.Minigames.Plating
             OnFinishRequested?.Invoke();
         }
 
+        private TextMeshProUGUI CreateText(
+            string name,
+            Transform parent,
+            string content,
+            int size,
+            Vector2 pos,
+            float width,
+            TextAlignmentOptions alignment)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            var rect = go.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.sizeDelta = new Vector2(width, 32f);
+            rect.anchoredPosition = pos;
+
+            var text = go.AddComponent<TextMeshProUGUI>();
+            text.font = ResolveFont();
+            text.text = content;
+            text.fontSize = size;
+            text.color = Color.white;
+            text.alignment = alignment;
+            text.richText = true;
+            text.raycastTarget = false;
+            return text;
+        }
+
+        private TMP_FontAsset ResolveFont()
+        {
+            if (fontAsset != null) return fontAsset;
+            if (TMP_Settings.defaultFontAsset != null) return TMP_Settings.defaultFontAsset;
+
+            var loaded = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+            if (loaded != null) return loaded;
+
+            return Resources.Load<TMP_FontAsset>("TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF");
+        }
+
         private static RectTransform CreatePanel(
             string name,
             Transform parent,
@@ -341,33 +383,6 @@ namespace Pep.Minigames.Plating
             rect.anchoredPosition = anchoredPosition;
             go.GetComponent<Image>().color = color;
             return rect;
-        }
-
-        private static Text CreateText(
-            string name,
-            Transform parent,
-            string content,
-            int size,
-            Vector2 pos,
-            float width,
-            TextAnchor alignment)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Text));
-            var rect = go.GetComponent<RectTransform>();
-            rect.SetParent(parent, false);
-            rect.anchorMin = new Vector2(0.5f, 1f);
-            rect.anchorMax = new Vector2(0.5f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.sizeDelta = new Vector2(width, 32f);
-            rect.anchoredPosition = pos;
-
-            var text = go.GetComponent<Text>();
-            text.font = GetFont();
-            text.text = content;
-            text.fontSize = size;
-            text.color = Color.white;
-            text.alignment = alignment;
-            return text;
         }
 
         private static Image CreateBar(
@@ -404,7 +419,7 @@ namespace Pep.Minigames.Plating
             return fill;
         }
 
-        private static Button CreateButton(
+        private Button CreateButton(
             string name,
             Transform parent,
             string label,
@@ -428,19 +443,13 @@ namespace Pep.Minigames.Plating
             button.targetGraphic = image;
             button.onClick.AddListener(onClick);
 
-            var text = CreateText("Label", rect, label, 20, Vector2.zero, size.x, TextAnchor.MiddleCenter);
+            var text = CreateText("Label", rect, label, 20, Vector2.zero, size.x, TextAlignmentOptions.Center);
             text.rectTransform.anchorMin = Vector2.zero;
             text.rectTransform.anchorMax = Vector2.one;
             text.rectTransform.offsetMin = Vector2.zero;
             text.rectTransform.offsetMax = Vector2.zero;
 
             return button;
-        }
-
-        private static Font GetFont()
-        {
-            return Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                   ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
         }
     }
 }
