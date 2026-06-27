@@ -1,31 +1,38 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// สคริปต์ตัวอย่าง: ป้อนข้อมูลให้ Manager สร้างรายการให้ดู
 public class SelectionDemo : MonoBehaviour
 {
     public MultiSelectManager manager;
 
-    void Start()
+    public List<IngredientData> ingredients = new List<IngredientData>
     {
-        // ตัวอย่างข้อมูล — เปลี่ยนเป็นข้อมูลจริงของโปรเจกต์ได้เลย
-        var data = new List<(string id, string name)>
-        {
-            ("01", "มะม่วง"),
-            ("02", "กล้วย"),
-            ("03", "ส้ม"),
-            ("04", "แอปเปิล"),
-            ("05", "องุ่น"),
-        };
+        new IngredientData { id = "01", itemName = "ไส้กรอก",   price = 45, outOfStockChance = 0.3f },
+        new IngredientData { id = "02", itemName = "ไข่ไก่",    price = 5,  outOfStockChance = 0.3f },
+        new IngredientData { id = "03", itemName = "หัวหอม",    price = 10, outOfStockChance = 0.3f },
+        new IngredientData { id = "04", itemName = "น้ำมัน",    price = 30, outOfStockChance = 0.3f },
+        new IngredientData { id = "05", itemName = "มะเขือเทศ", price = 15, outOfStockChance = 0.3f },
+        new IngredientData { id = "06", itemName = "แครอท",     price = 12, outOfStockChance = 0.3f },
+    };
 
-        manager.Populate(data);
+    private bool built = false; // กันไม่ให้สุ่ม/สร้างซ้ำ
 
-        // ฟังเวลามีการเลือกเปลี่ยน (จะใส่หรือไม่ก็ได้)
+    // เรียกจาก event "เปิดตู้เย็นครั้งแรก" ของ FridgeTouchController
+    public void BuildIngredients()
+    {
+        if (built) return;   // สุ่มไปแล้ว ไม่ทำซ้ำ
+        built = true;
+
+        // สุ่มว่าอันไหน "หมด" — ทำครั้งเดียวตลอดเกม
+        foreach (var item in ingredients)
+            item.RollStock();
+
+        manager.Populate(ingredients);
         manager.OnSelectionChanged += OnSelectionChanged;
     }
 
     private void OnSelectionChanged(List<SelectableItem> selectedItems)
     {
-        Debug.Log($"ตอนนี้เลือกอยู่ {selectedItems.Count} อัน");
+        Debug.Log($"เลือกอยู่ {selectedItems.Count} อัน");
     }
 }

@@ -1,8 +1,8 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 // ติดที่ตัวโมเดลตู้เย็น (ต้องมี Collider)
-// แตะตู้เย็น -> เปิดประตู + เด้ง UI / ปิด UI ด้วยปุ่ม X บนแผง
 [RequireComponent(typeof(Collider))]
 public class FridgeTouchController : MonoBehaviour
 {
@@ -11,10 +11,14 @@ public class FridgeTouchController : MonoBehaviour
     public string openBoolParam = "IsOpen";
 
     [Header("UI Panel")]
-    public GameObject uiPanel;   // ลากแผง UI เลือกวัตถุดิบมาใส่
+    public GameObject uiPanel;
+
+    [Header("Event ตอนเปิดตู้เย็นครั้งแรก (สุ่มของหมดครั้งเดียว)")]
+    public UnityEvent onFirstOpen;   // ลาก SelectionDemo.BuildIngredients มาใส่ที่นี่
 
     private Camera cam;
     private bool isOpen;
+    private bool hasOpenedBefore = false; // เคยเปิดแล้วหรือยัง
 
     void Start()
     {
@@ -28,17 +32,14 @@ public class FridgeTouchController : MonoBehaviour
 
     void Update()
     {
-        // *** หัวใจของการแก้ ***
-        // ถ้า UI เปิดอยู่แล้ว ตู้เย็นจะไม่รับการแตะใด ๆ อีก
-        // -> กดติ๊กบน UI ได้โดยไม่ไปโดนตู้เย็น (ปิดด้วยปุ่ม X แทน)
-        if (isOpen) return;
+        if (isOpen) return; // UI เปิดอยู่ ไม่รับแตะตู้เย็น
 
         if (Input.touchCount > 0)
         {
             Touch t = Input.GetTouch(0);
             if (t.phase == TouchPhase.Began)
             {
-                if (IsPointerOverUI(t.fingerId)) return; // กันเผื่อมี UI อื่นบังอยู่
+                if (IsPointerOverUI(t.fingerId)) return;
                 TryTouch(t.position);
             }
         }
@@ -72,15 +73,20 @@ public class FridgeTouchController : MonoBehaviour
         }
     }
 
-    // เปิดตู้เย็น + โชว์ UI
     public void OpenFridge()
     {
         isOpen = true;
         ApplyState();
         if (uiPanel != null) uiPanel.SetActive(true);
+
+        // สุ่มของหมด "ครั้งเดียว" ตอนเปิดครั้งแรกเท่านั้น
+        if (!hasOpenedBefore)
+        {
+            hasOpenedBefore = true;
+            onFirstOpen?.Invoke();
+        }
     }
 
-    // ปิดตู้เย็น + ซ่อน UI  <-- ผูกกับปุ่ม X บนแผง
     public void ClosePanel()
     {
         isOpen = false;
