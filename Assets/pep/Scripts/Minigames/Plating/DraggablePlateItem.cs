@@ -91,7 +91,7 @@ namespace Pep.Minigames.Plating
             if (isWaitingToLand)
             {
                 landFreezeTimer -= Time.deltaTime;
-                if (landFreezeTimer <= 0f && rb.velocity.magnitude < landFreezeVelocityThreshold)
+                if (landFreezeTimer <= 0f && rb.linearVelocity.magnitude < landFreezeVelocityThreshold)
                     FreezeOnLand();
                 return;
             }
@@ -216,7 +216,7 @@ namespace Pep.Minigames.Plating
             bobTimer = 0f;
 
             rb.isKinematic = true;
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
             float targetY = transform.position.y + liftHeight;
@@ -291,7 +291,7 @@ namespace Pep.Minigames.Plating
             isWaitingToLand = false;
 
             rb.isKinematic = true;
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
             if (pendingDropZone != null)
@@ -325,7 +325,7 @@ namespace Pep.Minigames.Plating
             isWaitingToLand = false;
             isInDropZone = false;
             rb.isKinematic = true;
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
             LeanTween.cancel(gameObject);
