@@ -47,14 +47,32 @@ public class EggClickCrackController : MonoBehaviour
     [Header("ความเร็วในการแผ่ตัวแบนราบตอนถึงกระทะ")]
     public float flattenSpeed = 5f;
 
-    // 🎯 [คุณสมบัติใหม่] จุดกึ่งกลางกระทะที่ต้องการให้ไข่วาร์ปไปลงล็อก
     [Header("🎯 วัตถุเป้าหมายกึ่งกลางกระทะ (Center of Pan)")]
     public Transform panCenterTarget;
+
+    [Header("ชื่อของ Object ไข่ข้นในหน้า Hierarchy เพื่อสั่งล่องหนตอนเริ่มเกม")]
+    public string scrambledEggObjectName = "New_Scrambled_Egg"; 
 
     void Start()
     {
         mainCamera = Camera.main;
         initialPosition = transform.position;
+
+        // 🎯 [แก้ไขบั๊ก] สั่งตามหาและซ่อนไข่ข้นให้ล่องหน (Alpha = 0) ตั้งแต่เฟรมแรกที่เปิดเกมทันที!
+        GameObject scrambledEggModel = GameObject.Find(scrambledEggObjectName);
+        if (scrambledEggModel == null) scrambledEggModel = GameObject.Find("ScrambledEgg");
+
+        if (scrambledEggModel != null)
+        {
+            Renderer scrambledRenderer = scrambledEggModel.GetComponentInChildren<Renderer>();
+            if (scrambledRenderer != null && scrambledRenderer.material != null)
+            {
+                // เปิดตัว Object ไว้ปกติ แต่เซ็ตให้ Material โปร่งแสงล่องหน 100% รอโดนผัด
+                scrambledEggModel.SetActive(true);
+                SetMaterialAlpha(scrambledRenderer.material, 0f);
+                Debug.Log("🎯 EggClickCrack: ซ่อนไข่ข้นให้ล่องหนตั้งแต่เริ่มเกมสำเร็จ!");
+            }
+        }
     }
 
     void Update()
@@ -126,7 +144,7 @@ public class EggClickCrackController : MonoBehaviour
 
     void CrackEgg()
     {
-        Debug.Log("💥 ตอกไข่ดิบและเตรียมระบบดูดเข้าหาจุดกึ่งกลางกระทะ");
+        Debug.Log("💥 ตอกไข่ดิบ ร่วงลงกึ่งกลาง และดีดเศษเปลือกไข่ออกข้าง");
 
         Vector3 leftSpawnPos = transform.position + (Vector3.left * shellSeparateDistance);
         Vector3 rightSpawnPos = transform.position + (Vector3.right * shellSeparateDistance);
@@ -146,9 +164,11 @@ public class EggClickCrackController : MonoBehaviour
             rightShell.transform.localScale = customShellRightScale;
         }
 
+        // แอดสคริปต์ผู้ช่วยให้เศษเปลือกไข่ (เวอร์ชันกล่องจิ๋ว)
         if (leftShell != null) leftShell.AddComponent<ShellClickDestroy>().SetupPairs(leftShell, rightShell);
         if (rightShell != null) rightShell.AddComponent<ShellClickDestroy>().SetupPairs(leftShell, rightShell);
 
+        // เสกไข่ดาวรวมชิ้น
         Vector3 spawnPos = (spawnPoint != null) ? spawnPoint.position : transform.position;
 
         if (friedEggPrefab != null)
@@ -162,6 +182,7 @@ public class EggClickCrackController : MonoBehaviour
             eggRb.isKinematic = false;
             eggRb.useGravity = true;
 
+            // เซฟตี้ปิดการชนกันระหว่างไข่ดาวร่วงกับเศษเปลือกไข่
             Collider eggCollider = friedEgg.GetComponent<Collider>();
             if (eggCollider != null)
             {
@@ -169,7 +190,7 @@ public class EggClickCrackController : MonoBehaviour
                 if (rightShell != null) { Collider c = rightShell.GetComponent<Collider>(); if (c != null) Physics.IgnoreCollision(eggCollider, c); }
             }
 
-            // 🎯 ส่งค่าเป้าหมายกึ่งกลางกระทะ (panCenterTarget) เข้าสคริปต์ผู้ช่วยแผ่ไข่
+            // ส่งค่าเป้าหมายกึ่งกลางกระทะเข้าทำงานระบบแผ่และดูดพิกัด
             friedEgg.AddComponent<EggFlattenEffect>().Setup(eggFlattenedScale, flattenSpeed, eggWhiteObjectName, panCenterTarget);
         }
 
@@ -180,8 +201,24 @@ public class EggClickCrackController : MonoBehaviour
 
         Destroy(gameObject);
     }
+
+    void SetMaterialAlpha(Material mat, float alphaValue)
+    {
+        if (mat == null) return;
+        if (mat.HasProperty("_Color"))
+        {
+            Color c = mat.color; c.a = alphaValue; mat.color = c;
+        }
+        else if (mat.HasProperty("_BaseColor"))
+        {
+            Color c = mat.GetColor("_BaseColor"); c.a = alphaValue; mat.SetColor("_BaseColor", c);
+        }
+    }
 }
 
+// ==========================================
+// สคริปต์ผู้ช่วยชุดที่ 1: บีบคอลลิชันเปลือกไข่ให้จิ๋ว และคลิกลบซาก
+// ==========================================
 public class ShellClickDestroy : MonoBehaviour
 {
     private GameObject partner1;
@@ -194,8 +231,10 @@ public class ShellClickDestroy : MonoBehaviour
 
         BoxCollider box = GetComponent<BoxCollider>();
         if (box == null) box = gameObject.AddComponent<BoxCollider>();
+        
         if (box != null)
         {
+            // 🎯 สั่งบีบขนาดกล่องเขียวให้จิ๋วลงเหลือแค่จุดตรงกลางเศษเปลือกไข่พอดี ไม่กางขวางทางไข่ดาว
             box.center = Vector3.zero;
             box.size = new Vector3(0.3f, 0.3f, 0.3f); 
         }
@@ -208,7 +247,9 @@ public class ShellClickDestroy : MonoBehaviour
     }
 }
 
-// 🎯 สคริปต์ผู้ช่วย: แผ่ไข่แบน + ดูดสไลด์เข้าหาเป้าหมายกึ่งกลางกระทะ
+// ==========================================
+// สคริปต์ผู้ช่วยชุดที่ 2: อนิเมชันไข่แผ่แบน + แม่เหล็กดูดเข้ากึ่งกลางกระทะ
+// ==========================================
 public class EggFlattenEffect : MonoBehaviour
 {
     private Vector3 targetFlattenScale;
@@ -223,7 +264,7 @@ public class EggFlattenEffect : MonoBehaviour
         targetFlattenScale = finalScale;
         speed = lerpSpeed;
         whiteName = whiteObjName;
-        centerTarget = panCenter; // รับค่าจุดดูดศูนย์กลาง
+        centerTarget = panCenter;
 
         Transform child = transform.Find(whiteName);
         if (child != null)
@@ -251,12 +292,9 @@ public class EggFlattenEffect : MonoBehaviour
         {
             hasHitPan = true;
 
-            // 🎯 สั่งปิดแรงฟิสิกส์กระดอนเพื่อไม่ให้มันส่ายหนี และเตรียมตัวสไลด์เข้าจุดศูนย์กลาง
+            // ปิดแรงฟิสิกส์เด้งดึ๋งเมื่อแตะกระทะ เพื่อให้พร้อมโดนดูดและแผ่ตัวแบบเนียนๆ
             Rigidbody rb = GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.isKinematic = true; 
-            }
+            if (rb != null) rb.isKinematic = true; 
 
             if (eggWhiteTransform != null) eggWhiteTransform.gameObject.SetActive(true);
             StartCoroutine(FlattenAndSnapRoutine());
@@ -268,26 +306,23 @@ public class EggFlattenEffect : MonoBehaviour
         float t = 0;
         Vector3 startScale = transform.localScale;
         Vector3 startPosition = transform.position;
-
-        // ดึงค่าตำแหน่งเป้าหมาย (หากไม่มีเป้าหมายผูกไว้จะอยู่ที่พิกัดเดิม)
         Vector3 targetPosition = (centerTarget != null) ? centerTarget.position : startPosition;
         
-        // บังคับให้รักษาความสูงแกน Y ตอนแตะก้นกระทะไว้ เพื่อไม่ให้ไข่จมดินหรือลอยฟ้า
+        // ล็อกความสูงแกน Y ตอนสัมผัสกระทะไว้ ไข่จะได้ไม่มุดดิน
         targetPosition.y = startPosition.y; 
 
         while (t < 1f)
         {
             t += Time.deltaTime * speed;
             
-            // 🎯 ค่อยๆ ขยายตัวแผ่แบน
+            // ค่อยๆ แผ่ตัวแบนราบก้นกระทะ
             transform.localScale = Vector3.Lerp(startScale, targetFlattenScale, t);
             
-            // 🎯 ควบคู่กับค่อยๆ ดูดและสไลด์ตำแหน่งไข่ดาวเข้าหาพิกัดเป้าหมายแบบสมูท
+            // ค่อยๆ สไลด์สลิ่งดูดไข่เข้าสู่จุดกึ่งกลางเป้าหมาย
             if (centerTarget != null)
             {
                 transform.position = Vector3.Lerp(startPosition, targetPosition, t);
             }
-
             yield return null;
         }
     }
