@@ -1,48 +1,62 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-// ติดสคริปต์นี้ไว้ที่ตัวโมเดลตู้เย็น (ตัวที่มี Collider)
-// ทำหน้าที่: แตะจอ/คลิกเมาส์ -> เล่นอนิเมชั่นเปิดประตู / แตะอีกที -> ปิด
+// ติดที่ตัวโมเดลตู้เย็น (ต้องมี Collider)
+// แตะตู้เย็น -> เปิดประตู + เด้ง UI / ปิด UI ด้วยปุ่ม X บนแผง
 [RequireComponent(typeof(Collider))]
 public class FridgeTouchController : MonoBehaviour
 {
-    [Header("Animation")]
-    public Animator animator;              // ลาก Animator ของตู้เย็นมาใส่
-    public string openBoolParam = "IsOpen"; // ชื่อ bool parameter ใน Animator
+    [Header("Animation (จะใส่หรือไม่ก็ได้)")]
+    public Animator animator;
+    public string openBoolParam = "IsOpen";
 
-    [Header("Options")]
-    public bool startOpen = false;          // เริ่มมาเปิดอยู่ไหม
-    public bool enableMouseClick = true;    // ✅ ติ๊กไว้ = ใช้เมาส์คลิกทดสอบได้ใน Editor / PC
-    public bool enableTouch = true;         // ✅ ติ๊กไว้ = ใช้นิ้วแตะได้บนมือถือ
+    [Header("UI Panel")]
+    public GameObject uiPanel;   // ลากแผง UI เลือกวัตถุดิบมาใส่
 
     private Camera cam;
     private bool isOpen;
 
     void Start()
     {
-        cam = Camera.main;                  // ใช้กล้องหลัก (ต้องมี tag = MainCamera)
+        cam = Camera.main;
         if (animator == null) animator = GetComponent<Animator>();
 
-        isOpen = startOpen;
+        isOpen = false;
         ApplyState();
+        if (uiPanel != null) uiPanel.SetActive(false);
     }
 
     void Update()
     {
-        // --- รองรับจอสัมผัส (มือถือ/touch screen) ---
-        if (enableTouch && Input.touchCount > 0)
+        // *** หัวใจของการแก้ ***
+        // ถ้า UI เปิดอยู่แล้ว ตู้เย็นจะไม่รับการแตะใด ๆ อีก
+        // -> กดติ๊กบน UI ได้โดยไม่ไปโดนตู้เย็น (ปิดด้วยปุ่ม X แทน)
+        if (isOpen) return;
+
+        if (Input.touchCount > 0)
         {
             Touch t = Input.GetTouch(0);
             if (t.phase == TouchPhase.Began)
+            {
+                if (IsPointerOverUI(t.fingerId)) return; // กันเผื่อมี UI อื่นบังอยู่
                 TryTouch(t.position);
+            }
         }
-        // --- รองรับเมาส์ (ทดสอบใน Editor หรือเล่นบน PC) ---
-        else if (enableMouseClick && Input.GetMouseButtonDown(0))
+        else if (Input.GetMouseButtonDown(0))
         {
+            if (IsPointerOverUI(-1)) return;
             TryTouch(Input.mousePosition);
         }
     }
 
-    // ยิงรังสีจากจุดที่แตะ/คลิก เช็คว่าโดนตู้เย็นไหม
+    bool IsPointerOverUI(int pointerId)
+    {
+        if (EventSystem.current == null) return false;
+        return pointerId == -1
+            ? EventSystem.current.IsPointerOverGameObject()
+            : EventSystem.current.IsPointerOverGameObject(pointerId);
+    }
+
     void TryTouch(Vector2 screenPos)
     {
         if (cam == null) cam = Camera.main;
@@ -50,25 +64,28 @@ public class FridgeTouchController : MonoBehaviour
         Ray ray = cam.ScreenPointToRay(screenPos);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            // โดนตัวนี้ หรือลูก ๆ ของตู้เย็น (เช่นบานประตู) ก็นับว่าโดน
             if (hit.collider.transform == transform ||
                 hit.collider.transform.IsChildOf(transform))
             {
-                Toggle();
+                OpenFridge();
             }
         }
     }
 
-    // สลับเปิด/ปิด — เรียกจากปุ่ม UI ก็ได้ (ลากใส่ช่อง OnClick)
-    public void Toggle()
+    // เปิดตู้เย็น + โชว์ UI
+    public void OpenFridge()
     {
-        SetOpen(!isOpen);
+        isOpen = true;
+        ApplyState();
+        if (uiPanel != null) uiPanel.SetActive(true);
     }
 
-    public void SetOpen(bool open)
+    // ปิดตู้เย็น + ซ่อน UI  <-- ผูกกับปุ่ม X บนแผง
+    public void ClosePanel()
     {
-        isOpen = open;
+        isOpen = false;
         ApplyState();
+        if (uiPanel != null) uiPanel.SetActive(false);
     }
 
     void ApplyState()
