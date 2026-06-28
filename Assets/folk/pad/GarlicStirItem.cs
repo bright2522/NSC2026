@@ -8,22 +8,21 @@ public class GarlicStirItem : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         // เช็คว่าวัตถุที่มาชนมี Tag ว่า "Spatula" (ตะหลิว) หรือไม่
-        // อย่าลืมไปตั้ง Tag ที่ตัวตะหลิวใน Unity ว่า Spatula ด้วยนะครับ
         if (collision.gameObject.CompareTag("Spatula") && !hasBeenStirred)
         {
             hasBeenStirred = true;
 
-            // ส่งสัญญาณไปบอกตัวผู้จัดการระบบว่า "กระเทียมโดนผัดแล้วนะ!"
+            // 🍳 ส่งสัญญาณเพิ่มแต้มระบบหลังบ้านทีละ 1 แต้มต่อการเขี่ยโดนหนึ่งครั้ง
             if (StirFryManager.Instance != null)
             {
-                StirFryManager.Instance.AddProgress(1); // เพิ่มทีละ 1 แต้มต่อก้อน
+                StirFryManager.Instance.AddProgress(1f); 
             }
 
-            // เปลี่ยนสีตัวกระเทียมเล็กน้อยให้ดูสุกขึ้น (เลือกใส่หรือไม่ใส่ก็ได้ครับ)
+            // 🎨 เปลี่ยนสีตัวกระเทียมให้ดูสุกเหลืองทองนวลอมทองแบบสมจริง
             Renderer renderer = GetComponent<Renderer>();
             if (renderer != null)
             {
-                renderer.material.color = new Color(0.9f, 0.75f, 0.5f); // เปลี่ยนเป็นสีเหลืองนวลอมทอง
+                renderer.material.color = new Color(0.9f, 0.75f, 0.5f); 
             }
         }
     }
