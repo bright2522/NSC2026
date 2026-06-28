@@ -64,6 +64,14 @@ public class MultiSelectManager : MonoBehaviour
     public List<SelectableItem> GetSelected() => selected.ToList();
     public List<string> GetSelectedIds() => selected.Select(s => s.itemId).ToList();
 
+    // หาการ์ดจาก id (ใช้โดย MenuManager)
+    public SelectableItem GetItemById(string id)
+    {
+        var found = items.FirstOrDefault(i => i.itemId == id);
+        if (found != null) return found;
+        return sceneItems.FirstOrDefault(i => i != null && i.itemId == id);
+    }
+
     public int GetOutOfStockTotal()
         => items.Where(i => i.isOutOfStock).Sum(i => i.price);
 

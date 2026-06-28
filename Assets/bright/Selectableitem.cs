@@ -8,9 +8,9 @@ public class SelectableItem : MonoBehaviour
     [Header("ข้อมูลวัตถุดิบ (ตั้งเองที่การ์ดแต่ละใบ)")]
     public string itemId;
     public string itemName;
-    public int price;          // ราคาเวลาต้องซื้อเพิ่ม (บาท)
+    public int price;
 
-    [HideInInspector] public bool isOutOfStock; // เซ็ตตอนรัน (สุ่ม)
+    [HideInInspector] public bool isOutOfStock;
 
     [Header("ป้ายข้อความ (ลากใส่เท่าที่มี)")]
     public TMP_Text nameLabel;
@@ -30,25 +30,38 @@ public class SelectableItem : MonoBehaviour
 
     public bool IsSelected => toggle != null && toggle.isOn;
 
-    // เรียกจาก Manager ตอนเปิดตู้เย็น (โหมดวางการ์ดเองในซีน)
     public void SetupInScene(MultiSelectManager mgr, bool outOfStock)
     {
         manager = mgr;
         isOutOfStock = outOfStock;
 
         toggle = GetComponent<Toggle>();
-        toggle.onValueChanged.RemoveListener(OnToggleChanged); // กันผูกซ้ำ
+        toggle.onValueChanged.RemoveListener(OnToggleChanged);
         toggle.onValueChanged.AddListener(OnToggleChanged);
 
         if (nameLabel) nameLabel.text = itemName;
 
-        toggle.isOn = false;                 // เริ่มมาแบบยังไม่เลือก
-        toggle.interactable = !isOutOfStock; // ของหมด กดไม่ได้
+        toggle.isOn = false;
+        ApplyStockVisual();
+        UpdateVisual(false);
+    }
+
+    // เติมของกลับ (เรียกจากปุ่มซื้อ)
+    public void Restock()
+    {
+        isOutOfStock = false;
+        if (toggle == null) toggle = GetComponent<Toggle>();
+        ApplyStockVisual();
+        UpdateVisual(toggle.isOn);
+    }
+
+    // อัปเดตหน้าตาตามสถานะ หมด/มี
+    void ApplyStockVisual()
+    {
+        toggle.interactable = !isOutOfStock;
         if (outOfStockOverlay) outOfStockOverlay.SetActive(isOutOfStock);
         if (statusLabel) statusLabel.text = isOutOfStock ? "หมด" : "";
         if (priceLabel)  priceLabel.text  = isOutOfStock ? $"{price} บาท" : "";
-
-        UpdateVisual(false);
     }
 
     private void OnToggleChanged(bool isOn)
