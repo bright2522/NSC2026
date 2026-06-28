@@ -6,9 +6,11 @@ using UnityEngine.UI;
 
 public class MultiSelectManager : MonoBehaviour
 {
-    [Header("Prefab & Container")]
-    public SelectableItem itemPrefab;
-    public Transform contentParent;
+    [Header("โหมดวางการ์ดเองในซีน")]
+    [Tooltip("ลากการ์ดทุกใบที่วางไว้ในซีนมาใส่ที่นี่")]
+    public List<SelectableItem> sceneItems = new List<SelectableItem>();
+    [Tooltip("โอกาสที่แต่ละใบจะสุ่มเป็นของหมด (0-1)")]
+    [Range(0f, 1f)] public float outOfStockChance = 0.3f;
 
     [Header("UI เสริม (จะใส่หรือไม่ก็ได้)")]
     public TMP_Text countLabel;
@@ -30,23 +32,21 @@ public class MultiSelectManager : MonoBehaviour
         UpdateUI();
     }
 
-    public void Populate(IEnumerable<IngredientData> data)
+    // เรียกตอนเปิดตู้เย็นครั้งแรก — สุ่มของหมดให้การ์ดที่วางไว้เองในซีน
+    public void SetupSceneItems()
     {
-        Clear();
-        foreach (var d in data)
-        {
-            var item = Instantiate(itemPrefab, contentParent);
-            item.Init(this, d);
-            items.Add(item);
-        }
-        UpdateUI();
-    }
-
-    public void Clear()
-    {
-        foreach (var item in items) if (item) Destroy(item.gameObject);
         items.Clear();
         selected.Clear();
+
+        foreach (var item in sceneItems)
+        {
+            if (item == null) continue;
+
+            // สุ่มว่าใบนี้หมดไหม
+            bool outOfStock = Random.value < outOfStockChance;
+            item.SetupInScene(this, outOfStock);
+            items.Add(item);
+        }
         UpdateUI();
     }
 
