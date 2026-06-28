@@ -10,6 +10,7 @@ public class RecipeSelectionManager : MonoBehaviour
     public Transform cardContainer;
     public Button startButton;
     public TextMeshProUGUI selectedLabel;
+    public bool autoStartOnCardClick = true;
 
     private int selectedIndex = -1;
     private RecipeCard[] cards;
@@ -36,7 +37,9 @@ public class RecipeSelectionManager : MonoBehaviour
             if (child.GetComponent<RecipeCard>() != null)
                 Destroy(child.gameObject);
         }
-        startButton.interactable = true;
+        startButton.interactable = false;
+        if (startButton != null)
+            startButton.onClick.AddListener(OnStartButton);
         cards = new RecipeCard[recipes.Length];
 
         for (int i = 0; i < recipes.Length; i++)
@@ -50,7 +53,12 @@ public class RecipeSelectionManager : MonoBehaviour
                 return;
             }
             card.Setup(recipes[i]);
-            card.GetComponent<Button>().onClick.AddListener(() => SelectCard(index));
+            card.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                SelectCard(index);
+                if (autoStartOnCardClick)
+                    OnStartButton();
+            });
             cards[i] = card;
         }
     }
@@ -65,6 +73,12 @@ public class RecipeSelectionManager : MonoBehaviour
         selectedLabel.text = "เลือก: " + recipes[index].name;
         startButton.interactable = true;
 
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("GameManager instance not found.");
+            return;
+        }
+
         GameManager.Instance.selectedRecipeIndex = index;
         GameManager.Instance.selectedRecipeName = recipes[index].name;
         GameManager.Instance.requiredIngredients = recipes[index].requiredIngredients;
@@ -73,6 +87,11 @@ public class RecipeSelectionManager : MonoBehaviour
     public void OnStartButton()
     {
         if (selectedIndex < 0) return;
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("GameManager instance not found.");
+            return;
+        }
         GameManager.Instance.GoToSmartFridge();
     }
 }

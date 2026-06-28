@@ -1,0 +1,36 @@
+1. Core Managers (Singleton)
+SceneManager / GameStateMachine
+PlayerDataManager (ScriptableObject + Save)
+InventoryManager (Smart Fridge)
+ScoringManager
+RewardManager
+2. Smart Fridge System
+FridgeUI (Canvas + Grid Layout)
+IngredientSO (ScriptableObject)
+RecipeRecommendation (Greedy Algorithm + Content-Based)
+ShopNearby system (static data)
+3. Recipe Selection
+RecipeListUI (ScrollView + Cards)
+RecipeSO (calories, difficulty, nutrition, ingredients)
+4. Mini-game Cooking Sequence (State Machine)
+PreparationState: Drag & Drop ingredients
+ChoppingState: Swipe timing + accuracy
+CookingState: Fire control (Slider + ProgressBar), Timer, Shaking detection (Input.acceleration)
+PresentationState: Plating UI
+5. Nutrition System
+NutritionDisplayUI (kcal, benefits, stars)
+Post-Cook Evaluation
+6. Community System
+ReviewPostUI
+FeedUI (ScrollView)
+Like/Comment (Firebase or local mock
+7. Competition (1v1)
+RoomManager (Create/Join with code)
+SharedTimer
+BattleStateMachine
+ScoreComparator (appearance, ingredients, nutrition)
+WinnerScreen
+8. Reward & Shop
+ShopUI (Grid)
+ItemSO (equip kitchen objects)
+EquipSystem

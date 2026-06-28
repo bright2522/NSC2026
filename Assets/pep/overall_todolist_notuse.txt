@@ -1,0 +1,420 @@
+================================================================================
+NSC2026 — สรุปสถานะโปรเจกต์ + TODO ของ PEP
+อัปเดต: 2026-06-13 (จากการ scan ทั้ง Assets/)
+================================================================================
+
+โครงสร้างทีม (จาก folder ใน Assets/)
+------------------------------------
+  bright/  → Recipe Selection + Smart Fridge + Scene flow (GameManager)
+  coco/    → Cooking minigame ทั้งชุด + RecipeDatabase + Kitchen assets + Scenes
+  folk/    → ระบบหั่น 3D (EzySlice + มีดลาก + physics)
+  pep/     → planning + todolist (งาน integration / core ของ pep)
+
+Scene ที่มีใน Build Settings ตอนนี้
+------------------------------------
+  ✅ Assets/Scenes/SampleScene.unity
+  ✅ Assets/bright/bright.unity              (Recipe Selection)
+  ✅ Assets/bright/Smart Fridge/SmartFridge.unity
+  ❌ "CookingGameplay" — bright/GameManager เรียก scene นี้ แต่ยังไม่มีในโปรเจกต์!
+  ❌ coco/map.unity, MenuSelect.unity, MainMenu.unity — มีไฟล์แต่ยังไม่ใส่ Build Settings
+
+Flow ที่เพื่อนตั้งใจไว้ (ยังต่อไม่ครบ)
+------------------------------------
+  bright.unity → SmartFridge.unity → CookingGameplay (ยังไม่มี)
+       ↑              ↑
+  RecipeSelection   SmartFridgeManager.OnSelectRecipe()
+  GameManager       → GameManager.GoToCooking()
+
+
+================================================================================
+สิ่งที่เพื่อนทำไปแล้ว (แยกตามคน)
+================================================================================
+
+[Bright] — Recipe Selection + Smart Fridge
+------------------------------------------
+  📁 Assets/bright/
+
+  ✅ GameManager.cs (Singleton, DontDestroyOnLoad)
+     - เก็บ selectedRecipeIndex, selectedRecipeName, requiredIngredients
+     - GoToSmartFridge() → โหลด "SmartFridge"
+     - GoToCooking() → โหลด "CookingGameplay" (scene ยังไม่มี!)
+
+  ✅ RecipeSelectionManager.cs + RecipeCard.cs
+     - UI เลือกเมนู (ScrollView cards)
+     - แสดง kcal, difficulty, healthStar (ดาวโภชนาการ)
+     - กด Start → ไป Smart Fridge
+
+  ✅ SmartFridgeManager.cs + IngredientCard.cs + RecipeResultCard..cs
+     - เลือกวัตถุดิบจากตู้เย็น (toggle cards)
+     - แนะนำสูตร: match ≥ 70% แล้ว sort ตามจำนวนที่ match (Greedy-like)
+     - เลือกสูตร → GoToCooking()
+     - ⚠️ ShopNearby — มีแค่ TODO comment ยังไม่ทำ
+
+  ⚠️ ข้อจำกัด
+     - ใช้ class ใน SmartFridgeManager (Ingredient, Recipe) ไม่ใช่ ScriptableObject
+     - ข้อมูลสูตร/วัตถุดิบแยกจาก coco/RecipeDatabase โดยสิ้นเชิง (duplicate data)
+
+
+[Coco] — Cooking Minigame System
+--------------------------------
+  📁 Assets/coco/Scripts/
+
+  ✅ CookingGameManager.cs — State Machine ฝั่งทำอาหาร
+     States: SelectRecipe → PreStepIntro → PlayingMinigame → StepResult → RecipeComplete
+     - คำนวณคะแนนรวม + medal (Gold/Silver/Bronze/Fail)
+
+  ✅ CookingMinigameBase.cs — base class (timer, score, EndMinigame)
+
+  ✅ Minigame 5 แบบ (ครบใน code แต่ยังไม่แน่ใจว่า wire ใน scene แล้วหรือยัง)
+     | Minigame          | ไฟล์                  | วิธีเล่น (สั้นๆ)                          |
+     |-------------------|-----------------------|-------------------------------------------|
+     | Chopping          | ChoppingMinigame.cs   | Slider timing — กดตอนเข็มอยู่ในโซน        |
+     | Stirring          | StirringMinigame.cs   | ลากวงกลมคนหม้อ — ความเร็วต้องอยู่โซน ideal |
+     | Grilling          | GrillingMinigame.cs   | progress วิ่งเอง + tap flip/plate         |
+     | Seasoning         | SeasoningMinigame.cs  | กดค้างเทเครื่องปรุง — gauge ต้องอยู่โซน    |
+     | Pounding          | PoundingMinigame.cs   | จังหวะวงกลม — โขลก/ตำ                      |
+
+  ✅ Recipe.cs (ScriptableObject) + RecipeStep.cs + RecipeDatabase.cs
+     - สูตรไทย 10 เมนู hardcode ใน InitializeDatabase()
+     - แต่ละ step กำหนด MinigameType + timeLimit + ชื่อวัตถุดิบ
+
+  ✅ CookingGameUI.cs — UI panels ครบ flow (เลือกสูตร, intro, HUD, ผล step, ผลจบ)
+
+  📦 Assets 3D: Pandazole Kitchen Food, Prop_Stove.prefab, map.unity, kitchen model
+  ⚠️ CookingGameManager ยังไม่พบ reference ใน .unity scene (อาจยังไม่ได้ประกอบ scene)
+
+  ❌ ยังไม่มีตาม planning ของ pep
+     - PreparationState (Drag & Drop วัตถุดิบ)
+     - CookingState แบบปรับไฟเตา (Slider ควบคุมไฟ + ProgressBar)
+     - Shaking detection (Input.acceleration)
+     - PresentationState (Plating UI)
+
+
+[Folk] — ระบบหั่น 3D (Physics + Mesh Slice)
+--------------------------------------------
+  📁 Assets/folk/
+
+  ✅ SliceableFood.cs — ตัด mesh ด้วย EzySlice เมื่อมีดชน (tag "Knife")
+     - physics bounce, ตัดซ้ำได้, min volume threshold
+
+  ✅ KnifeMovement.cs — ลากมีด (touch + mouse, Unity Input System)
+     - ปล่อยนิ้ว → สับลง (ChopRoutine coroutine)
+
+  ✅ EzySlice library (Slicer, SlicedHull, ...)
+  ✅ Scenes: cut.unity, folk2.unity + asset มีด/ผัก (FastMesh)
+
+  ⚠️ ระบบนี้แยกจาก coco/ChoppingMinigame โดยสิ้นเชิง
+     - folk = 3D interactive slicing
+     - coco = 2D UI slider timing minigame
+     → ต้องตัดสินใจกับทีมว่าใช้อันไหน หรือรวมกันอย่างไร
+
+
+================================================================================
+Mapping: planning.txt ของ PEP vs สถานะจริงในโปรเจกต์
+================================================================================
+
+[1] Core Managers
+  | ระบบ                    | สถานะ | ใครทำ / หมายเหตุ                              |
+  |-------------------------|-------|-----------------------------------------------|
+  | SceneManager/GameState  | 🟡    | bright/GameManager (scene อย่างเดียว)         |
+  |                         |       | coco/CookingGameManager (เฉพาะ minigame flow) |
+  |                         | ❌    | ยังไม่มี GameStateMachine รวมทั้งเกม          |
+  | PlayerDataManager+Save  | ❌    | ยet ไม่มี                                     |
+  | InventoryManager        | ❌    | SmartFridge เลือกวัตถุดิบได้ แต่ไม่ persist   |
+  | ScoringManager (global) | 🟡    | coco คิดคะแนนต่อ step/recipe ใน manager เอง  |
+  | RewardManager           | ❌    | ยet ไม่มี                                     |
+
+[2] Smart Fridge
+  | ระบบ                    | สถานะ | หมายเหตุ                                      |
+  |-------------------------|-------|-----------------------------------------------|
+  | FridgeUI + Grid           | ✅    | bright/SmartFridge                            |
+  | IngredientSO              | ❌    | ใช้ serializable class แทน SO                 |
+  | RecipeRecommendation      | 🟡    | match 70% + sort (ยังไม่ content-based เต็ม)  |
+  | ShopNearby                | ❌    | TODO ใน SmartFridgeManager                    |
+
+[3] Recipe Selection
+  | ระบบ                    | สถานะ | หมายเหตุ                                      |
+  |-------------------------|-------|-----------------------------------------------|
+  | RecipeListUI + Cards      | ✅    | bright/RecipeSelectionManager                 |
+  | RecipeSO                  | 🟡    | coco มี Recipe SO แต่ bright ใช้ RecipeData แยก|
+
+[4] Mini-game Cooking Sequence
+  | State                   | สถานะ | ใครทำ / หมายเหตุ                              |
+  |-------------------------|-------|-----------------------------------------------|
+  | Preparation (Drag&Drop) | ❌    | PEP ต้องทำ                                    |
+  | Chopping (Swipe timing) | 🟡    | coco = UI slider | folk = 3D slice (คนละแบบ) |
+  | Cooking (Fire+Timer+Shake)| 🟡  | coco/Grilling+Stirring ใกล้เคียง แต่ไม่ใช่     |
+  |                         |       | "ปรับไฟเตา gas" ตาม planning                  |
+  | Presentation (Plating)  | ❌    | PEP ต้องทำ                                    |
+  | State Machine รวม       | 🟡    | coco มี แต่ไม่ครบ 4 state ใน planning         |
+
+[5] Nutrition System
+  | ระบบ                    | สถานะ | หมายเหตุ                                      |
+  |-------------------------|-------|-----------------------------------------------|
+  | kcal / stars ใน UI        | 🟡    | bright RecipeCard มี kcal + healthStar        |
+  | NutritionDisplayUI        | ❌    | หลังทำอาหารเสร็จ — ยet ไม่มี                  |
+  | Post-Cook Evaluation      | 🟡    | coco มี medal + score แต่ไม่มี nutrition detail |
+
+[6] Community System          | ❌    | ทั้งหมด — ReviewPost, Feed, Like/Comment
+[7] Competition 1v1           | ❌    | ทั้งหมด — Room, Battle, SharedTimer
+[8] Reward & Shop             | ❌    | ทั้งหมด — ShopUI, ItemSO, EquipSystem
+
+
+================================================================================
+PEP ต้องทำอะไร (ตาม Priority ใน planning.txt)
+================================================================================
+
+─── P1: Core Gameplay (ทำก่อน) ───
+
+[ ] 1. Core Managers — ชั้น glue ที่รวมระบบเพื่อน
+      สร้างใน pep/ (หรือตามที่ทีมตกลง)
+      - GameStateMachine รวม flow: Menu → RecipeSelect → Fridge → Cook → Result
+      - PlayerDataManager (ScriptableObject + Save/Load พื้นฐาน)
+      - InventoryManager — sync กับ SmartFridge (วัตถุดิบที่เลือก/เหลือ)
+      - ScoringManager — รับคะแนนจาก coco CookingGameManager
+      - RewardManager — skeleton ไว้ก่อน (P2)
+
+      ⚠️ DEPEND ON เพื่อน:
+      - bright/GameManager.Instance (selectedRecipeName, requiredIngredients)
+      - bright/SmartFridgeManager (OnSelectRecipe callback)
+      - coco/CookingGameManager.OnStepCompleted + totalRecipeScore
+
+[ ] 2. แก้ Scene flow / Build Settings
+      - สร้างหรือตั้งชื่อ scene CookingGameplay (wire coco CookingGameManager + UI)
+      - หรือ map ไป coco/map.unity แล้วแก้ GameManager.GoToCooking()
+      - เพิ่ม scenes ใน EditorBuildSettings
+      - ตกลงกับ bright: ใช้ scene name เดียวกัน
+
+[ ] 3. รวมข้อมูล Recipe / Ingredient (สำคัญมาก!)
+      ตอนนี้มี 3 ชุดข้อมูลแยกกัน:
+        A) bright/RecipeSelectionManager.RecipeData[]
+        B) bright/SmartFridgeManager.Ingredient[] + Recipe[]
+        C) coco/RecipeDatabase (10 สูตร + steps)
+      → PEP ควรทำ IngredientSO + RecipeSO แล้วให้ทั้ง 3 ระบบอ้างอิงชุดเดียว
+      ⚠️ ต้องคุย bright + coco ก่อน refactor — อย่าแก้ folder เพื่อนโดยไม่ตกลง
+
+[ ] 4. Smart Fridge — ส่วนที่เหลือ
+      - ย้าย/อ้างอิง IngredientSO
+      - Greedy + Content-Based recommendation (ปรับจาก match 70% ปัจจุบัน)
+      - ShopNearby (static data) เมื่อไม่มีสูตร match
+
+[ ] 5. Mini-game State Machine — ส่วนที่ยังไม่มี
+      [ ] PreparationState — Drag & Drop วัตถุดิบลงเขีย/board
+      [ ] CookingState — ปรับไฟเตา gas:
+            - Slider ควบคุมความแรงไฟ
+            - ProgressBar ความสุก
+            - Timer
+            - Input.acceleration สำหรับ shake กระทะ
+          (coco/GrillingMinigame = auto progress + flip ไม่ใช่ gas slider)
+          (coco/StirringMinigame = คนหม้อ ไม่ใช่ปรับไฟ)
+      [ ] PresentationState — Plating UI จัดจาน
+
+      ⚠️ DEPEND ON coco:
+      - ขยาย CookingGameManager + RecipeStep.MinigameType (เพิ่ม enum ใหม่?)
+      - หรือ wrapper state ก่อน/หลัง minigame ของ coco
+
+      ⚠️ DEPEND ON folk (ถ้าใช้หั่น 3D):
+      - SliceableFood + KnifeMovement ใน ChoppingState
+      - ต้อง bridge score จาก folk → ScoringManager
+
+[ ] 6. Chopping — ตัดสินใจกับทีม
+      Option A: ใช้ coco/ChoppingMinigame (UI slider) — integrate ง่าย
+      Option B: ใช้ folk/3D slice — immersive แต่ต้อง bridge score + UI
+      Option C: ทั้งสอง (เลือกตาม recipe step)
+
+─── P2: Scoring + Nutrition + Result ───
+
+[ ] 7. Scoring + Nutrition Display
+      - NutritionDisplayUI (kcal, benefits, stars) หลังจบสูตร
+      - Post-Cook Evaluation รวมคะแนน minigame + โภชนาการ
+      - ต่อจาก coco/CookingGameUI.ShowFinalRecipeResult()
+
+[ ] 8. Result / Reward Screen
+      - หน้าสรุปผล + ให้ reward พื้นฐาน
+      - เชื่อม RewardManager
+
+─── P3: ภายหลัง (Priority ต่ำใน planning) ───
+
+[ ] 9.  Shop + Equip (ShopUI, ItemSO, EquipSystem)
+[ ] 10. Community (ReviewPostUI, FeedUI, Like/Comment — Firebase หรือ mock)
+[ ] 11. Competition 1v1 (RoomManager, SharedTimer, BattleStateMachine, ...)
+
+
+================================================================================
+จุดที่ PEP ต้อง "เชื่อ" / พึ่ง code เพื่อน (Integration Contract)
+================================================================================
+
+1) bright/GameManager (Singleton)
+   - Instance.selectedRecipeName / selectedRecipeIndex / requiredIngredients
+   - GoToSmartFridge(), GoToCooking()
+   → PEP ต้อง extend หรือ wrap ไม่ให้ conflict กับ GameStateMachine ใหม่
+
+2) bright/SmartFridgeManager
+   - OnSelectRecipe(Recipe) → ตั้งชื่อสูตรแล้ว GoToCooking()
+   - FindMatchingRecipes() — logic แนะนำสูตร
+   → PEP InventoryManager ควรรู้วัตถุดิบที่ user เลือกจากที่นี่
+
+3) bright/RecipeSelectionManager
+   - recipes[] (RecipeData) — ข้อมูล UI
+   → PEP ต้อง sync กับ RecipeSO ชุดเดียว
+
+4) coco/CookingGameManager (namespace CookingGame)
+   - SelectRecipe(int index) — ใช้ RecipeDatabase
+   - OnStepCompleted(float score) / totalRecipeScore / GetRecipeMedal()
+   - Minigame controllers: chopping, stirring, grilling, seasoning, pounding
+   → PEP ScoringManager ฟัง event จากที่นี่
+
+5) coco/RecipeDatabase + Recipe + RecipeStep
+   - 10 สูตรไทย + step → minigame type
+   → PEP ควรเป็น source of truth หรือ migrate มาที่ SO
+
+6) coco/CookingGameUI
+   - OnStateChanged, ShowFinalRecipeResult, ShowStepResult
+   → PEP NutritionDisplay ต่อท้าย recipeComplete state
+
+7) folk/SliceableFood + KnifeMovement (ถ้าใช้)
+   - tag "Knife" / "Sliceable"
+   - ไม่มี callback score — PEP ต้องเขียน adapter เอง
+
+
+================================================================================
+ความเสี่ยง / สิ่งที่ต้องคุยทีมด่วน
+================================================================================
+
+  🔴 Scene "CookingGameplay" ไม่มี — flow จาก Smart Fridge จะพังตอนกดเลือกสูตร
+  🔴 ข้อมูล Recipe 3 ชุดไม่ sync — ชื่อสูตร bright vs coco อาจไม่ตรงกัน
+  🟡 Chopping 2 ระบบ (folk 3D vs coco UI) — ต้องเลือกก่อน PEP implement
+  🟡 "ปรับเตา gas" ยังไม่มีใครทำ — Grilling/Stirring ของ coco ใกล้เคียงแต่ไม่ตรง spec
+  🟡 CookingGameManager ยังไม่เห็นใน scene — coco อาจยังไม่ได้ประกอบ gameplay scene
+  🟡 Build Settings มีแค่ 3 scene — ยังเล่น end-to-end ไม่ได้
+
+
+================================================================================
+Quick Reference — ไฟล์สำคัญ
+================================================================================
+
+  bright/Recipe Selection/GameManager.cs
+  bright/Recipe Selection/RecipeSelectionManager.cs
+  bright/Smart Fridge/SmartFridgeManager.cs
+
+  coco/Scripts/CookingGameManager.cs
+  coco/Scripts/CookingGameUI.cs
+  coco/Scripts/RecipeDatabase.cs
+  coco/Scripts/ChoppingMinigame.cs
+  coco/Scripts/GrillingMinigame.cs
+  coco/Scripts/StirringMinigame.cs
+
+  folk/SliceableFood.cs
+  folk/KnifeMovement.cs
+
+  pep/planning.txt          ← spec ทั้งหมดของ PEP
+  pep/pep_todolist.txt      ← ไฟล์นี้
+
+================================================================================
+Folder Structure (pep/) — ใช้งานตาม planning
+================================================================================
+
+pep/
+├── planning.txt
+├── pep_todolist.txt
+├── Scripts/
+│   ├── Core/              → GameStateMachine, PlayerDataManager, Save
+│   ├── Data/              → shared models, constants
+│   ├── Integration/       → adapter ต่อ bright / coco / folk (อย่าแก้ folder เพื่อน)
+│   ├── SmartFridge/       → InventoryManager, Recommendation, ShopNearby
+│   ├── Recipe/            → RecipeSO, IngredientSO, data sync
+│   ├── Minigames/
+│   │   ├── Preparation/   → Drag & Drop วัตถุดิบ
+│   │   ├── Chopping/      → adapter / bridge ไป folk หรือ coco
+│   │   ├── Cooking/       → ปรับไฟเตา + Timer + Shake
+│   │   └── Presentation/  → Plating UI
+│   ├── Nutrition/         → NutritionDisplayUI, Post-Cook Evaluation
+│   ├── Scoring/           → ScoringManager
+│   ├── Reward/            → RewardManager, Result screen
+│   ├── Community/         → Feed, Review, Like/Comment (P3)
+│   └── Competition/       → Room, Battle, 1v1 (P3)
+├── ScriptableObjects/
+│   ├── Ingredients/       → IngredientSO assets
+│   ├── Recipes/           → RecipeSO assets
+│   └── Items/             → ItemSO (shop/equip)
+├── Scenes/                → scene ของ pep (เช่น CookingGameplay)
+└── Prefabs/
+    ├── UI/
+    └── Minigames/
+
+================================================================================
+เนื้อเรื่องย่อ
+================================================================================
+สรุปเนื้อเรื่องเกม (Story / Core Concept)
+เกม: Smart Food Smart Life
+แนว: 3D Cooking Simulation + Gamification + Healthy Eating Education
+เนื้อเรื่องย่อ
+ผู้เล่นเป็นคนที่ต้องการเรียนรู้การทำอาหารเพื่อสุขภาพที่ดีขึ้น
+→ เลือก ช่วงอายุ (เด็ก/วัยรุ่น, วัยทำงาน, ผู้สูงอายุ)
+→ เลือกโหมด เรียนรู้ผ่านเกม หรือ ทำในชีวิตจริง
+→ ใช้ Smart Fridge เลือกวัตถุดิบที่มี → ระบบแนะนำเมนูที่เหมาะสม
+→ เข้า Mini-game จำลองการทำอาหารจริง (หั่น, ควบคุมไฟ, ต้ม/ผัด/ย่าง)
+→ ได้อาหารเสร็จ → ตรวจ Nutrition Score + Review
+→ แชร์ใน Community หรือไป แข่ง 1v1 กับเพื่อน
+Pain Point ที่เกมแก้ (สำคัญสำหรับ GameStateMachine)
+
+คนรุ่นใหม่ขาดความรู้โภชนาการ → กิน junk food → โรคอ้วน เบาหวาน ความดันสูง
+มองว่าทำอาหารยาก น่าเบื่อ
+อยากกินอร่อยแต่ไม่รู้ว่าจะทำยังไงให้ทั้งอร่อยและดีต่อสุขภาพ
+
+เกมจึงเปลี่ยนการเรียนรู้โภชนาการให้เป็นเกมสนุก ที่ผู้เล่นได้ฝึกจริง + นำไปใช้ในชีวิตจริงได้
+
+สำหรับ GameStateMachine แนะนำ Flow หลัก:
+
+MainMenu
+Age Selection
+Mode Selection (Game Mode / Real Life)
+Solo → Smart Fridge → Recipe Select → Cooking Sequence (State Machine)
+Result / Nutrition Review
+Community / Reward / Shop
+Competition Lobby → Battle
+
+Core Loop: Fridge → Cook (Mini-games) → Score → Reward
+ต้องการให้แยก State เพิ่มเติมไหม?
+
+
+================================================================================
+Planning Data (code) — pep/Scripts/Data/PepPlanningData.cs
+อัปเดต: 2026-06-13 | Overall Progress: 5% (1/19 tasks done)
+================================================================================
+
+// งานวันนี้ (deadline = 2026-06-13)
+GetTodayTasks() =>
+  [01] PEP-001 |  0% | NotStarted | GameStateMachine
+  [05] PEP-005 |  0% | NotStarted | Scene CookingGameplay + Build Settings  🔴
+  [11] PEP-011 |  0% | Blocked    | Chopping adapter — รอตัดสินใจทีม
+
+// ทั้งหมดเรียง step (ตับๆ)
+step | id      | prog | status     | deadline   | P  | title
+-----|---------|------|------------|------------|----|----------------------------------
+  0  | PEP-000 | 100% | Done       | 2026-06-13 | P1 | Research + folder setup
+  1  | PEP-001 |   0% | NotStarted | 2026-06-13 | P1 | GameStateMachine
+  2  | PEP-002 |   0% | NotStarted | 2026-06-14 | P1 | PlayerDataManager + Save
+  3  | PEP-003 |   0% | NotStarted | 2026-06-14 | P1 | InventoryManager
+  4  | PEP-004 |   0% | NotStarted | 2026-06-15 | P1 | ScoringManager
+  5  | PEP-005 |   0% | NotStarted | 2026-06-13 | P1 | Scene CookingGameplay  🔴
+  6  | PEP-006 |   0% | NotStarted | 2026-06-15 | P1 | IngredientSO + RecipeSO
+  7  | PEP-007 |   0% | NotStarted | 2026-06-16 | P1 | Integration adapters
+  8  | PEP-008 |  10% | NotStarted | 2026-06-17 | P1 | Smart Fridge recommendation
+  9  | PEP-009 |   0% | NotStarted | 2026-06-17 | P1 | ShopNearby
+ 10  | PEP-010 |   0% | NotStarted | 2026-06-18 | P1 | PreparationState
+ 11  | PEP-011 |   0% | Blocked    | 2026-06-13 | P1 | Chopping adapter
+ 12  | PEP-012 |   0% | NotStarted | 2026-06-19 | P1 | CookingState (gas+shake)
+ 13  | PEP-013 |   0% | NotStarted | 2026-06-20 | P1 | PresentationState
+ 14  | PEP-014 |   0% | NotStarted | 2026-06-21 | P2 | NutritionDisplayUI
+ 15  | PEP-015 |   0% | NotStarted | 2026-06-22 | P2 | RewardManager + Result screen
+ 16  | PEP-016 |   0% | NotStarted | 2026-06-25 | P3 | Shop + Equip
+ 17  | PEP-017 |   0% | NotStarted | 2026-06-28 | P3 | Community
+ 18  | PEP-018 |   0% | NotStarted | 2026-06-30 | P3 | Competition 1v1
+
+// ใช้ใน Unity
+Pep.Planning.PepPlanningData.Tasks
+Pep.Planning.PepPlanningData.GetTodayTasks()
+Pep.Planning.PepPlanningData.GetOverallProgressPercent()
+
+================================================================================

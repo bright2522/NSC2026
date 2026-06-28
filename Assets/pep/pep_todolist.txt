@@ -1,0 +1,428 @@
+================================================================================
+NSC2026 — TODO ของ PEP (Programmer)
+อัปเดต: 2026-06-22
+================================================================================
+
+บทบาท PEP (scope งาน)
+---------------------
+  ✅ Coding — Managers, State Machine, Minigame logic, Data (SO)
+  ✅ UI mock จาก code — Slider, ProgressBar, Timer, panel สร้าง/runtime wire ใน script
+  ❌ ไม่รับผิดชอบ — Scene setup, Build Settings, wire prefab ใน Editor, 3D level design
+  → งาน scene / flow ข้าม scene = bright / coco / คนอื่นในทีม
+
+โฟกัสหลักตาม planning
+---------------------
+  Core Managers (code) → Minigame states + UI mock → Scoring/Nutrition (code+UI mock)
+  Integration adapters (เรียก API เพื่อน ไม่แก้ folder เพื่อน)
+
+
+================================================================================
+สิ่งที่เพื่อนทำไปแล้ว (อ้างอิงเวลา integrate — ไม่ใช่งาน PEP)
+================================================================================
+
+[Bright]  bright/Recipe Selection + Smart Fridge + GameManager (scene navigation)
+  - GameManager, RecipeSelectionManager, SmartFridgeManager
+  - FridgeUI + recipe match 70% (Greedy-like)
+
+[Coco]  coco/Scripts/ — Cooking minigame + RecipeDatabase
+  - CookingGameManager, CookingMinigameBase, 5 minigames
+  - Chopping / Stirring / Grilling / Seasoning / Pounding (UI slider ส่วนใหญ่)
+
+[Folk]  folk/ — หั่น 3D (EzySlice + KnifeMovement) แยกจาก coco/ChoppingMinigame
+
+
+================================================================================
+Mapping: planning.txt vs สถานะ — เฉพาะส่วน PEP (prog)
+================================================================================
+
+[1] Core Managers (code)
+  GameStateMachine (logic/event)     ✅  PEP ทำ — ไม่รวม SceneManager.LoadScene
+  PlayerDataManager + Save             ✅
+  InventoryManager                     ✅
+  ScoringManager                       ✅
+  RewardManager                        ❌
+
+[2] Smart Fridge (logic)
+  IngredientSO + Recommendation        ❌ / 🟡 bright มี UI+match แล้ว
+  ShopNearby (static data)             ❌
+
+[3] Recipe data (code)
+  IngredientSO + RecipeSO              ❌  รวม 3 ชุดข้อมูล
+
+[4] Mini-game (code + UI mock)
+  PreparationState                     ❌
+  Chopping                             🟡  adapter / หรือ UI mock ใหม่
+  CookingState (fire slider+shake)     ✅  งานหลัก prog
+  PresentationState                    ❌
+
+[5] Nutrition / Result (code + UI mock)  ❌ P2
+[6–8] Community / Competition / Shop   ❌ P3
+
+
+================================================================================
+PEP ต้องทำ (เรียง priority — ไม่มีงาน scene)
+================================================================================
+
+─── P1: Core + Minigame (prog) ───
+
+[x] 1. GameStateMachine (code only)
+      - enum states + event/callback ระหว่างระบบ
+      - ไม่โหลด scene — ส่ง event ให้ bright/coco เรียกต่อเอง
+      folder: pep/Scripts/Core/
+
+[x] 2. PlayerDataManager + Save/Load
+      folder: pep/Scripts/Core/
+
+[x] 3. InventoryManager — logic วัตถุดิบ (sync กับ SmartFridge API)
+      folder: pep/Scripts/SmartFridge/
+
+[x] 4. ScoringManager — รับ score จาก minigame / coco
+      folder: pep/Scripts/Scoring/
+
+[x] 5. IngredientSO + RecipeSO + data models
+      folder: pep/Scripts/Recipe/ + pep/ScriptableObjects/
+      - IngredientSO, RecipeSO, RecipeCatalogManager (lookup by id) + custom editor
+
+[ ] 6. Integration adapters (bright / coco / folk)
+      folder: pep/Scripts/Integration/
+
+[ ] 7. Smart Fridge logic — recommendation + ShopNearby (static)
+      folder: pep/Scripts/SmartFridge/
+
+[x] 8. CookingState — ปรับไฟเตา gas (งานหลัก UI mock จาก code)
+      - Slider ควบคุมไฟ, ProgressBar ความสุก, Timer, Input.acceleration shake
+      - สร้าง/wire UI ใน script (เหมือน pattern coco/ChoppingMinigame)
+      folder: pep/Scripts/Minigames/Cooking/
+
+[ ] 9. PreparationState — drag logic + UI mock
+      folder: pep/Scripts/Minigames/Preparation/
+
+[ ] 10. PresentationState — plating logic + UI mock
+       folder: pep/Scripts/Minigames/Presentation/
+
+[ ] 11. Chopping adapter / UI mock (รอทีมเลือก folk 3D vs coco slider)
+       folder: pep/Scripts/Minigames/Chopping/
+
+─── P1: Gameplay Events ย่อย (mobile sensor) — ใหม่ 2026-06-22 ───
+
+[ ] 17. Mobile sensor input layer (shared)
+       folder: pep/Scripts/Input/
+       - AccelerometerGestureDetector.cs — อ่าน Input.acceleration + delta/jerk
+       - TiltPourReader.cs — คำนวณมุมเอียงจาก neutral pose
+       - FlickDetector.cs — จับ impulse สั้นๆ (ร่อนกระทะ)
+       - Editor fallback: Space / mouse drag สำหรับทดใน Unity Editor
+
+[ ] 18. Event: ร่อนกระทะ (Pan Flick)
+       folder: pep/Scripts/Minigames/Cooking/
+       - PanFlickMinigame.cs — minigame ย่อย / sub-step ใน Cooking phase
+       - แยกจาก shake ใน CookingState.cs (shake = คงที่, flick = spike ช่วงสั้น)
+
+[ ] 19. Event: เอียงมือถือเทของ (Tilt Pour)
+       folder: pep/Scripts/Minigames/Preparation/ (+ ใช้ซ้ำใน Cooking/)
+       - TiltPourMinigame.cs — เทน้ำมัน / ไข่ / ของเหลว
+       - ขยาย IngredientSO: isPourable, isFragile, idealPourMin/Max
+
+[ ] 20. Event: แมลงสาบวิ่งผ่าน (Cockroach Disturbance)
+       folder: pep/Scripts/GameplayEvents/
+       - KitchenDisturbanceManager.cs — สุ่ม spawn ตอน Preparation + Chopping
+       - CockroachRunner.cs — วิ่งตาม waypoint, tap ไล่, penalty ถ้าพลาด
+       - เชื่อม ScoringManager + GameStateMachine
+
+─── P2 ───
+
+[ ] 12. NutritionDisplayUI + Post-Cook Evaluation (code + UI mock)
+[ ] 13. RewardManager + Result screen (code + UI mock)
+
+─── P3 ───
+
+[ ] 14. Shop + Equip
+[ ] 15. Community
+[ ] 16. Competition 1v1
+
+
+================================================================================
+Integration contract (เรียก code เพื่อน — ไม่แตะ scene)
+================================================================================
+
+  bright/GameManager          → selectedRecipeName, requiredIngredients
+  bright/SmartFridgeManager   → OnConfirm, FindMatchingRecipes
+  coco/CookingGameManager     → OnStepCompleted, totalRecipeScore
+  coco/CookingMinigameBase    → pattern อ้างอิง minigame + slider UI
+  folk/SliceableFood          → (optional) adapter score
+
+
+================================================================================
+Out of scope — ทีม/คนอื่นดูแล (ไม่ใส่ใน todo PEP)
+================================================================================
+
+  - Scene สร้าง/ประกอบใน Unity Editor (CookingGameplay, map.unity, ...)
+  - EditorBuildSettings / scene name ใน GoToCooking()
+  - Wire prefab / Canvas ใน Inspector (PEP ทำแค่ code ที่ generate หรือ [SerializeField] optional)
+  - 3D assets, kitchen layout, lighting
+
+
+================================================================================
+Folder Structure (pep/) — prog
+================================================================================
+
+pep/
+├── Scripts/
+│   ├── Core/
+│   ├── Input/             ← NEW: accelerometer / tilt / flick (shared)
+│   ├── Data/              ← PepPlanningData.cs
+│   ├── Integration/
+│   ├── SmartFridge/
+│   ├── Recipe/
+│   ├── Minigames/
+│   │   ├── Preparation/   ← drag + TiltPourMinigame
+│   │   ├── Chopping/      ← + Cockroach event ร่วมกับ Preparation
+│   │   ├── Cooking/       ← fire slider + shake + PanFlickMinigame
+│   │   └── Presentation/
+│   ├── GameplayEvents/    ← NEW: แมลงสาบ / disturbance ข้าม phase
+│   ├── Nutrition/
+│   ├── Scoring/
+│   ├── Reward/
+│   ├── Community/
+│   └── Competition/
+├── ScriptableObjects/
+│   ├── Ingredients/
+│   ├── Recipes/
+│   └── Items/
+└── Prefabs/
+    ├── Minigames/         ← optional runtime prefab จาก code
+    └── GameplayEvents/    ← Cockroach prefab (ทีม art หรือ placeholder cube)
+
+
+================================================================================
+Planning Data (code) — pep/Scripts/Data/PepPlanningData.cs
+================================================================================
+
+// งานวันนี้ (2026-06-14) — prog focus
+GetTodayTasks() =>
+  [02] PEP-002 | 100% | Done       | PlayerDataManager + Save
+  [03] PEP-003 | 100% | Done       | InventoryManager
+  [11] PEP-011 |  0% | Blocked    | Chopping adapter (carry จากวันก่อน)
+
+// ทั้งหมดเรียง step
+step | id      | prog | status     | deadline   | P  | title
+-----|---------|------|------------|------------|----|----------------------------------------------
+  0  | PEP-000 | 100% | Done       | 2026-06-13 | P1 | Research + folder setup
+  1  | PEP-001 | 100% | Done       | 2026-06-13 | P1 | GameStateMachine (code)
+  2  | PEP-002 | 100% | Done       | 2026-06-14 | P1 | PlayerDataManager + Save
+  3  | PEP-003 | 100% | Done       | 2026-06-14 | P1 | InventoryManager
+  4  | PEP-004 | 100% | Done       | 2026-06-15 | P1 | ScoringManager
+  5  | PEP-005 | 100% | Done       | 2026-06-15 | P1 | IngredientSO + RecipeSO + CatalogManager + Editor
+  6  | PEP-006 |   0% | NotStarted | 2026-06-16 | P1 | Integration adapters
+  7  | PEP-007 |   0% | NotStarted | 2026-06-17 | P1 | Smart Fridge recommendation
+  8  | PEP-008 | 100% | Done       | 2026-06-13 | P1 | CookingState + UI mock
+  9  | PEP-009 |   0% | NotStarted | 2026-06-18 | P1 | PreparationState + UI mock
+ 10  | PEP-010 |   0% | NotStarted | 2026-06-20 | P1 | PresentationState + UI mock
+ 11  | PEP-011 |   0% | Blocked    | 2026-06-13 | P1 | Chopping adapter
+ 12  | PEP-012 |   0% | NotStarted | 2026-06-21 | P2 | NutritionDisplayUI
+ 13  | PEP-013 |   0% | NotStarted | 2026-06-22 | P2 | RewardManager + Result UI
+ 14  | PEP-014 |   0% | NotStarted | 2026-06-25 | P3 | Shop + Equip
+ 15  | PEP-015 |   0% | NotStarted | 2026-06-28 | P3 | Community
+ 16  | PEP-016 |   0% | NotStarted | 2026-06-30 | P3 | Competition 1v1
+
+Pep.Planning.PepPlanningData.Tasks
+Pep.Planning.PepPlanningData.GetTodayTasks()
+
+
+================================================================================
+PLANNING: Gameplay Events ย่อย (Research 2026-06-22)
+================================================================================
+
+สรุปสิ่งที่มีอยู่แล้ว vs ต้องทำใหม่
+------------------------------------
+  มีแล้ว:
+    - CookingState.cs — Input.acceleration magnitude แบบ shake ต่อเนื่อง (ไม่ใช่ flick)
+    - coco/SeasoningMinigame.cs — เทของด้วย mouse hold + หมุนขวด (ไม่ใช่ tilt มือถือ)
+    - coco/GrillingMinigame.cs — tap flip (ไม่ใช่ร่อนกระทะ)
+    - GameStateMachine — enum Preparation / Chopping / Cooking พร้อม event
+    - ScoringManager — ReportStepScore(source, stepName, score)
+
+  ยังไม่มี (PEP ต้องเขียน):
+    - Shared mobile sensor layer (tilt + flick แยกจาก shake)
+    - Pan flick minigame
+    - Tilt pour minigame (น้ำมัน / ไข่แตก)
+    - Cockroach random event ระหว่างเตรียม/หั่น
+
+
+────────────────────────────────────────────────────────────────────────────────
+EVENT 1 — ร่อนกระทะ (Flick phone → pan toss/flip)
+────────────────────────────────────────────────────────────────────────────────
+
+Concept
+  ผู้เล่น "ร่อน" มือถืออย่างรวดเร็ว 1 ครั้ง → กระทะ flip/กระเด้งของในกระทะ
+  ใช้ตอน Cooking phase (เช่น หลังของเริ่มสุก ต้องร่อน 1-2 ครั้ง)
+
+ความต่างจาก shake ใน CookingState ปัจจุบัน
+  |           | Shake (มีแล้ว)              | Flick (ต้องทำ)                |
+  |-----------|-----------------------------|-------------------------------|
+  | Input     | |accel| สูงต่อเนื่อง        | delta accel สูงช่วง < 0.3s    |
+  | จุดประสงค์ | bonus ความสุกต่อเนื่อง      | trigger flip ครั้งเดียว       |
+  | Score     | partial bonus               | timing ใน ideal window        |
+
+ไฟล์ที่ต้องสร้าง
+  pep/Scripts/Input/FlickDetector.cs
+  pep/Scripts/Minigames/Cooking/PanFlickMinigame.cs
+
+FlickDetector.cs — logic หลัก
+  - เก็บ accel ย้อนหลัง 5-10 frame (ring buffer)
+  - jerk = (accelNow - accelPrev) / dt
+  - OnFlickDetected(Vector3 direction, float intensity) เมื่อ |jerk| > flickThreshold
+  - cooldown 0.4s กันยิงซ้ำ
+  - calibrate: ลบ gravity baseline ตอนเริ่ม minigame (Input.acceleration ตอนมือถือนิ่ง)
+  - Editor: GetKeyDown(Space) หรือ mouse flick แทน
+
+PanFlickMinigame.cs — minigame
+  - Implements sub-step หรือ MonoBehaviour แยกที่ CookingState เรียก
+  - State: WaitingFlick → Flicked → Scored
+  - แสดง UI mock: "ร่อนมือถือเพื่อพลิกกระทะ!" + progress ว่าร่อนแล้วกี่ครั้ง
+  - ideal window: หลัง cookProgress ถึง X% ภายใน Y วินาที (คล้าย coco/GrillingMinigame flip timing)
+  - score: 100 ใน ideal, ลดลงถ้าร่อนเร็ว/ช้าเกิน, 0 ถ้าไม่ร่อนก่อนหมดเวลา
+  - event: OnPanFlickCompleted(float score, bool success)
+  - ส่งคะแนน: ScoringManager.ReportStepScore("pep/PanFlick", "Pan Flick", score)
+
+Optional (ทีม art / scene — out of scope PEP)
+  - Transform pan หมุนรอบ X axis เมื่อ flick สำเร็จ (AnimationCurve)
+  - Particle ของในกระทะกระเด้ง
+
+Unity API
+  - Input.acceleration (ต้อง build ลงมือถือจริง — Editor ไม่มี sensor)
+  - Input.compensateSensors = true (Project Settings) ถ้าต้องการ
+
+
+────────────────────────────────────────────────────────────────────────────────
+EVENT 2 — เอียงมือถือเทของ (Tilt pour — น้ำมัน / ไข่)
+────────────────────────────────────────────────────────────────────────────────
+
+Concept
+  เอียงมือถือช้าๆ → อัตราการเทเพิ่ม (pour rate)
+  ของแตกง่าย (ไข่): เอียงเร็วเกิน → แตก → penalty
+
+อ้างอิง pattern จาก coco/SeasoningMinigame (gauge + ideal zone) แต่เปลี่ยน input เป็น tilt
+
+ไฟล์ที่ต้องสร้าง
+  pep/Scripts/Input/TiltPourReader.cs
+  pep/Scripts/Minigames/Preparation/TiltPourMinigame.cs
+  ขยาย pep/Scripts/Recipe/IngredientSO.cs — field เพิ่ม (ดูด้านล่าง)
+
+TiltPourReader.cs
+  - CalibrateNeutral() ตอนเริ่ม — เก็บ accel ขณะมือถือตั้งตรง
+  - tiltX = accel.x - neutral.x (หรือใช้แกน Z ตาม Screen.orientation)
+  - pourRate = Mathf.Clamp01(Mathf.InverseLerp(minTilt, maxTilt, tiltX))
+  - tiltVelocity = delta tilt / dt — ใช้เช็คของแตก
+  - Editor fallback: ลาก mouse ซ้าย-ขวา แทน tilt
+
+TiltPourMinigame.cs
+  - fillAmount += pourRate * pourSpeed * dt (คล้าย SeasoningMinigame.currentFill)
+  - UI mock จาก code: Slider gauge + ideal zone rect + ชื่อวัตถุดิบ
+  - โหมด isFragile (ไข่):
+      if (tiltVelocity > fragileBreakThreshold) → แตก → score ต่ำ / fail step
+  - โหมด liquid (น้ำมัน):
+      เน้นความแม่นยำใน idealMin–idealMax (เช่น 65–85%)
+  - event: OnPourCompleted(float score, bool broken)
+  - ใช้ใน PreparationState (เทน้ำมันก่อนผัด) หรือ sub-step ใน Cooking
+
+IngredientSO — field ที่ควรเพิ่ม
+  [SerializeField] bool isPourable;
+  [SerializeField] bool isFragile;
+  [SerializeField] float idealPourMin = 65f;
+  [SerializeField] float idealPourMax = 85f;
+  [SerializeField] float fragileMaxTiltVelocity = 2.5f;
+
+เชื่อมกับ state machine
+  - PreparationState เรียก TiltPourMinigame เมื่อ recipe step ต้องเทของ
+  - หรือ RecipeSO เพิ่ม enum step type: Pour, Flick, Chop, ...
+
+
+────────────────────────────────────────────────────────────────────────────────
+EVENT 3 — แมลงสาบวิ่งผ่าน (Random disturbance)
+────────────────────────────────────────────────────────────────────────────────
+
+Concept
+  ระหว่างเตรียมวัตถุดิบ / หั่นผัก — สุ่มเกิดแมลงสาบวิ่งข้ามโต๊ะ
+  ผู้เล่นต้องแตะไล่ก่อนวิ่งถึงเขตวัตถุดิบ → ไม่แตะ = hygiene penalty
+
+ไฟล์ที่ต้องสร้าง
+  pep/Scripts/GameplayEvents/KitchenDisturbanceManager.cs
+  pep/Scripts/GameplayEvents/CockroachRunner.cs
+  pep/Scripts/GameplayEvents/DisturbanceEventSO.cs (optional — config สุ่ม)
+  pep/Prefabs/GameplayEvents/Cockroach.prefab (placeholder — ทีม art ทำทีหลังได้)
+
+KitchenDisturbanceManager.cs
+  - Subscribe GameStateMachine.OnStateEntered
+  - Active เฉพาะ PepGameState.Preparation และ PepGameState.Chopping
+  - Coroutine RandomSpawnLoop:
+      wait Random.Range(minInterval, maxInterval)
+      if (Random.value < spawnChance) SpawnCockroach()
+  - SerializeField: minInterval=8s, maxInterval=25s, spawnChance=0.35
+  - จำกัด concurrent: สูงสุด 1 ตัวบนจอ
+  - OnStateExited → หยุด spawn + destroy active
+
+CockroachRunner.cs
+  - waypoint 2-4 จุด (RectTransform บน UI mock หรือ Transform ใน world — code รับ array)
+  - MoveTowards ด้วย speed
+  - OnPointerClick / raycast tap → PlaySquash() → destroy + bonus hygiene
+  - ถ้าวิ่งถึงจุดสุดท้าย (เขตวัตถุดิบ) → OnContaminated() → penalty
+  - penalty: ScoringManager.ReportStepScore("pep/Cockroach", "Hygiene", -15f) หรือ clamp 0
+
+UI mock (PEP ทำใน code)
+  - สร้าง panel overlay บน Canvas มี Image สี่เหลี่ยมสีน้ำตาลแทนแมลงสาบ (ก่อนมี art)
+  - หรือ runtime quad + Button component สำหรับ tap
+
+เชื่อมกับ minigame อื่น
+  - PreparationState / Chopping adapter ไม่ต้องรู้เรื่องแมลงโดยตรง
+  - DisturbanceManager เป็น singleton ข้าม phase ฟัง state machine อย่างเดียว
+
+
+────────────────────────────────────────────────────────────────────────────────
+ลำดับการ implement แนะนำ
+────────────────────────────────────────────────────────────────────────────────
+
+  Step A — pep/Scripts/Input/ (ทำก่อน ใช้ร่วม event 1+2)
+    1. AccelerometerGestureDetector.cs — wrapper อ่าน sensor + Editor fallback
+    2. FlickDetector.cs
+    3. TiltPourReader.cs
+
+  Step B — Event 2 Tilt Pour (ง่ายสุด, ไม่พึ่ง state อื่นมาก)
+    4. ขยาย IngredientSO
+    5. TiltPourMinigame.cs + ทดใน test scene
+
+  Step C — Event 1 Pan Flick (ต่อจาก Input layer)
+    6. PanFlickMinigame.cs
+    7. (optional) แยก shake ออกจาก CookingState หรือให้ CookingState orchestrate sub-steps
+
+  Step D — Event 3 Cockroach (พึ่ง GameStateMachine)
+    8. KitchenDisturbanceManager.cs + CockroachRunner.cs
+    9. ทด spawn ตอน Preparation/Chopping
+
+  Step E — Integration
+    10. PreparationState.cs เรียก TiltPour + เปิด DisturbanceManager
+    11. Chopping adapter เปิด DisturbanceManager
+    12. Cooking flow เรียก PanFlickMinigame ตาม recipe step
+    13. pep/Scripts/Integration/ — adapter ส่ง event ไป coco ถ้าต้อง sync step
+
+
+────────────────────────────────────────────────────────────────────────────────
+Unity / Mobile checklist (ตอน build ทดบนเครื่องจริง)
+────────────────────────────────────────────────────────────────────────────────
+
+  - Player Settings → Other Settings → Accelerometer Frequency (60 Hz แนะนำ)
+  - Input.compensateSensors = true ใน script ตอนเริ่ม minigame
+  - ทดบน Android/iOS จริง — Editor ใช้ keyboard/mouse fallback
+  - Screen.orientation ล็อก Portrait หรือ calibrate ตาม orientation ปัจจุบัน
+  - อย่าใช้ Gyroscope ถ้าไม่จำเป็น — accelerometer พอสำหรับ tilt + flick
+
+
+────────────────────────────────────────────────────────────────────────────────
+Task IDs ใหม่ (เพิ่มใน PepPlanningData.cs เมื่อเริ่มทำ)
+────────────────────────────────────────────────────────────────────────────────
+
+ 17 | PEP-017 |   0% | NotStarted | P1 | Mobile sensor input layer
+ 18 | PEP-018 |   0% | NotStarted | P1 | Pan Flick minigame
+ 19 | PEP-019 |   0% | NotStarted | P1 | Tilt Pour minigame + IngredientSO
+ 20 | PEP-020 |   0% | NotStarted | P1 | Cockroach disturbance event
+
+================================================================================

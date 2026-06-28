@@ -174,8 +174,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 76394394}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2963, y: 0.0654, z: -0.2269}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.29630002, y: 0.06539996, z: -0.2269}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -578,6 +578,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1896783641}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1896783645}
   m_SourcePrefab: {fileID: 100100000, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
 --- !u!1 &1806577086
 GameObject:
@@ -741,6 +744,21 @@ MonoBehaviour:
   snapPoint: {fileID: 76394395}
   snapDistance: 1
   snapSpeed: 10
+--- !u!114 &1896783645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896783632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7c8e0d1b59159d42a03092bb1c3b59b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canTilt: 0
+  maxAngle: 30
+  smoothSpeed: 5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,0 +1,86 @@
+PEP Demo Setup (24-06-69)
+============================================================
+
+ไฟล์ scene ที่ใช้เล่น:
+  pep/Scenes/PepDemo.unity
+
+ตอนนี้ใส่ script หลักให้แล้วใน scene:
+  PepDebug
+    - PepGameBootstrap
+  PepCore
+    - GameStateMachine
+    - PlayerDataManager
+    - InventoryManager
+    - ScoringManager
+    - RecipeCatalogManager
+  PepMobileInput
+    - AccelerometerGestureDetector
+    - FlickDetector
+    - TiltPourReader
+  PepMinigames
+    - TiltPourMinigame
+    - PreparationState
+    - ChoppingMockState
+    - CookingState
+    - PanFlickMinigame
+    - PresentationState
+  PepGameplayEvents
+    - KitchenDisturbanceManager
+
+
+สิ่งที่คุณต้องใส่เอง (สำคัญ)
+============================================================
+
+[1] Recipe/Ingredient Data
+  - ไปที่ PepCore > RecipeCatalogManager
+  - เช็ค/เพิ่ม ingredientAssets ให้ครบที่ใช้จริง
+  - เช็ค/เพิ่ม recipeAssets ให้ครบเมนูที่จะเล่น
+  - ตอนนี้มีตัวอย่างอยู่แล้ว 1 เมนู + 1 ingredient
+
+[2] ค่ามินิเกมที่อยากจูนเอง
+  - PepMinigames > TiltPourMinigame
+      totalDuration, pourSpeed, ideal range
+  - PepMinigames > CookingState
+      heat rates, burn penalty, shake tuning
+  - PepMinigames > PanFlickMinigame
+      totalDuration, idealWindowStart/End
+  - PepMinigames > ChoppingMockState / PresentationState
+      duration, target
+
+[3] ระบบแมลงสาบ (ถ้าใช้ art จริง)
+  - PepGameplayEvents > KitchenDisturbanceManager
+  - ใส่ cockroachPrefab เอง (ตอนนี้ปล่อยว่างได้ ระบบมี placeholder)
+  - ถ้าอยากกำหนดเส้นวิ่งเอง ให้กำหนด runPath เองใน Inspector
+    (ไม่ใส่ก็ได้ ระบบสร้าง path default ตอน Play)
+
+[4] UI จริงของทีม (คุณจะใส่เอง)
+  - ตอนนี้แต่ละ script ใช้ runtime mock UI จาก code
+  - ถ้าจะใช้ UI ของทีม:
+      - ปิด createUiOnStart ในแต่ละ state/minigame ที่ไม่อยากให้สร้าง UI mock
+      - แล้วผูก event/callback ของ UI จริงเข้ากับ flow ตามต้องการ
+
+[5] Build/Test
+  - Add scene: pep/Scenes/PepDemo.unity เข้า Build Settings
+  - ทดสอบใน Editor:
+      - Shake/Flick fallback = Space / Mouse
+  - ทดสอบมือถือจริง:
+      - Accelerometer ทำงานจริงบนอุปกรณ์
+
+
+Quick test flow
+============================================================
+1) เปิด PepDemo.unity
+2) กด Play
+3) PepGameBootstrap จะรัน flow:
+   Boot -> RecipeSelection -> SmartFridge -> Preparation -> Chopping -> Cooking -> PanFlick -> Presentation -> Result
+4) ระหว่างเล่น ใช้ debug panel ที่มุมล่างซ้าย:
+   Start / Restart / Skip
+
+
+ถ้ามี error หลังใส่ UI จริง:
+============================================================
+เช็ค 4 จุดก่อน
+  - GameStateMachine ยังอยู่ใน scene
+  - ScoringManager ยังอยู่ใน scene
+  - PepGameBootstrap reference ไม่หลุด
+  - ไม่มี script ไหนถูกปิด (disabled) โดยไม่ตั้งใจ

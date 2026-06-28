@@ -4,22 +4,6 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes:
-  - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
-    path: Assets/bright/bright.unity
-    guid: 4d7dc944c152e324d93cd15521e89837
-  - enabled: 1
-    path: Assets/bright/Smart Fridge/SmartFridge.unity
-    guid: 739a57d91116544479fea91afccacba7
-  - enabled: 1
-    path: Assets/Chon/Scene/MenuUi.unity
-    guid: 4fbcc14fd5d9aa3419803e46fc2b35f4
-  - enabled: 1
-    path: Assets/Chon/Scene/VersusScene.unity
-    guid: e956cf754776cd5479e7bc4fd7408f02
-  m_configObjects:
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Scenes: []
+  m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
