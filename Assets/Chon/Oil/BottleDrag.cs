@@ -47,24 +47,19 @@ public class BottleDrag : MonoBehaviour
     {
         if (dragging)
         {
-            Ray ray =
-                Camera.main.ScreenPointToRay(
-                    Input.mousePosition
-                );
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             float distance;
 
             if (dragPlane.Raycast(ray, out distance))
             {
-                Vector3 hitPoint =
-                    ray.GetPoint(distance);
+                Vector3 hitPoint = ray.GetPoint(distance);
 
-                transform.position =
-                    new Vector3(
-                        fixedX,
-                        hitPoint.y,
-                        hitPoint.z
-                    );
+                transform.position = new Vector3(
+                    fixedX,
+                    hitPoint.y,
+                    hitPoint.z
+                );
             }
         }
 
@@ -81,10 +76,13 @@ public class BottleDrag : MonoBehaviour
                 snapPoint.position
             ) < 0.05f)
             {
-                transform.position =
-                    snapPoint.position;
+                transform.position = snapPoint.position;
 
                 moveToSnap = false;
+
+                Debug.Log("Snap สำเร็จ");
+
+                GetComponent<BottleTilt>().canTilt = true;
             }
         }
     }
