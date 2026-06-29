@@ -521,6 +521,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minVolumeThreshold: 0.005
   minAxisSize: 0.002
+  launchPieces: 0
   spawnOffset: 0.02
   antiClipYOffset: 0.02
   pushForce: 4
@@ -2654,7 +2655,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d01c8cfde90550479931db5c0c02da8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stirFrySlider: {fileID: 0}
   putDownButtonObject: {fileID: 0}
   maxProgress: 100
 --- !u!1 &1750461946
@@ -3299,6 +3299,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minVolumeThreshold: 0.005
   minAxisSize: 0.002
+  launchPieces: 1
   spawnOffset: 0.02
   antiClipYOffset: 0.02
   pushForce: 4

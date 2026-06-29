@@ -10,6 +10,8 @@ public class SliceableFood : MonoBehaviour
     public float minAxisSize = 0.002f;
 
     [Header("Gentle Physics Settings")]
+    [Tooltip("ให้ชิ้นที่หั่นกระเด็นไหม — ปิด = ตกนิ่ง ๆ ไม่ดีด")]
+    public bool launchPieces = false;
     [Tooltip("ระยะที่ชิ้นส่วนจะขยับหลบใบมีดทางซ้าย-ขวา")]
     public float spawnOffset = 0.015f;
     [Tooltip("ระยะที่ชิ้นส่วนจะยกตัวลอยเหนือเขียงนิดหน่อยในเฟรมแรกเพื่อแก้บั๊กฟิสิกส์ดีดตัว")]
@@ -143,6 +145,11 @@ public class SliceableFood : MonoBehaviour
 
         FinalizeGroup(upperGroup, isLeftPiece: false);
         FinalizeGroup(lowerGroup, isLeftPiece: true);
+
+        // กันชิ้นบน-ล่างดันกันเอง และกันใบมีดชนชิ้นจนกระเด็น
+        IgnoreCollisions(upperGroup, lowerGroup);
+        IgnoreCollisionsWith(upperGroup, knife);
+        IgnoreCollisionsWith(lowerGroup, knife);
 
         foreach (GameObject source in sourcesToDestroy)
         {
@@ -280,25 +287,30 @@ public class SliceableFood : MonoBehaviour
         rb.linearDamping = 4f;
         rb.angularDamping = 5f;
 
-        if (isLeftPiece)
+        // ใส่แรงดีดเฉพาะตอนเปิด launchPieces เท่านั้น (ปิดไว้ = ตกนิ่ง ๆ)
+        if (launchPieces)
         {
-            float forceX = pushForce * directionX;
-            rb.AddForce(new Vector3(forceX, bounceUpForce, -0.15f), ForceMode.Impulse);
-            rb.AddTorque(new Vector3(
-                Random.Range(-torqueForce, torqueForce),
-                Random.Range(-torqueForce, torqueForce),
-                Random.Range(-torqueForce, torqueForce)), ForceMode.Impulse);
-        }
-        else
-        {
-            float forceX = (pushForce * 0.2f) * directionX;
-            rb.AddForce(new Vector3(forceX, 0f, 0f), ForceMode.Impulse);
-            rb.AddTorque(new Vector3(0f, 0f, Random.Range(-torqueForce * 0.2f, torqueForce * 0.2f)), ForceMode.Impulse);
+            if (isLeftPiece)
+            {
+                float forceX = pushForce * directionX;
+                rb.AddForce(new Vector3(forceX, bounceUpForce, -0.15f), ForceMode.Impulse);
+                rb.AddTorque(new Vector3(
+                    Random.Range(-torqueForce, torqueForce),
+                    Random.Range(-torqueForce, torqueForce),
+                    Random.Range(-torqueForce, torqueForce)), ForceMode.Impulse);
+            }
+            else
+            {
+                float forceX = (pushForce * 0.2f) * directionX;
+                rb.AddForce(new Vector3(forceX, 0f, 0f), ForceMode.Impulse);
+                rb.AddTorque(new Vector3(0f, 0f, Random.Range(-torqueForce * 0.2f, torqueForce * 0.2f)), ForceMode.Impulse);
+            }
         }
 
         SliceableFood sliceScript = groupRoot.AddComponent<SliceableFood>();
         sliceScript.minVolumeThreshold = minVolumeThreshold;
         sliceScript.minAxisSize = minAxisSize;
+        sliceScript.launchPieces = launchPieces;
         sliceScript.spawnOffset = spawnOffset;
         sliceScript.antiClipYOffset = antiClipYOffset;
         sliceScript.pushForce = pushForce;
@@ -306,6 +318,28 @@ public class SliceableFood : MonoBehaviour
         sliceScript.torqueForce = torqueForce;
         sliceScript.isSlicing = false;
         sliceScript.SetupColliderRelays();
+    }
+
+    // กันชน 2 กลุ่ม ไม่ให้ดันกันเอง
+    private static void IgnoreCollisions(GameObject a, GameObject b)
+    {
+        if (a == null || b == null) return;
+        var colA = a.GetComponentsInChildren<Collider>();
+        var colB = b.GetComponentsInChildren<Collider>();
+        foreach (var ca in colA)
+            foreach (var cb in colB)
+                if (ca && cb) Physics.IgnoreCollision(ca, cb, true);
+    }
+
+    // กันชิ้นชนกับใบมีด
+    private static void IgnoreCollisionsWith(GameObject piece, GameObject other)
+    {
+        if (piece == null || other == null) return;
+        var pieceCols = piece.GetComponentsInChildren<Collider>();
+        var otherCols = other.GetComponentsInChildren<Collider>();
+        foreach (var pc in pieceCols)
+            foreach (var oc in otherCols)
+                if (pc && oc) Physics.IgnoreCollision(pc, oc, true);
     }
 
     private static void EnsureCollider(GameObject piece)
