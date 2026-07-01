@@ -48,9 +48,9 @@ public class CookingSystem3D : MonoBehaviour
     [SerializeField] private float burnTimer = 3f;   
     private float maxBurnTime = 3f;
 
-    private bool isBurnt = false;
-    private bool isCooked = false;
-    private bool isTimeOut = false; 
+    public bool isBurnt = false;
+    public bool isCooked = false;
+    public bool isTimeOut = false;
 
     // ตัวแปรภายในสำหรับเก็บค่าโซนที่คำนวณได้จากตำแหน่ง UI จริง
     private float idealMin;

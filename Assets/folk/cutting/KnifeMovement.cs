@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,34 +15,94 @@ public class KnifeMovement : MonoBehaviour
     public LeanTweenType chopEase = LeanTweenType.easeInQuad;
     public LeanTweenType resetEase = LeanTweenType.easeOutQuad;
 
+    private static readonly List<KnifeMovement> instances = new List<KnifeMovement>();
+    private static KnifeMovement activeKnife;
+
     private Camera mainCamera;
     private bool isDragging;
     private bool isChopping;
     private Plane dragPlane;
     private Collider knifeCollider;
+    private Vector3 dragStartPosition;
+    private float dragStartPointerX;
 
     public bool IsSliceActive { get; private set; }
+
+    private void Awake()
+    {
+        knifeCollider = GetComponent<Collider>();
+        if (knifeCollider == null)
+            knifeCollider = GetComponentInChildren<Collider>();
+    }
+
+    private void OnEnable()
+    {
+        instances.Add(this);
+    }
 
     private void Start()
     {
         mainCamera = Camera.main;
-        knifeCollider = GetComponent<Collider>();
+        BakeChildOffsetIntoRoot();
+    }
+
+    private void BakeChildOffsetIntoRoot()
+    {
+        Transform visualChild = GetPositionedVisualChild();
+        if (visualChild != null)
+        {
+            Vector3 worldPos = visualChild.position;
+            transform.position = new Vector3(worldPos.x, topYPosition, worldPos.z);
+            visualChild.SetParent(transform, true);
+            return;
+        }
+
         transform.position = new Vector3(transform.position.x, topYPosition, transform.position.z);
+    }
+
+    private Transform GetPositionedVisualChild()
+    {
+        if (transform.childCount == 0)
+            return null;
+
+        Transform bestChild = null;
+        float largestLocalSqr = 0f;
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            float localSqr = child.localPosition.sqrMagnitude;
+            if (localSqr <= largestLocalSqr)
+                continue;
+
+            largestLocalSqr = localSqr;
+            bestChild = child;
+        }
+
+        return largestLocalSqr > 0.0001f ? bestChild : null;
     }
 
     private void Update()
     {
         if (isChopping) return;
 
+        if (activeKnife != null && activeKnife != this)
+            return;
+
         Vector2 inputScreenPosition = GetInputPosition();
 
         if (IsInputPressedThisFrame())
         {
-            Ray ray = mainCamera.ScreenPointToRay(inputScreenPosition);
-            if (knifeCollider.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
+            if (activeKnife == null && IsTopKnifeUnderCursor(inputScreenPosition))
             {
                 isDragging = true;
+                activeKnife = this;
+                dragStartPosition = transform.position;
                 dragPlane = new Plane(Vector3.up, new Vector3(0f, topYPosition, 0f));
+
+                Ray ray = mainCamera.ScreenPointToRay(inputScreenPosition);
+                if (dragPlane.Raycast(ray, out float enter))
+                    dragStartPointerX = ray.GetPoint(enter).x;
             }
         }
 
@@ -51,20 +112,81 @@ public class KnifeMovement : MonoBehaviour
             if (dragPlane.Raycast(ray, out float enter))
             {
                 Vector3 hitPoint = ray.GetPoint(enter);
-                transform.position = new Vector3(hitPoint.x, topYPosition, transform.position.z);
+                float deltaX = hitPoint.x - dragStartPointerX;
+                transform.position = new Vector3(
+                    dragStartPosition.x + deltaX,
+                    topYPosition,
+                    dragStartPosition.z);
             }
         }
 
         if (isDragging && IsInputReleasedThisFrame())
         {
             isDragging = false;
+            activeKnife = null;
             PlayChopTween();
         }
     }
 
+    private void OnDisable()
+    {
+        instances.Remove(this);
+        ReleaseInputOwnership();
+        LeanTween.cancel(gameObject);
+    }
+
     private void OnDestroy()
     {
+        instances.Remove(this);
+        ReleaseInputOwnership();
         LeanTween.cancel(gameObject);
+    }
+
+    private void ReleaseInputOwnership()
+    {
+        if (activeKnife != this)
+            return;
+
+        activeKnife = null;
+        isDragging = false;
+    }
+
+    private bool IsTopKnifeUnderCursor(Vector2 screenPosition)
+    {
+        if (mainCamera == null || knifeCollider == null)
+            return false;
+
+        return GetKnifeUnderCursor(screenPosition) == this;
+    }
+
+    private static KnifeMovement GetKnifeUnderCursor(Vector2 screenPosition)
+    {
+        Camera camera = Camera.main;
+        if (camera == null || instances.Count == 0)
+            return null;
+
+        Ray ray = camera.ScreenPointToRay(screenPosition);
+        KnifeMovement closestKnife = null;
+        float closestDistance = float.MaxValue;
+
+        for (int i = 0; i < instances.Count; i++)
+        {
+            KnifeMovement knife = instances[i];
+            Collider col = knife.knifeCollider;
+            if (knife == null || col == null)
+                continue;
+
+            if (!col.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
+                continue;
+
+            if (hit.distance < closestDistance)
+            {
+                closestDistance = hit.distance;
+                closestKnife = knife;
+            }
+        }
+
+        return closestKnife;
     }
 
     private void PlayChopTween()

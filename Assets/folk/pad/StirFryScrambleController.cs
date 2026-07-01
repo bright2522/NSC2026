@@ -2,13 +2,13 @@ using UnityEngine;
 
 public class StirFryScrambleController : MonoBehaviour
 {
-    [Header("ชื่อของ Object ไข่ข้นในหน้า Hierarchy (พิมพ์ให้ตรงตัวพิมพ์เล็ก-ใหญ่)")]
-    public string scrambledEggObjectName = "New_Scrambled_Egg"; // ใส่ชื่อ Object ไข่ข้นที่อยู่ในฉากหลักตรงนี้
+    [Header("ชื่อของ Object ไข่ข้นในหน้า Hierarchy")]
+    public string scrambledEggObjectName = "New_Scrambled_Egg";
 
     [Header("ตั้งค่าระบบการคนกระทะ")]
-    public float totalStirProgressNeeded = 100f; // คะแนนสะสมการคนจนกว่าจะสุกสำเร็จ
-    public float stirSensitivity = 5f;          // ความไวต่อการลากตะหลิวมาโดน
-    public string spatulaTag = "Spatula";        // แท็กของโมเดลตะหลิวเพื่อใช้ตรวจจับ
+    public float totalStirProgressNeeded = 100f; 
+    public float stirSensitivity = 5f;          
+    public string spatulaTag = "Spatula";        
 
     private GameObject scrambledEggModel;
     private float currentProgress = 0f;
@@ -20,19 +20,22 @@ public class StirFryScrambleController : MonoBehaviour
     private Vector3 lastSpatulaPos;
     private bool hasHitPan = false;
 
+    // อาร์เรย์เก็บค่า Material ของวัตถุดิบอื่น ๆ ในกระทะเพื่อนำมาทำ Fade Out
+    private GarlicStirItem[] sceneGarlics;
+    private SausageItemController[] sceneSausages;
+    private GameObject[] sceneCarrots;
+
     void Start()
     {
-        // 1. ดึง Material ของตัวไข่ดาวเองมาควบคุมค่า Alpha (ความโปร่งแสง)
+        // 1. ดึง Material ของตัวไข่ดาวเอง
         Renderer friedRenderer = GetComponentInChildren<Renderer>();
         if (friedRenderer != null)
         {
             friedEggMat = friedRenderer.material;
         }
 
-        // 2. ค้นหาโมเดลไข่ข้นที่วางรออยู่ในฉากตามชื่อที่ตั้งไว้
+        // 2. ค้นหาโมเดลไข่ข้น
         scrambledEggModel = GameObject.Find(scrambledEggObjectName);
-
-        // เซฟตี้เผื่อค้นหาชื่อแรกไม่เจอ ลองหาชื่อสั้น ๆ ดูอีกที
         if (scrambledEggModel == null) 
         {
             scrambledEggModel = GameObject.Find("ScrambledEgg");
@@ -45,18 +48,33 @@ public class StirFryScrambleController : MonoBehaviour
             {
                 scrambledEggMat = scrambledRenderer.material;
             }
-            
-            Debug.Log($"🍳 StirFryScramble: ผูกวัตถุ '{scrambledEggModel.name}' สำเร็จ!");
         }
-        else
+
+        // 🔍 ค้นหาและบันทึกวัตถุดิบอื่น ๆ ที่อยู่ในกระทะ ณ ตอนเริ่มผัดไข่ทันที
+        FetchAllIngredientsInScene();
+    }
+
+    // ฟังก์ชันรวบรวมวัตถุดิบทั้งหมดในฉาก ณ ตอนเริ่มผัด
+    void FetchAllIngredientsInScene()
+    {
+        sceneGarlics = FindObjectsByType<GarlicStirItem>(FindObjectsSortMode.None);
+        sceneSausages = FindObjectsByType<SausageItemController>(FindObjectsSortMode.None);
+        
+        // หาแครอทจากชื่อวัตถุ
+        System.Collections.Generic.List<GameObject> carrotList = new System.Collections.Generic.List<GameObject>();
+        GameObject[] allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        foreach (GameObject obj in allObjects)
         {
-            Debug.LogError($"❌ หาวัตถุไข่ข้นชื่อ '{scrambledEggObjectName}' ในฉากไม่เจอ! รบกวนตรวจสอบการพิมพ์ชื่อในช่อง Inspector ของ Prefab อีกทีนะครับ");
+            if (obj != null && obj.name.ToLower().Contains("carrot"))
+            {
+                carrotList.Add(obj);
+            }
         }
+        sceneCarrots = carrotList.ToArray();
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        // เมื่อไข่ดาวตกกระทบพื้นกระทะ ให้หยุดแรงฟิสิกส์เพื่อไม่ให้ขยับหนีเวลาโดนคน
         if (!hasHitPan && (collision.gameObject.name.Contains("Pan") || collision.gameObject.name.Contains("pan")))
         {
             hasHitPan = true;
@@ -67,36 +85,29 @@ public class StirFryScrambleController : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
-        // ตรวจจับเมื่อตะหลิว (ที่มี Collider แบบ Is Trigger) ลากเข้ามาบดคนเนื้อไข่
         if (other.CompareTag(spatulaTag) || other.name.Contains("Spatula") || other.name.Contains("spatula"))
         {
             if (isFinished || scrambledEggMat == null) return;
 
-            // คำนวณระยะการขยับของตะหลิว ยิ่งผู้เล่นคนเมาส์ส่ายไปมามาก คะแนนยิ่งขึ้นไว
             Vector3 currentSpatulaPos = other.transform.position;
             float stirDistance = Vector3.Distance(currentSpatulaPos, lastSpatulaPos);
 
-            // เช็คว่าตะหลิวมีการขยับเขยื้อนจริง ๆ ไม่ได้วางแช่ไว้เฉย ๆ
             if (stirDistance > 0.01f && stirDistance < 2f) 
             {
                 currentProgress += stirDistance * stirSensitivity;
                 currentProgress = Mathf.Clamp(currentProgress, 0f, totalStirProgressNeeded);
 
-                // คำนวณอัตราส่วนการสุก (0.0 ถึง 1.0)
                 float ratio = currentProgress / totalStirProgressNeeded;
 
-                // ไข่ดาวปกติ: ค่อยๆ จางหายไป (Alpha ลดลงจาก 1 ไป 0)
-                if (friedEggMat != null) 
-                {
-                    SetMaterialAlpha(friedEggMat, 1f - ratio);
-                }
+                // 🍳 1. จัดการระบบไข่
+                if (friedEggMat != null) SetMaterialAlpha(friedEggMat, 1f - ratio); // ไข่ดาวค่อยๆ จางหาย
+                SetMaterialAlpha(scrambledEggMat, ratio);                           // ไข่ข้นค่อยๆ ชัดขึ้น
 
-                // ไข่ข้นในฉาก: ค่อยๆ เลือนชัดขึ้นมา (Alpha เพิ่มขึ้นจาก 0 ไป 1)
-                SetMaterialAlpha(scrambledEggMat, ratio);
+                // 🧄 🌭 🥕 2. จัดการให้วัตถุดิบอื่น ๆ ค่อย ๆ เลือนหายไปตามการคน (Alpha ลดลงจาก 1 ไป 0)
+                FadeOtherIngredients(1f - ratio);
 
-                Debug.Log($"🍳 กำลังผัดไข่ขยี้... Progress: {ratio * 100f:F1}%");
+                Debug.Log($"🍳 กำลังผัดไข่และหลอมรวมวัตถุดิบ... Progress: {ratio * 100f:F1}%");
 
-                // เมื่อผัดจนได้คะแนนเต็มและไข่ข้นชัดเจน 100%
                 if (currentProgress >= totalStirProgressNeeded)
                 {
                     FinishScrambling();
@@ -107,22 +118,64 @@ public class StirFryScrambleController : MonoBehaviour
         }
     }
 
+    // ฟังก์ชันสั่งปรับค่า Alpha ให้กับวัตถุดิบอื่น ๆ ทั้งหมดที่บันทึกไว้
+    void FadeOtherIngredients(float alphaTarget)
+    {
+        // เลือนหายกระเทียม
+        foreach (var garlic in sceneGarlics)
+        {
+            if (garlic != null)
+            {
+                Renderer r = garlic.GetComponentInChildren<Renderer>();
+                if (r != null) SetMaterialAlpha(r.material, alphaTarget);
+            }
+        }
+
+        // เลือนหายไส้กรอก
+        foreach (var sausage in sceneSausages)
+        {
+            if (sausage != null)
+            {
+                Renderer r = sausage.GetComponentInChildren<Renderer>();
+                if (r != null) SetMaterialAlpha(r.material, alphaTarget);
+            }
+        }
+
+        // เลือนหายแครอท
+        foreach (var carrot in sceneCarrots)
+        {
+            if (carrot != null)
+            {
+                Renderer r = carrot.GetComponentInChildren<Renderer>();
+                if (r != null) SetMaterialAlpha(r.material, alphaTarget);
+            }
+        }
+    }
+
     void FinishScrambling()
     {
         isFinished = true;
-        Debug.Log("🎉 ผัดไข่ข้นเสร็จเรียบร้อยแล้ว!");
+        Debug.Log("🎉 ผัดไข่ข้นเสร็จเรียบร้อยแล้ว วัตถุดิบอื่นเลือนหายสมบูรณ์!");
 
-        // บังคับล็อกความชัดเจนของเนื้อไข่ข้นให้ทึบแสง 100% สมบูรณ์แบบ
         if (scrambledEggMat != null) 
         {
             SetMaterialAlpha(scrambledEggMat, 1f);
         }
+
+        // เมื่อจางจนมองไม่เห็นแล้ว สั่งทำลาย Object ทิ้งหลังบ้านเพื่อเคลียร์ขยะฟิสิกส์
+        DestroyAllLoggedIngredients();
         
-        // ทำลายโครงซากของไข่ดาวก้อนเดิมทิ้ง เพื่อเคลียร์หน่วยความจำเครื่อง
         Destroy(gameObject);
     }
 
-    // ฟังก์ชันส่วนตัวช่วยปรับค่าความจาง-ชัด (Alpha) ของ Material รองรับทั้ง Standard และ URP Shader
+    // ฟังก์ชันเคลียร์ขยะ Object ทิ้งอย่างถาวร
+    void DestroyAllLoggedIngredients()
+    {
+        foreach (var g in sceneGarlics) { if (g != null) Destroy(g.gameObject); }
+        foreach (var s in sceneSausages) { if (s != null) Destroy(s.gameObject); }
+        foreach (var c in sceneCarrots) { if (c != null) Destroy(c); }
+    }
+
     void SetMaterialAlpha(Material mat, float alphaValue)
     {
         if (mat == null) return;

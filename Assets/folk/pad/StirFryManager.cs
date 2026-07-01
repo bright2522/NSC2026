@@ -1,17 +1,14 @@
 using UnityEngine;
-using UnityEngine.UI; 
 
 public class StirFryManager : MonoBehaviour
 {
     public static StirFryManager Instance { get; private set; }
 
-    [Header("UI Elements")]
-    public Slider stirFrySlider;
-    // 🔥 [ช่องใหม่] ลากวัตถุปุ่มวางตะหลิวมาใส่ที่นี่เพื่อให้ระบบเปิดขึ้นมาตอนผัดเสร็จ
+    [Header("UI Elements (ซ่อนหลอดเหลือแค่ปุ่มพาสไปต่อ)")]
     [Tooltip("ลาก GameObject ของปุ่มวางตะหลิว (PutDownButton) มาใส่ช่องนี้")]
     public GameObject putDownButtonObject; 
 
-    [Header("Stir Fry Settings")]
+    [Header("Stir Fry Settings (นับแต้มเบื้องหลังเงียบๆ)")]
     public float maxProgress = 100f;
     
     private float currentProgress = 0f;
@@ -31,32 +28,27 @@ public class StirFryManager : MonoBehaviour
 
     void Start()
     {
-        if (stirFrySlider != null)
-        {
-            stirFrySlider.minValue = 0f;
-            stirFrySlider.maxValue = maxProgress;
-            stirFrySlider.value = 0f;
-        }
+        // เคลียร์ระบบ UI เก่าออกไปอย่างปลอดภัยแล้ว
     }
 
     public void IncreaseProgress(float amount)
     {
         if (isCookingFinished) return;
 
+        // สะสมความสุกระบบหลังบ้านเงียบๆ ผู้เล่นไม่เห็นหลอด
         currentProgress += amount;
         currentProgress = Mathf.Clamp(currentProgress, 0f, maxProgress);
 
-        if (stirFrySlider != null)
-        {
-            stirFrySlider.value = currentProgress;
-        }
+        Debug.Log($"[ระบบหลังบ้าน] กำลังผัดวัตถุดิบ... ความสุกภายใน: {currentProgress} / {maxProgress}");
 
+        // เมื่อผัดจนได้ที่ครบ 100%
         if (currentProgress >= maxProgress && !isCookingFinished)
         {
             TriggerCookingSuccess();
         }
     }
 
+    // ฟังก์ชันนี้เก็บไว้เพื่อให้สคริปต์กระเทียมเรียกใช้งานได้สะดวก
     public void AddProgress(float value)
     {
         IncreaseProgress(value);
@@ -65,9 +57,9 @@ public class StirFryManager : MonoBehaviour
     void TriggerCookingSuccess()
     {
         isCookingFinished = true;
-        Debug.Log("🍳✨ [SUCCESS] ผัดกระเทียมครบ 100% แล้ว!");
+        Debug.Log("🍳✨ [SUCCESS] ผัดวัตถุดิบจนสุกได้ที่เรียบร้อย!");
 
-        // 🔥 [จุดสำคัญ] เมื่อผัดเสร็จครบ 100% สั่งให้ปุ่มวางตะหลิวเด้งขึ้นมาบนจอทันที!
+        // เมื่อผัดเสร็จครบกำหนด สั่งให้ปุ่มวางตะหลิวเด้งขึ้นมาบนจอทันที!
         if (putDownButtonObject != null)
         {
             putDownButtonObject.SetActive(true);
@@ -78,9 +70,5 @@ public class StirFryManager : MonoBehaviour
     {
         currentProgress = 0f;
         isCookingFinished = false;
-        if (stirFrySlider != null)
-        {
-            stirFrySlider.value = 0f;
-        }
     }
 }
