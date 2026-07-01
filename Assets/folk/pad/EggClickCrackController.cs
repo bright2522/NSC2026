@@ -79,6 +79,8 @@ public class EggClickCrackController : MonoBehaviour
     {
         if (isLockedInPlace && panLockTarget != null)
         {
+            PanDragCoordinator.Maintain(this);
+
             transform.position = Vector3.Lerp(transform.position, panLockTarget.position, Time.deltaTime * snapSpeed);
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(lockedRotationTarget), Time.deltaTime * snapSpeed);
             
@@ -87,50 +89,78 @@ public class EggClickCrackController : MonoBehaviour
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
                 
-                if (Physics.Raycast(ray, out hit))
+                if (Physics.Raycast(ray, out hit) && PanDragCoordinator.IsHitOnObject(hit, transform))
                 {
-                    if (hit.transform == this.transform)
-                    {
-                        CrackEgg();
-                    }
+                    CrackEgg();
                 }
             }
         }
-        else if (!isDragging && transform.position != initialPosition)
+        else
         {
-            transform.position = Vector3.Lerp(transform.position, initialPosition, Time.deltaTime * 5f);
-        }
-    }
+            HandleDrag();
 
-    void OnMouseDown()
-    {
-        if (isLockedInPlace) return;
-        isDragging = true;
-        zCoord = mainCamera.WorldToScreenPoint(transform.position).z;
-        offset = transform.position - GetMouseWorldPos();
-    }
-
-    void OnMouseDrag()
-    {
-        if (isDragging && !isLockedInPlace)
-        {
-            Vector3 targetPos = GetMouseWorldPos() + offset;
-            transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
-        }
-    }
-
-    void OnMouseUp()
-    {
-        if (isLockedInPlace) return;
-        isDragging = false;
-
-        if (panLockTarget != null)
-        {
-            float distance = Vector3.Distance(transform.position, panLockTarget.position);
-            if (distance <= snapDistance)
+            if (!isDragging && transform.position != initialPosition)
             {
-                isLockedInPlace = true;
-                Debug.Log("🔒 ไข่เข้าล็อกพิกัดแล้ว! คลิกตอกได้เลย");
+                transform.position = Vector3.Lerp(transform.position, initialPosition, Time.deltaTime * 5f);
+            }
+        }
+    }
+
+    void HandleDrag()
+    {
+        if (isLockedInPlace) return;
+
+        if (isDragging)
+        {
+            PanDragCoordinator.Maintain(this);
+
+            if (Input.GetMouseButton(0))
+            {
+                Vector3 targetPos = GetMouseWorldPos() + offset;
+                transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
+            }
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                isDragging = false;
+
+                bool willLock = false;
+                if (panLockTarget != null)
+                {
+                    float distance = Vector3.Distance(transform.position, panLockTarget.position);
+                    willLock = distance <= snapDistance;
+                }
+
+                if (willLock)
+                {
+                    isLockedInPlace = true;
+                    PanDragCoordinator.Maintain(this);
+                    Debug.Log("🔒 ไข่เข้าล็อกพิกัดแล้ว! คลิกตอกได้เลย");
+                }
+                else
+                {
+                    PanDragCoordinator.End(this);
+                }
+            }
+
+            return;
+        }
+
+        if (PanDragCoordinator.HasActiveInteraction) return;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit) && PanDragCoordinator.IsHitOnObject(hit, transform))
+            {
+                if (PanDragCoordinator.TryBegin(this))
+                {
+                    isDragging = true;
+                    zCoord = mainCamera.WorldToScreenPoint(transform.position).z;
+                    offset = transform.position - GetMouseWorldPos();
+                }
             }
         }
     }
@@ -199,6 +229,12 @@ public class EggClickCrackController : MonoBehaviour
             StirFryManager.Instance.ResetProgress();
         }
 
+        if (PanPrepManager.Instance != null)
+        {
+            PanPrepManager.Instance.MarkEggDone();
+        }
+
+        PanDragCoordinator.End(this);
         Destroy(gameObject);
     }
 

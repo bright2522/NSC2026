@@ -195,10 +195,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canTilt: 1
-  oilParticle: {fileID: 0}
+  oilParticle: {fileID: 1236351439}
   tiltAngle: 70
   tiltSpeed: 5
   pourThreshold: 35
+  useKeyboardTiltSim: 1
 --- !u!4 &151096464 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
@@ -5632,6 +5633,7 @@ MonoBehaviour:
   tiltAngle: 70
   tiltSpeed: 5
   pourThreshold: 35
+  useKeyboardTiltSim: 1
 --- !u!114 &1896783650
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,6 +10,7 @@ public class SpatulaController : MonoBehaviour
     private Vector3 initialPosition;    
     private Quaternion initialRotation; 
     private Vector3 lastPosition; 
+    private Collider spatulaCollider;
 
     [Header("Spatula Rotation Setup")]
     public Vector3 lockedRotation = new Vector3(-45f, 180f, 0f); 
@@ -40,10 +41,12 @@ public class SpatulaController : MonoBehaviour
         initialPosition = transform.position;
         initialRotation = transform.rotation;
         lastPosition = transform.position;
+        spatulaCollider = GetComponent<Collider>();
 
-        // ตอนเริ่มเกม สั่งซ่อนทั้งปุ่มวางและหลอดสไลเดอร์ไว้ก่อน
         if (putDownButtonObject != null) putDownButtonObject.SetActive(false);
         if (stirFrySliderObject != null) stirFrySliderObject.SetActive(false);
+
+        UpdateSpatulaInteractable();
 
         if (customBoundary == null)
         {
@@ -60,6 +63,7 @@ public class SpatulaController : MonoBehaviour
 
     void Update()
     {
+        UpdateSpatulaInteractable();
         HandleFPSControl();
 
         if (isReturningToStart)
@@ -76,6 +80,17 @@ public class SpatulaController : MonoBehaviour
         }
     }
 
+    bool CanPickupSpatula()
+    {
+        return PanPrepManager.Instance.IsAllPrepDone;
+    }
+
+    void UpdateSpatulaInteractable()
+    {
+        if (spatulaCollider == null) return;
+        spatulaCollider.enabled = isHolding || CanPickupSpatula();
+    }
+
     void HandleFPSControl()
     {
         if (isReturningToStart) return;
@@ -85,19 +100,19 @@ public class SpatulaController : MonoBehaviour
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (!isHolding && Physics.Raycast(ray, out hit))
+            if (!isHolding && CanPickupSpatula() && !PanDragCoordinator.HasActiveInteraction && Physics.Raycast(ray, out hit))
             {
-                if (hit.transform == transform || hit.transform.IsChildOf(transform))
+                if (PanDragCoordinator.IsHitOnObject(hit, transform))
                 {
-                    isHolding = true;
-                    lastPosition = transform.position; 
-                    
-                    // 🔒 [แก้ไข] ตัดคำสั่งเปิดปุ่มตรงนี้ออกชั่วคราว เพื่อรอให้ผัดเสร็จก่อนค่อยเปิด
-                    
-                    // 🔓 เปิดเฉพาะหลอดสไลเดอร์ให้ผู้เล่นเห็นความคืบหน้าตอนผัด
-                    if (stirFrySliderObject != null)
+                    if (PanDragCoordinator.TryBegin(this))
                     {
-                        stirFrySliderObject.SetActive(true);
+                        isHolding = true;
+                        lastPosition = transform.position; 
+                        
+                        if (stirFrySliderObject != null)
+                        {
+                            stirFrySliderObject.SetActive(true);
+                        }
                     }
                     return;
                 }
@@ -106,6 +121,7 @@ public class SpatulaController : MonoBehaviour
 
         if (isHolding)
         {
+            PanDragCoordinator.Maintain(this);
             if (Input.GetMouseButton(0))
             {
                 float currentHeight = customBoundary.position.y;
@@ -162,6 +178,7 @@ public class SpatulaController : MonoBehaviour
         {
             isHolding = false;
             isReturningToStart = true; 
+            PanDragCoordinator.End(this);
 
             if (putDownButtonObject != null) putDownButtonObject.SetActive(false);
             if (stirFrySliderObject != null) stirFrySliderObject.SetActive(false);

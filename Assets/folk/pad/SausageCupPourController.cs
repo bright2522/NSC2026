@@ -15,6 +15,7 @@ public class SausageCupPourController : MonoBehaviour
 
     private Vector3 initialPosition;    
     private Quaternion initialRotation; 
+    private Collider cupCollider;
 
     [Header("Settings")]
     public float tiltSpeed = 400.0f; 
@@ -37,8 +38,8 @@ public class SausageCupPourController : MonoBehaviour
         mainCamera = Camera.main;
         initialPosition = transform.position;
         initialRotation = transform.rotation;
+        cupCollider = GetComponent<Collider>();
 
-        // 🔒 ตอนเริ่มเกม สั่งแช่แข็งฟิสิกส์ให้ไส้กรอกอยู่นิ่ง ๆ ในถ้วยก่อน
         SetSausagesKinematic(true);
     }
 
@@ -54,7 +55,8 @@ public class SausageCupPourController : MonoBehaviour
             {
                 transform.position = targetSnapPosition;
                 isSnapping = false;
-                isAbovePan = true; 
+                isAbovePan = true;
+                PanDragCoordinator.End(this);
                 currentRotationZ = 0f;
                 transform.rotation = Quaternion.identity;
             }
@@ -75,50 +77,75 @@ public class SausageCupPourController : MonoBehaviour
 
         if (isAbovePan && !isDragging && !isSnapping && !isPoured && !isReturningToStart)
         {
+            SetCupColliderEnabled(false);
             HandleTilt();
+        }
+        else if (!isAbovePan || isDragging || isSnapping || isPoured || isReturningToStart)
+        {
+            SetCupColliderEnabled(!isPoured && !isReturningToStart);
         }
     }
 
     void HandleDrag()
     {
-        if (isPoured || isReturningToStart) return; 
+        if (isPoured || isReturningToStart) return;
+
+        if (isDragging || isSnapping)
+        {
+            PanDragCoordinator.Maintain(this);
+
+            if (isDragging && Input.GetMouseButton(0))
+            {
+                Vector3 targetPos = GetMouseWorldPos() + offset;
+                transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
+            }
+
+            if (Input.GetMouseButtonUp(0) && isDragging)
+            {
+                isDragging = false;
+
+                if (lockTarget != null)
+                {
+                    Vector2 cupPos2D = new Vector2(transform.position.x, transform.position.y);
+                    Vector2 targetPos2D = new Vector2(lockTarget.position.x, lockTarget.position.y);
+
+                    float finalDistance = Vector2.Distance(cupPos2D, targetPos2D);
+
+                    if (finalDistance < snapDistance)
+                    {
+                        isSnapping = true;
+                        targetSnapPosition = new Vector3(lockTarget.position.x, lockTarget.position.y, transform.position.z);
+                    }
+                    else
+                    {
+                        PanDragCoordinator.End(this);
+                    }
+                }
+                else
+                {
+                    PanDragCoordinator.End(this);
+                }
+            }
+
+            return;
+        }
+
+        if (PanDragCoordinator.HasActiveInteraction) return;
 
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            
-            if (Physics.Raycast(ray, out hit) && (hit.transform == transform || hit.transform.IsChildOf(transform)))
-            {
-                isDragging = true;
-                isAbovePan = false; 
-                isSnapping = false; 
-                zCoord = mainCamera.WorldToScreenPoint(transform.position).z;
-                offset = transform.position - GetMouseWorldPos();
-            }
-        }
 
-        if (isDragging && Input.GetMouseButton(0))
-        {
-            Vector3 targetPos = GetMouseWorldPos() + offset;
-            transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
-        }
-
-        if (Input.GetMouseButtonUp(0) && isDragging)
-        {
-            isDragging = false;
-            
-            if (lockTarget != null)
+            if (Physics.Raycast(ray, out hit) && PanDragCoordinator.IsHitOnObject(hit, transform))
             {
-                Vector2 cupPos2D = new Vector2(transform.position.x, transform.position.y);
-                Vector2 targetPos2D = new Vector2(lockTarget.position.x, lockTarget.position.y);
-                
-                float finalDistance = Vector2.Distance(cupPos2D, targetPos2D);
-                
-                if (finalDistance < snapDistance) 
+                if (PanDragCoordinator.TryBegin(this))
                 {
-                    isSnapping = true;
-                    targetSnapPosition = new Vector3(lockTarget.position.x, lockTarget.position.y, transform.position.z);
+                    isDragging = true;
+                    isAbovePan = false;
+                    isSnapping = false;
+                    zCoord = mainCamera.WorldToScreenPoint(transform.position).z;
+                    offset = transform.position - GetMouseWorldPos();
                 }
             }
         }
@@ -134,13 +161,15 @@ public class SausageCupPourController : MonoBehaviour
     void HandleTilt()
     {
         float inputX = 0f;
-        Vector3 acceleration = Input.acceleration;
-        if (acceleration != Vector3.zero) inputX = acceleration.x;
 
-        if (inputX == 0)
-        {
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) inputX = -1f;
-        }
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+            inputX = -1f;
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+            inputX = 1f;
+#else
+        inputX = Input.acceleration.x;
+#endif
 
         if (inputX < 0)
         {
@@ -164,8 +193,12 @@ public class SausageCupPourController : MonoBehaviour
     {
         isPoured = true;
         
-        // 🔓 ปลดล็อกฟิสิกส์ให้หล่น และตัดขาดจากถ้วยแม่ทันที!
-        DetachAndDropSausages(); 
+        DetachAndDropSausages();
+
+        if (PanPrepManager.Instance != null)
+        {
+            PanPrepManager.Instance.MarkSausageDone();
+        }
 
         StartCoroutine(ReturnRoutine());
     }
@@ -199,6 +232,14 @@ public class SausageCupPourController : MonoBehaviour
         
         isAbovePan = false;
         isReturningToStart = true; // ค่อยสั่งถ้วยเปล่าวิ่งกลับไปที่เดิม
+    }
+
+    void SetCupColliderEnabled(bool enabled)
+    {
+        if (cupCollider != null)
+        {
+            cupCollider.enabled = enabled;
+        }
     }
 
     void SetSausagesKinematic(bool state)

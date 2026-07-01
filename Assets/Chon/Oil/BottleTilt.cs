@@ -19,11 +19,10 @@ public class BottleTilt : MonoBehaviour
 
         float input = 0f;
 
-#if UNITY_EDITOR
-        if (Input.GetKey(KeyCode.A))
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
             input = -1f;
-
-        if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
             input = 1f;
 #else
         input = Input.acceleration.x;
