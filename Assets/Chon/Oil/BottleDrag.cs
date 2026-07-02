@@ -8,12 +8,19 @@ public class BottleDrag : MonoBehaviour
 
     private bool dragging;
     private bool moveToSnap;
+    private bool returnHome;
 
     private float fixedX;
     private Plane dragPlane;
 
+    private Vector3 startPosition;
+    private Quaternion startRotation;
+
     void Start()
     {
+        startPosition = transform.position;
+        startRotation = transform.rotation;
+
         fixedX = transform.position.x;
 
         dragPlane = new Plane(
@@ -24,6 +31,8 @@ public class BottleDrag : MonoBehaviour
 
     void OnMouseDown()
     {
+        if (returnHome) return;
+
         dragging = true;
         moveToSnap = false;
     }
@@ -80,10 +89,40 @@ public class BottleDrag : MonoBehaviour
 
                 moveToSnap = false;
 
-                Debug.Log("Snap สำเร็จ");
-
                 GetComponent<BottleTilt>().canTilt = true;
             }
         }
+
+        if (returnHome)
+        {
+            transform.position = Vector3.Lerp(
+                transform.position,
+                startPosition,
+                Time.deltaTime * 5f
+            );
+
+            transform.rotation = Quaternion.Lerp(
+                transform.rotation,
+                startRotation,
+                Time.deltaTime * 5f
+            );
+
+            if (Vector3.Distance(transform.position, startPosition) < 0.05f)
+            {
+                transform.position = startPosition;
+                transform.rotation = startRotation;
+
+                returnHome = false;
+
+                gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void ReturnBottle()
+    {
+        dragging = false;
+        moveToSnap = false;
+        returnHome = true;
     }
 }
