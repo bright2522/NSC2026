@@ -241,12 +241,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 343090302}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
-        m_MethodName: RestockMissing
-        m_Mode: 1
+        m_MethodName: BuyFromStore
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -805,14 +805,14 @@ RectTransform:
   m_GameObject: {fileID: 274602786}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.69953, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1232632264}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 363, y: -169}
+  m_AnchoredPosition: {x: 327.9, y: -169}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &274602788
@@ -870,8 +870,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1019,28 +1019,28 @@ MonoBehaviour:
   menus:
   - menuName: "\u0E44\u0E2A\u0E49\u0E01\u0E23\u0E2D\u0E01\u0E44\u0E02\u0E48\u0E0B\u0E2D\u0E2A\u0E21\u0E30\u0E40\u0E02\u0E37\u0E2D\u0E40\u0E17\u0E28"
     requiredIds:
-    - sausage
-    - egg
-    - onion
-    - oil
-    - tomato
-    - carrot
+    - 01
+    - 02
+    - 03
+    - 04
+    - 05
+    - 06
   stores:
   - storeName: "\u0E23\u0E49\u0E32\u0E19\u0E22\u0E32\u0E22\u0E1B\u0E32\u0E25\u0E21\u0E4C"
     distanceMeters: 50
     sellsIds:
-    - sausage
-    - oil
+    - 01
+    - 04
   - storeName: "\u0E23\u0E49\u0E32\u0E19\u0E23\u0E38\u0E48\u0E07\u0E40\u0E23\u0E37\u0E2D\u0E19"
     distanceMeters: 200
     sellsIds:
-    - egg
-    - onion
+    - 02
+    - 03
   - storeName: "\u0E23\u0E49\u0E32\u0E19\u0E28\u0E23\u0E35\u0E2A\u0E21\u0E38\u0E19"
     distanceMeters: 800
     sellsIds:
-    - carrot
-    - tomato
+    - 06
+    - 05
   missingText: {fileID: 274602789}
   storeTexts:
   - {fileID: 660804990}
@@ -1187,8 +1187,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 343090302}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
-        m_MethodName: RestockMissing
-        m_Mode: 1
+        m_MethodName: BuyFromStore
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -3881,12 +3881,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 343090302}
         m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
-        m_MethodName: RestockMissing
-        m_Mode: 1
+        m_MethodName: BuyFromStore
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -4268,13 +4268,53 @@ PrefabInstance:
       propertyPath: m_Name
       value: Image  carrot
       objectReference: {fileID: 0}
+    - target: {fileID: 1927989510967694082, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemId
+      value: 02
+      objectReference: {fileID: 0}
+    - target: {fileID: 1927989510967694082, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemName
+      value: egg
+      objectReference: {fileID: 0}
+    - target: {fileID: 2040531362907046769, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemId
+      value: 03
+      objectReference: {fileID: 0}
+    - target: {fileID: 2040531362907046769, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemName
+      value: onion
+      objectReference: {fileID: 0}
+    - target: {fileID: 2452736886016073186, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemId
+      value: 05
+      objectReference: {fileID: 0}
+    - target: {fileID: 2452736886016073186, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemName
+      value: tomato
+      objectReference: {fileID: 0}
     - target: {fileID: 2724663853691996789, guid: fa1912518d4be004594b784c1612b029, type: 3}
       propertyPath: m_Name
       value: Image egg1
       objectReference: {fileID: 0}
+    - target: {fileID: 5201693249727413260, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemId
+      value: 01
+      objectReference: {fileID: 0}
+    - target: {fileID: 5201693249727413260, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemName
+      value: sausage
+      objectReference: {fileID: 0}
     - target: {fileID: 5738982324337332244, guid: fa1912518d4be004594b784c1612b029, type: 3}
       propertyPath: m_Name
       value: Image oil2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6150011889492443249, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemId
+      value: 06
+      objectReference: {fileID: 0}
+    - target: {fileID: 6150011889492443249, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemName
+      value: carrot
       objectReference: {fileID: 0}
     - target: {fileID: 7093946515425627934, guid: fa1912518d4be004594b784c1612b029, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4343,6 +4383,14 @@ PrefabInstance:
     - target: {fileID: 7791789064107487013, guid: fa1912518d4be004594b784c1612b029, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 7868821169293702157, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemId
+      value: 04
+      objectReference: {fileID: 0}
+    - target: {fileID: 7868821169293702157, guid: fa1912518d4be004594b784c1612b029, type: 3}
+      propertyPath: itemName
+      value: oil
       objectReference: {fileID: 0}
     - target: {fileID: 8891667787473153519, guid: fa1912518d4be004594b784c1612b029, type: 3}
       propertyPath: m_Name

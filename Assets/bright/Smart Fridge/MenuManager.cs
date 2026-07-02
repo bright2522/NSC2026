@@ -15,6 +15,7 @@ public class StoreData
 {
     public string storeName;
     public float distanceMeters;
+    [Tooltip("id วัตถุดิบที่ร้านนี้มีขาย (เว้นว่าง = มีทุกอย่าง)")]
     public List<string> sellsIds = new List<string>();
 }
 
@@ -30,25 +31,43 @@ public class MenuManager : MonoBehaviour
     public List<StoreData> stores = new List<StoreData>();
 
     [Header("ป้ายข้อความผลลัพธ์")]
-    public TMP_Text missingText;          // ขึ้นว่าอะไรหมดบ้าง
-
-    [Tooltip("ลาก TMP Text ของแต่ละกล่องร้านมาใส่ — ร้านใกล้สุดลงช่องแรก ไล่ไปช่องถัดไป")]
-    public List<TMP_Text> storeTexts = new List<TMP_Text>(); // ป้ายร้าน หลายช่อง
+    public TMP_Text missingText;
+    public List<TMP_Text> storeTexts = new List<TMP_Text>();
 
     private MenuData currentMenu;
+    private int currentIndex = -1;
+
+    // ร้านเรียงตามระยะ (ตรงกับที่โชว์บนจอ) — ปุ่มร้านอ้างอิงลิสต์นี้
+    private List<StoreData> displayedStores = new List<StoreData>();
 
     public void OnMenuClicked(int menuIndex)
     {
         if (menuIndex < 0 || menuIndex >= menus.Count) return;
+
+        if (menuIndex == currentIndex)
+        {
+            ClearDisplay();
+            return;
+        }
+
+        currentIndex = menuIndex;
         currentMenu = menus[menuIndex];
         Refresh();
+    }
+
+    void ClearDisplay()
+    {
+        currentIndex = -1;
+        currentMenu = null;
+        if (missingText) missingText.text = "";
+        foreach (var t in storeTexts)
+            if (t != null) t.gameObject.SetActive(false);
     }
 
     void Refresh()
     {
         if (currentMenu == null) return;
 
-        // หาวัตถุดิบที่ขาด (หมด)
         var missing = new List<SelectableItem>();
         foreach (var id in currentMenu.requiredIds)
         {
@@ -66,24 +85,22 @@ public class MenuManager : MonoBehaviour
         ShowStores();
     }
 
-    // เขียนชื่อร้านลงแต่ละกล่อง เรียงใกล้ -> ไกล
     void ShowStores()
     {
-        var ordered = stores.OrderBy(s => s.distanceMeters).ToList();
+        displayedStores = stores.OrderBy(s => s.distanceMeters).ToList();
 
         for (int i = 0; i < storeTexts.Count; i++)
         {
             if (storeTexts[i] == null) continue;
 
-            if (i < ordered.Count)
+            if (i < displayedStores.Count)
             {
-                var s = ordered[i];
+                var s = displayedStores[i];
                 storeTexts[i].text = $"{s.storeName}  {FormatDistance(s.distanceMeters)}";
                 storeTexts[i].gameObject.SetActive(true);
             }
             else
             {
-                // ถ้ามีกล่องมากกว่าจำนวนร้าน ช่องเกินก็ซ่อนไว้
                 storeTexts[i].gameObject.SetActive(false);
             }
         }
@@ -96,6 +113,34 @@ public class MenuManager : MonoBehaviour
         return $"{meters:0} m";
     }
 
+    // *** ปุ่มร้าน: ซื้อของที่ขาดจากร้านช่องนี้ (0=บนสุด, 1=กลาง, 2=ล่าง) ***
+    public void BuyFromStore(int slotIndex)
+    {
+        if (currentMenu == null) return;
+        if (slotIndex < 0 || slotIndex >= displayedStores.Count) return;
+
+        StoreData store = displayedStores[slotIndex];
+
+        foreach (var id in currentMenu.requiredIds)
+        {
+            var item = selectionManager.GetItemById(id);
+            if (item == null || !item.isOutOfStock) continue;
+
+            // ซื้อได้เฉพาะของที่ร้านนี้มี
+            if (StoreHasItem(store, id))
+                item.Restock();
+        }
+
+        Refresh(); // อัปเดตข้อความ "ขาด" ใหม่หลังซื้อ
+    }
+
+    bool StoreHasItem(StoreData store, string id)
+    {
+        if (store.sellsIds == null || store.sellsIds.Count == 0) return true; // ร้านมีทุกอย่าง
+        return store.sellsIds.Contains(id);
+    }
+
+    // เผื่ออยากมีปุ่มเดียวเติมของที่ขาดทั้งหมด (ไม่สนร้าน)
     public void RestockMissing()
     {
         if (currentMenu == null) return;
