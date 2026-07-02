@@ -61,6 +61,9 @@ public class MultiSelectManager : MonoBehaviour
     public void SelectAll() { foreach (var item in items) item.SetSelected(true); }
     public void ClearAll()  { foreach (var item in items) item.SetSelected(false); }
 
+    // มีวัตถุดิบถูกเลือกอยู่อย่างน้อย 1 ไหม (ใช้โดยปุ่มไปต่อ)
+    public bool HasAnySelected => selected.Count > 0;
+
     public List<SelectableItem> GetSelected() => selected.ToList();
     public List<string> GetSelectedIds() => selected.Select(s => s.itemId).ToList();
 

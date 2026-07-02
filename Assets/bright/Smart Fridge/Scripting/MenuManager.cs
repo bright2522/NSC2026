@@ -40,6 +40,9 @@ public class MenuManager : MonoBehaviour
     // ร้านเรียงตามระยะ (ตรงกับที่โชว์บนจอ) — ปุ่มร้านอ้างอิงลิสต์นี้
     private List<StoreData> displayedStores = new List<StoreData>();
 
+    // มีเมนูถูกเลือกอยู่ไหม (ใช้โดยปุ่มไปต่อ)
+    public bool HasMenuSelected => currentMenu != null;
+
     public void OnMenuClicked(int menuIndex)
     {
         if (menuIndex < 0 || menuIndex >= menus.Count) return;

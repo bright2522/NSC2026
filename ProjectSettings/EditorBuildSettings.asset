@@ -14,5 +14,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Fan/Solo+Learn.unity
     guid: d1c85bd5effb4184f87a5ad6b7a03e0c
+  - enabled: 1
+    path: Assets/bright/Gameplay.unity
+    guid: 5b3ba51a929b83346811f2408b42a18b
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
