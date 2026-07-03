@@ -162,7 +162,7 @@ GameObject:
   - component: {fileID: 76394396}
   m_Layer: 0
   m_Name: BottleSnapPoint
-  m_TagString: Untagged
+  m_TagString: SnapZone
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -176,35 +176,33 @@ Transform:
   m_GameObject: {fileID: 76394394}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.29630008, y: 0.06539996, z: -0.2269}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.018038273, y: 1.05916, z: -0.0438205}
+  m_LocalScale: {x: 4.0697274, y: 4.0697274, z: 4.0697274}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 151096464}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &76394396
-MonoBehaviour:
+--- !u!65 &76394396
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 76394394}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7c8e0d1b59159d42a03092bb1c3b59b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canTilt: 1
-  oilParticle: {fileID: 1236351439}
-  tiltAngle: 70
-  tiltSpeed: 5
-  pourThreshold: 35
-  useKeyboardTiltSim: 1
---- !u!4 &151096464 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
-  m_PrefabInstance: {fileID: 1383074183}
-  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &420213196
 GameObject:
   m_ObjectHideFlags: 0
@@ -5244,10 +5242,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 76394395}
+    m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
 --- !u!1 &1483838267
@@ -5418,7 +5413,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.4260003
+      value: -0.73
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5464,10 +5459,10 @@ PrefabInstance:
       addedObject: {fileID: 1896783637}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1896783650}
+      addedObject: {fileID: 1896783657}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1896783649}
+      addedObject: {fileID: 1896783656}
   m_SourcePrefab: {fileID: 100100000, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
 --- !u!1 &1806577086
 GameObject:
@@ -5616,44 +5611,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.10153195, y: 0.36422643, z: 0.10153195}
   m_Center: {x: 0, y: 0.18210126, z: 0}
---- !u!114 &1896783649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1896783632}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7c8e0d1b59159d42a03092bb1c3b59b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canTilt: 1
-  oilParticle: {fileID: 1236351439}
-  tiltAngle: 70
-  tiltSpeed: 5
-  pourThreshold: 35
-  useKeyboardTiltSim: 1
---- !u!114 &1896783650
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1896783632}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f95ce03f17a4ef4ab783708f9ab2ed2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  snapPoint: {fileID: 76394395}
-  snapDistance: 1
-  snapSpeed: 10
 --- !u!4 &1896783653 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c05e831c1a7cd42409777f8defe5b330, type: 3}
   m_PrefabInstance: {fileID: 1518203092}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1896783656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896783632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f50c415c5cdbc64291c1057c6a24b03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tiltSpeed: 5
+  minTiltAngle: -60
+  maxTiltAngle: 0
+--- !u!54 &1896783657
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896783632}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -5661,5 +5665,6 @@ SceneRoots:
   - {fileID: 1483838270}
   - {fileID: 1806577088}
   - {fileID: 420213200}
+  - {fileID: 76394395}
   - {fileID: 1383074183}
   - {fileID: 1518203092}

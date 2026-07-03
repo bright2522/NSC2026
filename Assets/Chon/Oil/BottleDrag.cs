@@ -2,127 +2,89 @@ using UnityEngine;
 
 public class BottleDrag : MonoBehaviour
 {
-    public Transform snapPoint;
-    public float snapDistance = 1f;
+    [Header("References")]
+    public Transform bottleSnapPoint; // (ลากจุดล็อกที่กระทะมาใส่)
+    public BottleTilt bottleTiltScript; // (ลากสคริปต์ BottleTilt มาใส่)
+    
+    [Header("Settings")]
+    public float snapDistance = 1.0f; // ระยะห่างที่จะเริ่มดูดเข้าจุด
     public float snapSpeed = 10f;
 
-    private bool dragging;
-    private bool moveToSnap;
-    private bool returnHome;
-
-    private float fixedX;
-    private Plane dragPlane;
-
-    private Vector3 startPosition;
-    private Quaternion startRotation;
+    private bool isSnapped = false;
+    private Vector3 screenPoint;
+    private Vector3 offset;
+    private Camera mainCamera;
 
     void Start()
     {
-        startPosition = transform.position;
-        startRotation = transform.rotation;
-
-        fixedX = transform.position.x;
-
-        dragPlane = new Plane(
-            Vector3.right,
-            new Vector3(fixedX, 0, 0)
-        );
-    }
-
-    void OnMouseDown()
-    {
-        if (returnHome) return;
-
-        dragging = true;
-        moveToSnap = false;
-    }
-
-    void OnMouseUp()
-    {
-        dragging = false;
-
-        float d = Vector3.Distance(
-            transform.position,
-            snapPoint.position
-        );
-
-        if (d <= snapDistance)
+        mainCamera = Camera.main;
+        
+        // ถ้าลืมลากมาใส่ใน Inspector โค้ดจะพยายามหาเองให้อัตโนมัติ
+        if (bottleTiltScript == null)
         {
-            moveToSnap = true;
+            bottleTiltScript = GetComponent<BottleTilt>();
         }
     }
 
     void Update()
     {
-        if (dragging)
+        // ถ้ายกขวดขึ้นมาแล้วและเคลื่อนไปใกล้จุดกระทะ ให้ล็อกขวดเข้าจุด
+        if (bottleSnapPoint != null && !isSnapped)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            float distance;
-
-            if (dragPlane.Raycast(ray, out distance))
+            float distance = Vector3.Distance(transform.position, bottleSnapPoint.position);
+            
+            if (distance < snapDistance)
             {
-                Vector3 hitPoint = ray.GetPoint(distance);
-
-                transform.position = new Vector3(
-                    fixedX,
-                    hitPoint.y,
-                    hitPoint.z
-                );
-            }
-        }
-
-        if (moveToSnap)
-        {
-            transform.position = Vector3.Lerp(
-                transform.position,
-                snapPoint.position,
-                Time.deltaTime * snapSpeed
-            );
-
-            if (Vector3.Distance(
-                transform.position,
-                snapPoint.position
-            ) < 0.05f)
-            {
-                transform.position = snapPoint.position;
-
-                moveToSnap = false;
-
-                GetComponent<BottleTilt>().canTilt = true;
-            }
-        }
-
-        if (returnHome)
-        {
-            transform.position = Vector3.Lerp(
-                transform.position,
-                startPosition,
-                Time.deltaTime * 5f
-            );
-
-            transform.rotation = Quaternion.Lerp(
-                transform.rotation,
-                startRotation,
-                Time.deltaTime * 5f
-            );
-
-            if (Vector3.Distance(transform.position, startPosition) < 0.05f)
-            {
-                transform.position = startPosition;
-                transform.rotation = startRotation;
-
-                returnHome = false;
-
-                gameObject.SetActive(false);
+                SnapToPan();
             }
         }
     }
 
-    public void ReturnBottle()
+    // --- 🛠️ ส่วนโค้ดสำหรับคลิกลากด้วยเมาส์ / นิ้วบนมือถือ ---
+    
+    void OnMouseDown()
     {
-        dragging = false;
-        moveToSnap = false;
-        returnHome = true;
+        // ถ้าระบบล็อกไปแล้ว จะไม่ให้ลากขวดหนีไปไหนได้อีก (หรือตามกติกาเกมคุณ)
+        if (isSnapped) return;
+
+        screenPoint = mainCamera.WorldToScreenPoint(gameObject.transform.position);
+        offset = gameObject.transform.position - mainCamera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
+    }
+
+    void OnMouseDrag()
+    {
+        if (isSnapped) return;
+
+        Vector3 curScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z);
+        Vector3 curPosition = mainCamera.ScreenToWorldPoint(curScreenPoint) + offset;
+        
+        // อัปเดตตำแหน่งขวดตามตำแหน่งเมาส์/นิ้ว
+        transform.position = curPosition;
+    }
+
+    // --------------------------------------------------
+
+    void SnapToPan()
+    {
+        isSnapped = true;
+
+        // ดูดตำแหน่งขวดเข้าหาจุด Snap ให้เป๊ะๆ
+        transform.position = bottleSnapPoint.position;
+        
+        // สั่งเปิดระบบเอียงขวดในสคริปต์ BottleTilt
+        if (bottleTiltScript != null)
+        {
+            bottleTiltScript.canTilt = true; 
+        }
+    }
+
+    // หากต้องการให้ยกขวดออกจากกระทะได้อีกครั้ง ให้เรียกใช้ฟังก์ชันนี้
+    public void ResetBottle()
+    {
+        isSnapped = false;
+        if (bottleTiltScript != null)
+        {
+            bottleTiltScript.canTilt = false;
+        }
     }
 }

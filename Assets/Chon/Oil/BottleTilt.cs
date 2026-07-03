@@ -2,58 +2,49 @@ using UnityEngine;
 
 public class BottleTilt : MonoBehaviour
 {
-    public bool canTilt = false;
-
-    public ParticleSystem oilParticle;
-
-    public float tiltAngle = 70f;
+    [Header("Settings")]
     public float tiltSpeed = 5f;
+    public float maxTiltAngle = 90f;
 
-    // เอียงเกินกี่องศาถึงเริ่มเท
-    public float pourThreshold = 35f;
+    [Header("Control Flag")]
+    // เปิดตัวแปรนี้ให้ BottleDrag สามารถเข้ามาเปิด/ปิดระบบเอียงได้
+    public bool canTilt = false; 
+
+    private Quaternion targetRotation;
+
+    void Start()
+    {
+        targetRotation = transform.localRotation;
+    }
 
     void Update()
     {
-        if (!canTilt)
-            return;
-
-        float input = 0f;
-
-#if UNITY_EDITOR || UNITY_STANDALONE
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            input = -1f;
-        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            input = 1f;
-#else
-        input = Input.acceleration.x;
-#endif
-
-        Quaternion targetRotation = Quaternion.Euler(
-            0,
-            0,
-            -input * tiltAngle
-        );
-
-        transform.rotation = Quaternion.Lerp(
-            transform.rotation,
-            targetRotation,
-            Time.deltaTime * tiltSpeed
-        );
-
-        float currentAngle = Mathf.Abs(transform.eulerAngles.z);
-
-        if (currentAngle > 180)
-            currentAngle = 360 - currentAngle;
-
-        if (currentAngle > pourThreshold)
+        if (canTilt)
         {
-            if (!oilParticle.isPlaying)
-                oilParticle.Play();
+            HandleMobileTilt();
         }
         else
         {
-            if (oilParticle.isPlaying)
-                oilParticle.Stop();
+            // ถ้ายังไม่เข้าจุด ให้ขวดตั้งตรงปกติ
+            transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.identity, Time.deltaTime * tiltSpeed);
         }
+    }
+
+    void HandleMobileTilt()
+    {
+        // ดึงค่าการเอียงจากมือถือ
+        float tiltInput = Input.acceleration.x;
+
+        // ถ้าทดสอบบนคอมพิวเตอร์ (Editor) ให้ใช้ปุ่ม A, D หรือ ลูกศรซ้าย-ขวา แทน
+        if (Application.isEditor && tiltInput == 0)
+        {
+            tiltInput = Input.GetAxis("Horizontal");
+        }
+
+        // คำนวณองศาแกน Z (สามารถเปลี่ยนเป็นแกน X ได้ตามทิศทางโมเดลขวดของคุณ)
+        float targetZAngle = -tiltInput * maxTiltAngle;
+        targetRotation = Quaternion.Euler(0, 0, targetZAngle);
+
+        transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRotation, Time.deltaTime * tiltSpeed);
     }
 }
