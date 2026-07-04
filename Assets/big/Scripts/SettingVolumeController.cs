@@ -8,28 +8,42 @@ public class SettingVolumeController : MonoBehaviour
     public Slider volumeSlider;
     public TMP_Text volumePercentText;
 
+    private const string VolumeKey = "MasterVolume";
+
     private void Start()
     {
-        // ค่าเริ่มต้นเสียง = 0%
+        // ตั้งช่วงค่าเสียง
         volumeSlider.minValue = 0f;
         volumeSlider.maxValue = 1f;
-        volumeSlider.value = 0f;
+        volumeSlider.wholeNumbers = false;
 
-        UpdateVolume(volumeSlider.value);
+        // โหลดค่าเสียงที่เคยบันทึกไว้
+        // ถ้าไม่เคยมีค่า ให้เริ่มที่ 0
+        float savedVolume = PlayerPrefs.GetFloat(VolumeKey, 0f);
 
-        // เวลาเลื่อน Slider ให้เรียกฟังก์ชัน UpdateVolume
-        volumeSlider.onValueChanged.AddListener(UpdateVolume);
+        volumeSlider.value = savedVolume;
+        ApplyVolume(savedVolume);
+
+        // เชื่อม Slider กับฟังก์ชัน
+        volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
     }
 
-    private void UpdateVolume(float value)
+    private void OnVolumeChanged(float value)
+    {
+        ApplyVolume(value);
+
+        // บันทึกค่าเสียง
+        PlayerPrefs.SetFloat(VolumeKey, value);
+        PlayerPrefs.Save();
+    }
+
+    private void ApplyVolume(float value)
     {
         // ปรับเสียงทั้งเกม
         AudioListener.volume = value;
 
-        // แปลง 0-1 เป็น 0-100%
+        // แสดงเป็นเปอร์เซ็นต์
         int percent = Mathf.RoundToInt(value * 100f);
-
-        // แสดงตัวเลข
         volumePercentText.text = percent + "%";
     }
 }
