@@ -8,7 +8,8 @@ public class SausageCupPourController : MonoBehaviour
     private bool isSnapping = false; 
     private bool isReturningToStart = false; 
     
-    private Camera mainCamera;
+    // 🎥 เปลี่ยนตัวแปรหลักมาใช้ตัวที่กำหนดเองได้ ไม่พึ่งพาแค่ Camera.main ส่วนกลางอย่างเดียว
+    private Camera activeCamera;
     private Vector3 offset;
     private float zCoord;
     private Vector3 targetSnapPosition; 
@@ -16,6 +17,10 @@ public class SausageCupPourController : MonoBehaviour
     private Vector3 initialPosition;    
     private Quaternion initialRotation; 
     private Collider cupCollider;
+
+    [Header("ระบบล็อกกล้องเฉพาะตัว (ป้องกันเอ๋อเมื่อมีกล้องหลายตัว)")]
+    [Tooltip("ลากกล้องตัวที่ 3 (กล้องที่ใช้คุมการทำอาหารในซีนนี้) มาหย่อนใส่ช่องนี้ได้เลย")]
+    public Camera customCamera; 
 
     [Header("Settings")]
     public float tiltSpeed = 400.0f; 
@@ -36,7 +41,19 @@ public class SausageCupPourController : MonoBehaviour
     void Start()
     {
         CupTiltInput.EnableSensors();
-        mainCamera = Camera.main;
+
+        // 🛠️ ลอจิกเลือกกล้อง: ถ้าลากกล้องตัวที่ 3 มาใส่ใน Inspector ให้ใช้ตัวนั้นทันที 
+        // แต่ถ้าไม่ได้ลากใส่ (เป็นค่าว่าง) ให้มันถอยกลับไปใช้ Camera.main ดั้งเดิมเพื่อความเซฟตี้
+        if (customCamera != null)
+        {
+            activeCamera = customCamera;
+        }
+        else
+        {
+            activeCamera = Camera.main;
+            Debug.LogWarning($"[SausageCup] ไม่พบการใส่กล้องในช่อง Custom Camera จึงสลับไปใช้ Camera.main ส่วนกลาง");
+        }
+
         initialPosition = transform.position;
         initialRotation = transform.rotation;
         cupCollider = GetComponent<Collider>();
@@ -136,7 +153,8 @@ public class SausageCupPourController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            // 🎯 เปลี่ยนมาทำ Raycast ผ่านตัวแปร activeCamera (ซึ่งผูกกับกล้องตัวที่ 3 แล้ว)
+            Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit) && PanDragCoordinator.IsHitOnObject(hit, transform))
@@ -146,7 +164,7 @@ public class SausageCupPourController : MonoBehaviour
                     isDragging = true;
                     isAbovePan = false;
                     isSnapping = false;
-                    zCoord = mainCamera.WorldToScreenPoint(transform.position).z;
+                    zCoord = activeCamera.WorldToScreenPoint(transform.position).z;
                     offset = transform.position - GetMouseWorldPos();
                 }
             }
@@ -157,7 +175,8 @@ public class SausageCupPourController : MonoBehaviour
     {
         Vector3 mousePoint = Input.mousePosition;
         mousePoint.z = zCoord;
-        return mainCamera.ScreenPointToRay(mousePoint).GetPoint(zCoord);
+        // 🎯 เปลี่ยนมาแปลงพิกัดหน้าจอสู่พิกัดโลกด้วยกล้องที่เราเลือกโดยตรง
+        return activeCamera.ScreenPointToRay(mousePoint).GetPoint(zCoord);
     }
 
     void HandleTilt()
@@ -202,10 +221,8 @@ public class SausageCupPourController : MonoBehaviour
         {
             if (sausage != null)
             {
-                // 1. ตัดขาดความสัมพันธ์แม่ลูกออกจากถ้วยไปอยู่รากแกนโลก
                 sausage.transform.SetParent(null, true);
 
-                // 2. ปลดล็อก Rigidbody ฟิสิกส์ให้ทำงาน
                 Rigidbody rb = sausage.GetComponent<Rigidbody>();
                 if (rb == null) rb = sausage.GetComponentInChildren<Rigidbody>();
                 
@@ -220,11 +237,10 @@ public class SausageCupPourController : MonoBehaviour
 
     System.Collections.IEnumerator ReturnRoutine()
     {
-        // ⏳ 🔥 แก้ไขตรงนี้: หน่วงเวลาค้างไว้ 2 วินาทีเต็มให้ไส้กรอกหล่นเคลียร์จนเสร็จ
         yield return new WaitForSeconds(2.0f);
         
         isAbovePan = false;
-        isReturningToStart = true; // ค่อยสั่งถ้วยเปล่าวิ่งกลับไปที่เดิม
+        isReturningToStart = true; 
     }
 
     void SetCupColliderEnabled(bool enabled)

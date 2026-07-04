@@ -2377,6 +2377,7 @@ GameObject:
   - component: {fileID: 245132017}
   - component: {fileID: 245132016}
   - component: {fileID: 245132015}
+  - component: {fileID: 245132019}
   m_Layer: 0
   m_Name: Main Camera (3)
   m_TagString: MainCamera
@@ -2502,6 +2503,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 55.72, y: 0, z: 0}
+--- !u!114 &245132019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245132014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c49b4cc203aa6414fae5c798d1d0e7d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EventMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_MaxRayIntersections: 0
 --- !u!1 &245686182
 GameObject:
   m_ObjectHideFlags: 0
@@ -3415,6 +3432,7 @@ GameObject:
   - component: {fileID: 315394907}
   - component: {fileID: 315394909}
   - component: {fileID: 315394908}
+  - component: {fileID: 315394910}
   m_Layer: 0
   m_Name: Cracked Egg_02
   m_TagString: Untagged
@@ -3490,6 +3508,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 315394906}
   m_Mesh: {fileID: 4753006561227384950, guid: f93babe1c3f46ca48a490f8841a8ce2e, type: 3}
+--- !u!65 &315394910
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 315394906}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.05712763, y: 0.042309593, z: 0.057376795}
+  m_Center: {x: -0.00014188114, y: 0.0043981494, z: 0.0003019434}
 --- !u!1 &324603153
 GameObject:
   m_ObjectHideFlags: 0
@@ -4014,7 +4053,7 @@ GameObject:
   - component: {fileID: 390733634}
   m_Layer: 0
   m_Name: New_Shell_Left
-  m_TagString: Untagged
+  m_TagString: Finish
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5811,6 +5850,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d737674284576f14c80eff956d7fa7b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  customCamera: {fileID: 245132017}
   tiltSpeed: 400
   snapSpeed: 10
   pourAngleThreshold: 120
@@ -7413,6 +7453,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d737674284576f14c80eff956d7fa7b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  customCamera: {fileID: 245132017}
   tiltSpeed: 400
   snapSpeed: 10
   pourAngleThreshold: 120
@@ -13643,6 +13684,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3703564ec1839f04f800d9ad7062cc8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  customCamera: {fileID: 245132017}
   lockedRotation: {x: -45, y: 180, z: 0}
   fpsRotation: {x: 0, y: 180, z: 0}
   customBoundary: {fileID: 638132041}
@@ -14273,6 +14315,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d737674284576f14c80eff956d7fa7b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  customCamera: {fileID: 245132017}
   tiltSpeed: 400
   snapSpeed: 10
   pourAngleThreshold: 120
@@ -16170,7 +16213,7 @@ GameObject:
   - component: {fileID: 1711345653}
   m_Layer: 0
   m_Name: New_Shell_Right
-  m_TagString: Untagged
+  m_TagString: Finish
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -17094,6 +17137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17e0b4522f5c91843a9f518736d776af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  customCamera: {fileID: 245132017}
   panLockTarget: {fileID: 759235650}
   snapDistance: 3
   snapSpeed: 10
@@ -17329,6 +17373,7 @@ GameObject:
   - component: {fileID: 1961562429}
   - component: {fileID: 1961562431}
   - component: {fileID: 1961562430}
+  - component: {fileID: 1961562432}
   m_Layer: 0
   m_Name: Cracked Egg_01
   m_TagString: Untagged
@@ -17404,6 +17449,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1961562428}
   m_Mesh: {fileID: 6353874406760019279, guid: f93babe1c3f46ca48a490f8841a8ce2e, type: 3}
+--- !u!65 &1961562432
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1961562428}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.05583476, y: 0.049829915, z: 0.0573768}
+  m_Center: {x: 0.0005067283, y: -0.0059075137, z: 0.000038116752}
 --- !u!1 &1964424701
 GameObject:
   m_ObjectHideFlags: 0

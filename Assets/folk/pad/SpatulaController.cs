@@ -5,12 +5,18 @@ public class SpatulaController : MonoBehaviour
 {
     private bool isHolding = false; 
     private bool isReturningToStart = false; 
-    private Camera mainCamera;
+    
+    // 🎥 เปลี่ยนตัวแปรหลักมาใช้ตัวที่เลือกกำหนดได้เอง ป้องกันปัญหากล้องหลายตัวตีกัน
+    private Camera activeCamera;
 
     private Vector3 initialPosition;    
     private Quaternion initialRotation; 
     private Vector3 lastPosition; 
     private Collider spatulaCollider;
+
+    [Header("ระบบล็อกกล้องเฉพาะตัว (ป้องกันเอ๋อเมื่อมีกล้องหลายตัว)")]
+    [Tooltip("ลากกล้องตัวที่ 3 (กล้องที่ใช้คุมการทำอาหารในซีนนี้) มาหย่อนใส่ช่องนี้ได้เลย")]
+    public Camera customCamera;
 
     [Header("Spatula Rotation Setup")]
     public Vector3 lockedRotation = new Vector3(-45f, 180f, 0f); 
@@ -37,7 +43,18 @@ public class SpatulaController : MonoBehaviour
 
     void Start()
     {
-        mainCamera = Camera.main;
+        // 🛠️ ลอจิกเลือกกล้อง: ถ้ามีการลากกล้องตัวที่ 3 มาใส่ในช่องกิซโม ให้เลือกใช้ตัวนั้นทันที
+        // แต่ถ้าลืมลากใส่ (เป็นค่าว่าง) จะยอมถอยกลับไปใช้ Camera.main ตัวหลักเพื่อความปลอดภัยครับ
+        if (customCamera != null)
+        {
+            activeCamera = customCamera;
+        }
+        else
+        {
+            activeCamera = Camera.main;
+            Debug.LogWarning($"[Spatula] ไม่พบการใส่กล้องในช่อง Custom Camera จึงสลับไปใช้ Camera.main ส่วนกลาง");
+        }
+
         initialPosition = transform.position;
         initialRotation = transform.rotation;
         lastPosition = transform.position;
@@ -97,7 +114,8 @@ public class SpatulaController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            // 🎯 จุดที่ 1: เปลี่ยน Raycast ตอนเช็คหยิบตะหลิวให้ยิงผ่านหน้ากล้อง activeCamera (กล้องตัวที่ 3)
+            Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
             if (!isHolding && CanPickupSpatula() && !PanDragCoordinator.HasActiveInteraction && Physics.Raycast(ray, out hit))
@@ -127,7 +145,8 @@ public class SpatulaController : MonoBehaviour
                 float currentHeight = customBoundary.position.y;
                 Plane projectPlane = new Plane(Vector3.up, new Vector3(0, currentHeight, 0));
                 
-                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+                // 🎯 จุดที่ 2: เปลี่ยน Raycast ระบบคำนวณการลากผัดวนในกระทะให้ยิงผ่านกล้อง activeCamera 
+                Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
                 float enter = 0.0f;
 
                 if (projectPlane.Raycast(ray, out enter))
@@ -165,7 +184,8 @@ public class SpatulaController : MonoBehaviour
             }
             else
             {
-                Vector3 fpsPos = mainCamera.transform.TransformPoint(fpsOffset);
+                // 🎯 จุดที่ 3: เปลี่ยนระบบคำนวณค่าพิกัดลอยตามเมาส์ในโหมด FPS ให้แปลงตำแหน่งอิงจากกล้อง activeCamera
+                Vector3 fpsPos = activeCamera.transform.TransformPoint(fpsOffset);
                 transform.position = Vector3.Lerp(transform.position, fpsPos, Time.deltaTime * 10f);
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(fpsRotation), Time.deltaTime * 10f);
             }

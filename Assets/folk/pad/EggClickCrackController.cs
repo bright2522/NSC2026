@@ -6,10 +6,13 @@ public class EggClickCrackController : MonoBehaviour
     private bool isDragging = false;
     private bool isLockedInPlace = false; 
 
-    private Camera mainCamera;
+    private Camera activeCamera;
     private Vector3 offset;
     private float zCoord;
     private Vector3 initialPosition;
+
+    [Header("ระบบล็อกกล้องเฉพาะตัว (ป้องกันเอ๋อเมื่อมีกล้องหลายตัว)")]
+    public Camera customCamera;
 
     [Header("ระบบล็อกตำแหน่งเหนือกระทะ")]
     public Transform panLockTarget;
@@ -38,10 +41,10 @@ public class EggClickCrackController : MonoBehaviour
     [Header("ชื่อของ Object ไข่ขาวในโมเดล (พิมพ์ให้ตรงตัวพิมพ์เล็ก-ใหญ่)")]
     public string eggWhiteObjectName = "EggWhite"; 
 
-    [Header("รูปทรงไข่แดงตอนร่วงหล่น (กลมๆ หนาๆ เหมือนหยดน้ำ)")]
+    [Header("รูปทรงไข่แดงตอนร่วงหล่น")]
     public Vector3 eggFallingScale = new Vector3(0.6f, 1.2f, 0.6f); 
 
-    [Header("รูปทรงตอนแผ่แบนราบสำเร็จรูป (เมื่อถึงพื้นกระทะแล้ว)")]
+    [Header("รูปทรงตอนแผ่แบนราบสำเร็จรูป")]
     public Vector3 eggFlattenedScale = new Vector3(1f, 1f, 1f);
 
     [Header("ความเร็วในการแผ่ตัวแบนราบตอนถึงกระทะ")]
@@ -55,10 +58,11 @@ public class EggClickCrackController : MonoBehaviour
 
     void Start()
     {
-        mainCamera = Camera.main;
+        if (customCamera != null) activeCamera = customCamera;
+        else activeCamera = Camera.main;
+
         initialPosition = transform.position;
 
-        // 🎯 [แก้ไขบั๊ก] สั่งตามหาและซ่อนไข่ข้นให้ล่องหน (Alpha = 0) ตั้งแต่เฟรมแรกที่เปิดเกมทันที!
         GameObject scrambledEggModel = GameObject.Find(scrambledEggObjectName);
         if (scrambledEggModel == null) scrambledEggModel = GameObject.Find("ScrambledEgg");
 
@@ -67,10 +71,8 @@ public class EggClickCrackController : MonoBehaviour
             Renderer scrambledRenderer = scrambledEggModel.GetComponentInChildren<Renderer>();
             if (scrambledRenderer != null && scrambledRenderer.material != null)
             {
-                // เปิดตัว Object ไว้ปกติ แต่เซ็ตให้ Material โปร่งแสงล่องหน 100% รอโดนผัด
                 scrambledEggModel.SetActive(true);
                 SetMaterialAlpha(scrambledRenderer.material, 0f);
-                Debug.Log("🎯 EggClickCrack: ซ่อนไข่ข้นให้ล่องหนตั้งแต่เริ่มเกมสำเร็จ!");
             }
         }
     }
@@ -86,12 +88,20 @@ public class EggClickCrackController : MonoBehaviour
             
             if (Input.GetMouseButtonDown(0))
             {
-                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+                Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
                 
-                if (Physics.Raycast(ray, out hit) && PanDragCoordinator.IsHitOnObject(hit, transform))
+                if (Physics.Raycast(ray, out hit))
                 {
-                    CrackEgg();
+                    if (hit.transform.GetComponentInParent<ShellClickDestroy>() != null || hit.transform.CompareTag("Finish")) 
+                    {
+                        return; 
+                    }
+
+                    if (PanDragCoordinator.IsHitOnObject(hit, transform))
+                    {
+                        CrackEgg();
+                    }
                 }
             }
         }
@@ -135,7 +145,6 @@ public class EggClickCrackController : MonoBehaviour
                 {
                     isLockedInPlace = true;
                     PanDragCoordinator.Maintain(this);
-                    Debug.Log("🔒 ไข่เข้าล็อกพิกัดแล้ว! คลิกตอกได้เลย");
                 }
                 else
                 {
@@ -150,16 +159,21 @@ public class EggClickCrackController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit) && PanDragCoordinator.IsHitOnObject(hit, transform))
+            if (Physics.Raycast(ray, out hit))
             {
-                if (PanDragCoordinator.TryBegin(this))
+                if (hit.transform.GetComponentInParent<ShellClickDestroy>() != null) return;
+
+                if (PanDragCoordinator.IsHitOnObject(hit, transform))
                 {
-                    isDragging = true;
-                    zCoord = mainCamera.WorldToScreenPoint(transform.position).z;
-                    offset = transform.position - GetMouseWorldPos();
+                    if (PanDragCoordinator.TryBegin(this))
+                    {
+                        isDragging = true;
+                        zCoord = activeCamera.WorldToScreenPoint(transform.position).z;
+                        offset = transform.position - GetMouseWorldPos();
+                    }
                 }
             }
         }
@@ -169,12 +183,15 @@ public class EggClickCrackController : MonoBehaviour
     {
         Vector3 mousePoint = Input.mousePosition;
         mousePoint.z = zCoord;
-        return mainCamera.ScreenPointToRay(mousePoint).GetPoint(zCoord);
+        return activeCamera.ScreenPointToRay(mousePoint).GetPoint(zCoord);
     }
 
     void CrackEgg()
     {
-        Debug.Log("💥 ตอกไข่ดิบ ร่วงลงกึ่งกลาง และดีดเศษเปลือกไข่ออกข้าง");
+        Collider parentCollider = GetComponent<Collider>();
+        if (parentCollider != null) parentCollider.enabled = false;
+
+        if (fullEggVisual != null) fullEggVisual.SetActive(false);
 
         Vector3 leftSpawnPos = transform.position + (Vector3.left * shellSeparateDistance);
         Vector3 rightSpawnPos = transform.position + (Vector3.right * shellSeparateDistance);
@@ -194,11 +211,9 @@ public class EggClickCrackController : MonoBehaviour
             rightShell.transform.localScale = customShellRightScale;
         }
 
-        // แอดสคริปต์ผู้ช่วยให้เศษเปลือกไข่ (เวอร์ชันกล่องจิ๋ว)
-        if (leftShell != null) leftShell.AddComponent<ShellClickDestroy>().SetupPairs(leftShell, rightShell);
-        if (rightShell != null) rightShell.AddComponent<ShellClickDestroy>().SetupPairs(leftShell, rightShell);
+        if (leftShell != null) leftShell.AddComponent<ShellClickDestroy>().SetupPairs(leftShell, rightShell, activeCamera);
+        if (rightShell != null) rightShell.AddComponent<ShellClickDestroy>().SetupPairs(leftShell, rightShell, activeCamera);
 
-        // เสกไข่ดาวรวมชิ้น
         Vector3 spawnPos = (spawnPoint != null) ? spawnPoint.position : transform.position;
 
         if (friedEggPrefab != null)
@@ -211,28 +226,14 @@ public class EggClickCrackController : MonoBehaviour
             
             eggRb.isKinematic = false;
             eggRb.useGravity = true;
+            eggRb.constraints = RigidbodyConstraints.FreezeRotation; 
 
-            // เซฟตี้ปิดการชนกันระหว่างไข่ดาวร่วงกับเศษเปลือกไข่
-            Collider eggCollider = friedEgg.GetComponent<Collider>();
-            if (eggCollider != null)
-            {
-                if (leftShell != null) { Collider c = leftShell.GetComponent<Collider>(); if (c != null) Physics.IgnoreCollision(eggCollider, c); }
-                if (rightShell != null) { Collider c = rightShell.GetComponent<Collider>(); if (c != null) Physics.IgnoreCollision(eggCollider, c); }
-            }
-
-            // ส่งค่าเป้าหมายกึ่งกลางกระทะเข้าทำงานระบบแผ่และดูดพิกัด
+            // สั่งเปิดระบบเช็คระยะทางจริงแทนการชน
             friedEgg.AddComponent<EggFlattenEffect>().Setup(eggFlattenedScale, flattenSpeed, eggWhiteObjectName, panCenterTarget);
         }
 
-        if (StirFryManager.Instance != null)
-        {
-            StirFryManager.Instance.ResetProgress();
-        }
-
-        if (PanPrepManager.Instance != null)
-        {
-            PanPrepManager.Instance.MarkEggDone();
-        }
+        if (StirFryManager.Instance != null) StirFryManager.Instance.ResetProgress();
+        if (PanPrepManager.Instance != null) PanPrepManager.Instance.MarkEggDone();
 
         PanDragCoordinator.End(this);
         Destroy(gameObject);
@@ -253,38 +254,75 @@ public class EggClickCrackController : MonoBehaviour
 }
 
 // ==========================================
-// สคริปต์ผู้ช่วยชุดที่ 1: บีบคอลลิชันเปลือกไข่ให้จิ๋ว และคลิกลบซาก
+// สคริปต์ผู้ช่วยชุดที่ 1: เปลือกไข่ลอยค้าง
 // ==========================================
 public class ShellClickDestroy : MonoBehaviour
 {
     private GameObject partner1;
     private GameObject partner2;
+    private Camera activeCamera; 
 
-    public void SetupPairs(GameObject p1, GameObject p2)
+    public void SetupPairs(GameObject p1, GameObject p2, Camera gameCamera)
     {
         partner1 = p1;
         partner2 = p2;
+        activeCamera = gameCamera; 
 
         BoxCollider box = GetComponent<BoxCollider>();
         if (box == null) box = gameObject.AddComponent<BoxCollider>();
         
         if (box != null)
         {
-            // 🎯 สั่งบีบขนาดกล่องเขียวให้จิ๋วลงเหลือแค่จุดตรงกลางเศษเปลือกไข่พอดี ไม่กางขวางทางไข่ดาว
+            box.enabled = true;
             box.center = Vector3.zero;
-            box.size = new Vector3(0.3f, 0.3f, 0.3f); 
+            box.size = new Vector3(0.6f, 0.6f, 0.6f); 
+        }
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
         }
     }
 
-    void OnMouseDown()
+    void Start()
     {
-        if (partner1 != null) Destroy(partner1);
-        if (partner2 != null) Destroy(partner2);
+        if (activeCamera == null)
+        {
+            EggClickCrackController parentController = FindFirstObjectByType<EggClickCrackController>();
+            if (parentController != null && parentController.customCamera != null)
+            {
+                activeCamera = parentController.customCamera;
+            }
+            else
+            {
+                activeCamera = Camera.main;
+            }
+        }
+    }
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0) && activeCamera != null)
+        {
+            Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.transform == transform || hit.transform.IsChildOf(transform))
+                {
+                    if (partner1 != null) Destroy(partner1);
+                    if (partner2 != null) Destroy(partner2);
+                }
+            }
+        }
     }
 }
 
 // ==========================================
-// สคริปต์ผู้ช่วยชุดที่ 2: อนิเมชันไข่แผ่แบน + แม่เหล็กดูดเข้ากึ่งกลางกระทะ
+// 🛠️ [ยกเครื่องใหม่ทั้งหมด] สคริปต์ผู้ช่วยชุดที่ 2: ใช้ระบบ Check Distance ตัดปัญหาการชนบั๊ก
 // ==========================================
 public class EggFlattenEffect : MonoBehaviour
 {
@@ -294,6 +332,7 @@ public class EggFlattenEffect : MonoBehaviour
     private Transform eggWhiteTransform;
     private Transform centerTarget;
     private bool hasHitPan = false;
+    private Rigidbody rb;
 
     public void Setup(Vector3 finalScale, float lerpSpeed, string whiteObjName, Transform panCenter)
     {
@@ -306,35 +345,53 @@ public class EggFlattenEffect : MonoBehaviour
         if (child != null)
         {
             eggWhiteTransform = child;
-            eggWhiteTransform.gameObject.SetActive(false); 
+            eggWhiteTransform.gameObject.SetActive(true); 
         }
-        else
+    }
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            foreach (Transform t in transform)
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.constraints = RigidbodyConstraints.FreezeRotation; 
+        }
+
+        // 🎯 สั่งปิดทิ้งทุกฟิสิกส์คอลลิชันของตัวมันเอง ป้องกันปัญหาชนซ้อนเฟรมแรกกับเปลือกไข่เด็ดขาด!
+        Collider c = GetComponent<Collider>();
+        if (c != null) c.enabled = false;
+        foreach (Collider childCollider in GetComponentsInChildren<Collider>())
+        {
+            childCollider.enabled = false;
+        }
+    }
+
+    void Update()
+    {
+        // ถ้ายังลงไม่ถึงกระทะ ให้เช็คระยะห่างแกนดิ่ง (Y) ตลอดเวลา
+        if (!hasHitPan && centerTarget != null)
+        {
+            // ถ้าความสูง (Y) ร่วงลงมาใกล้เคียง หรือ ต่ำกว่าพิกัดของก้นกระทะแล้ว ให้ทำงานทันที!
+            if (transform.position.y <= centerTarget.position.y + 0.2f)
             {
-                if (t.name.Contains("White") || t.name.Contains("white") || t.name == whiteName)
-                {
-                    eggWhiteTransform = t;
-                    eggWhiteTransform.gameObject.SetActive(false);
-                    break;
-                }
+                TriggerFlatten();
             }
         }
     }
 
-    void OnCollisionEnter(Collision collision)
+    void TriggerFlatten()
     {
-        if (!hasHitPan)
+        hasHitPan = true;
+
+        if (rb != null)
         {
-            hasHitPan = true;
-
-            // ปิดแรงฟิสิกส์เด้งดึ๋งเมื่อแตะกระทะ เพื่อให้พร้อมโดนดูดและแผ่ตัวแบบเนียนๆ
-            Rigidbody rb = GetComponent<Rigidbody>();
-            if (rb != null) rb.isKinematic = true; 
-
-            if (eggWhiteTransform != null) eggWhiteTransform.gameObject.SetActive(true);
-            StartCoroutine(FlattenAndSnapRoutine());
+            rb.isKinematic = true; 
+            rb.useGravity = false;
         }
+
+        StartCoroutine(FlattenAndSnapRoutine());
     }
 
     IEnumerator FlattenAndSnapRoutine()
@@ -342,24 +399,29 @@ public class EggFlattenEffect : MonoBehaviour
         float t = 0;
         Vector3 startScale = transform.localScale;
         Vector3 startPosition = transform.position;
+        Quaternion startRotation = transform.rotation;
+
         Vector3 targetPosition = (centerTarget != null) ? centerTarget.position : startPosition;
-        
-        // ล็อกความสูงแกน Y ตอนสัมผัสกระทะไว้ ไข่จะได้ไม่มุดดิน
-        targetPosition.y = startPosition.y; 
+        Quaternion targetRotation = (centerTarget != null) ? centerTarget.rotation : Quaternion.identity;
 
         while (t < 1f)
         {
             t += Time.deltaTime * speed;
             
-            // ค่อยๆ แผ่ตัวแบนราบก้นกระทะ
             transform.localScale = Vector3.Lerp(startScale, targetFlattenScale, t);
+            transform.rotation = Quaternion.Lerp(startRotation, targetRotation, t);
             
-            // ค่อยๆ สไลด์สลิ่งดูดไข่เข้าสู่จุดกึ่งกลางเป้าหมาย
             if (centerTarget != null)
             {
                 transform.position = Vector3.Lerp(startPosition, targetPosition, t);
             }
             yield return null;
+        }
+
+        if (centerTarget != null)
+        {
+            transform.position = targetPosition;
+            transform.rotation = targetRotation; 
         }
     }
 }
