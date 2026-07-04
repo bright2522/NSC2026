@@ -35,6 +35,7 @@ public class SausageCupPourController : MonoBehaviour
 
     void Start()
     {
+        CupTiltInput.EnableSensors();
         mainCamera = Camera.main;
         initialPosition = transform.position;
         initialRotation = transform.rotation;
@@ -57,6 +58,7 @@ public class SausageCupPourController : MonoBehaviour
                 isSnapping = false;
                 isAbovePan = true;
                 PanDragCoordinator.End(this);
+                CupTiltInput.CalibrateNeutral();
                 currentRotationZ = 0f;
                 transform.rotation = Quaternion.identity;
             }
@@ -160,16 +162,7 @@ public class SausageCupPourController : MonoBehaviour
 
     void HandleTilt()
     {
-        float inputX = 0f;
-
-#if UNITY_EDITOR || UNITY_STANDALONE
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            inputX = -1f;
-        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            inputX = 1f;
-#else
-        inputX = Input.acceleration.x;
-#endif
+        float inputX = CupTiltInput.ReadPourAxis();
 
         if (inputX < 0)
         {

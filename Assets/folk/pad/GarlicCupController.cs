@@ -38,6 +38,7 @@ public class GarlicCupController : MonoBehaviour
 
     void Start()
     {
+        CupTiltInput.EnableSensors();
         mainCamera = Camera.main;
         initialPosition = transform.position;
         initialRotation = transform.rotation;
@@ -58,6 +59,7 @@ public class GarlicCupController : MonoBehaviour
                 isSnapping = false;
                 isAbovePan = true;
                 PanDragCoordinator.End(this);
+                CupTiltInput.CalibrateNeutral();
                 currentRotationZ = 0f;
                 transform.rotation = Quaternion.identity;
             }
@@ -163,14 +165,7 @@ public class GarlicCupController : MonoBehaviour
 
     void HandleTilt()
     {
-        float inputX = 0f;
-        Vector3 acceleration = Input.acceleration;
-        if (acceleration != Vector3.zero) inputX = acceleration.x;
-
-        if (inputX == 0)
-        {
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) inputX = -1f;
-        }
+        float inputX = CupTiltInput.ReadPourAxis();
 
         if (inputX < 0)
         {
