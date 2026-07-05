@@ -16,15 +16,20 @@ public class PanShakeController : MonoBehaviour
     {
         if (cooldownTimer > 0) cooldownTimer -= Time.deltaTime;
 
-        // ดักจับแรงเหวี่ยงจากมือถือ
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetKeyDown(KeyCode.Space) && cooldownTimer <= 0)
+            TriggerShake();
+#endif
+
         if (Input.acceleration.sqrMagnitude >= shakeThreshold && cooldownTimer <= 0)
-        {
-            if (animator != null)
-            {
-                // สั่งให้ Trigger ที่เราตั้งชื่อไว้ว่า "Shake" ทำงานทำให้อนิเมชันในภาพเล่นทันที!
-                animator.SetTrigger("Shake"); 
-                cooldownTimer = 0.6f; // เล่นเสร็จแล้วรอ 0.6 วินาทีถึงจะเขย่ารอบต่อไปได้
-            }
-        }
+            TriggerShake();
+    }
+
+    public void TriggerShake()
+    {
+        if (animator == null) return;
+
+        animator.SetTrigger("Shake");
+        cooldownTimer = 0.6f;
     }
 }

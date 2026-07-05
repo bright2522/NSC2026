@@ -22126,7 +22126,7 @@ MonoBehaviour:
   lockedRotation: {x: -45, y: 180, z: 0}
   fpsRotation: {x: 0, y: 180, z: 0}
   customBoundary: {fileID: 638132041}
-  fpsOffset: {x: 1, y: -1, z: -0.2}
+  fpsOffset: {x: 0.68, y: -2.04, z: 2.14}
   returnSpeed: 8
   putDownButtonObject: {fileID: 2145851208}
   stirFrySliderObject: {fileID: 0}
