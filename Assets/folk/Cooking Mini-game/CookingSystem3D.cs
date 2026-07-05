@@ -1,6 +1,7 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
-using TMPro; // สำคัญมาก! ต้องใส่บรรทัดนี้เพื่อควบคุมตัวเลข TextMeshPro
+using TMPro;
 
 public class CookingSystem3D : MonoBehaviour
 {
@@ -52,6 +53,13 @@ public class CookingSystem3D : MonoBehaviour
     public bool isCooked = false;
     public bool isTimeOut = false;
 
+    [Header("Events")]
+    public UnityEvent whenStart = new UnityEvent();
+    public UnityEvent whenEnd = new UnityEvent();
+
+    private bool isPlaying;
+    private bool hasInvokedEnd;
+
     // ตัวแปรภายในสำหรับเก็บค่าโซนที่คำนวณได้จากตำแหน่ง UI จริง
     private float idealMin;
     private float idealMax;
@@ -63,15 +71,49 @@ public class CookingSystem3D : MonoBehaviour
 
     void Start()
     {
-        if (foodRenderer != null) 
-            foodRenderer.material.color = normalColor;
+        CalculateZonesFromUI();
+    }
 
+    public void StartFunction()
+    {
+        hasInvokedEnd = false;
+        isPlaying = true;
+        isBurnt = false;
+        isCooked = false;
+        isTimeOut = false;
+        cookingProgress = 0f;
+        burnTimer = maxBurnTime;
+        currentHeat = 0f;
+        targetHeat = 0f;
         currentTimer = maxCookingTime;
 
-        // --- เรียกฟังก์ชันคำนวณโซนจากตำแหน่ง UI ที่คุณจัดไว้ ---
-        CalculateZonesFromUI();
-        displayedCookingFill = cookingProgress / maxCookingProgress;
-        if (cookingFillImage != null) cookingFillImage.fillAmount = displayedCookingFill;
+        CancelTween(ref cookingFillTweenId);
+        CancelTween(ref heatArrowTweenId);
+        CancelTween(ref foodColorTweenId);
+
+        if (foodRenderer != null)
+            foodRenderer.material.color = normalColor;
+
+        displayedCookingFill = 0f;
+        if (cookingFillImage != null) cookingFillImage.fillAmount = 0f;
+        UpdateTimerTextDisplay();
+        UpdateCookingValueDisplay(0f);
+
+        whenStart?.Invoke();
+    }
+
+    public void EndFunction()
+    {
+        if (hasInvokedEnd) return;
+
+        hasInvokedEnd = true;
+        isPlaying = false;
+
+        CancelTween(ref cookingFillTweenId);
+        CancelTween(ref heatArrowTweenId);
+        CancelTween(ref foodColorTweenId);
+
+        whenEnd?.Invoke();
     }
 
     void OnDestroy()
@@ -83,7 +125,7 @@ public class CookingSystem3D : MonoBehaviour
 
     void Update()
     {
-        if (isCooked || isBurnt || isTimeOut) return;
+        if (!isPlaying || isCooked || isBurnt || isTimeOut) return;
 
         // --- ระบบจับเวลาและควบคุมลูกศร (เดิม) ---
         currentTimer -= Time.deltaTime;
@@ -257,7 +299,18 @@ public class CookingSystem3D : MonoBehaviour
         CancelTween(ref foodColorTweenId);
         if (foodRenderer != null) foodRenderer.material.color = burntColor;
         Debug.Log("<color=red><b>อาหารไหม้เกรียม! Game Over</b></color>");
+        EndFunction();
     }
-    void TriggerCooked() { isCooked = true; Debug.Log("<color=green><b>ทำอาหารเสร็จสมบูรณ์! Win!</b></color>"); }
-    void TriggerTimeOut() { isTimeOut = true; Debug.Log("<color=yellow><b>หมดเวลาทำอาหาร! Game Over</b></color>"); }
+    void TriggerCooked()
+    {
+        isCooked = true;
+        Debug.Log("<color=green><b>ทำอาหารเสร็จสมบูรณ์! Win!</b></color>");
+        EndFunction();
+    }
+    void TriggerTimeOut()
+    {
+        isTimeOut = true;
+        Debug.Log("<color=yellow><b>หมดเวลาทำอาหาร! Game Over</b></color>");
+        EndFunction();
+    }
 }

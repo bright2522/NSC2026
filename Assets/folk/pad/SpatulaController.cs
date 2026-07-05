@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI; 
 
 public class SpatulaController : MonoBehaviour
 {
     private bool isHolding = false; 
     private bool isReturningToStart = false; 
+    private bool hasInvokedPrepDoneEvent = false;
     
     // 🎥 เปลี่ยนตัวแปรหลักมาใช้ตัวที่เลือกกำหนดได้เอง ป้องกันปัญหากล้องหลายตัวตีกัน
     private Camera activeCamera;
@@ -40,6 +42,10 @@ public class SpatulaController : MonoBehaviour
     [Header("ระบบคะแนนการผัด (Stir Fry Progress)")]
     public StirFryManager stirFryManager; 
     public float progressMultiplier = 0.5f;
+
+    [Header("Events")]
+    [Tooltip("เรียกเมื่อใส่วัตถุดิบครบแล้ว (ไข่ + ไส้กรอก) — ลากฟังก์ชันอื่นมาเชื่อมใน Inspector ได้")]
+    public UnityEvent onAllPrepDone = new UnityEvent();
 
     void Start()
     {
@@ -80,6 +86,7 @@ public class SpatulaController : MonoBehaviour
 
     void Update()
     {
+        TryInvokePrepDoneEvent();
         UpdateSpatulaInteractable();
         HandleFPSControl();
 
@@ -100,6 +107,14 @@ public class SpatulaController : MonoBehaviour
     bool CanPickupSpatula()
     {
         return PanPrepManager.Instance.IsAllPrepDone;
+    }
+
+    void TryInvokePrepDoneEvent()
+    {
+        if (hasInvokedPrepDoneEvent || !CanPickupSpatula()) return;
+
+        hasInvokedPrepDoneEvent = true;
+        onAllPrepDone.Invoke();
     }
 
     void UpdateSpatulaInteractable()

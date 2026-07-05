@@ -276,7 +276,7 @@ public class MinigameFlowManager : MonoBehaviour
                 else if (folkCookingSystem != null)
                 {
                     folkCookingSystem.enabled = true;
-                    // folk CookingSystem3D ไม่มี event → poll
+                    folkCookingSystem.StartFunction();
                     pollRoutine = StartCoroutine(PollFolkCooking());
                 }
                 break;
@@ -315,7 +315,11 @@ public class MinigameFlowManager : MonoBehaviour
         panFlickMinigame?.Stop();
         platingMinigame?.Stop();
         presentationState?.Stop();
-        if (folkCookingSystem != null) folkCookingSystem.enabled = false;
+        if (folkCookingSystem != null)
+        {
+            folkCookingSystem.EndFunction();
+            folkCookingSystem.enabled = false;
+        }
         if (disturbanceManager != null) disturbanceManager.enabled = false;
 
         EnterPepState(PepGameState.None, force: true);
