@@ -44,6 +44,10 @@ public class MinigameStepConfig
     [Tooltip("auto advance เมื่อ script ภายในยิง completion event")]
     public bool autoAdvanceOnComplete = true;
     public float fallbackScore = 70f;
+    [Tooltip("เรียกเมื่อ step นี้เริ่มแสดง (หลัง transition fade out)")]
+    public UnityEvent onStart = new UnityEvent();
+    [Tooltip("เรียกเมื่อออกจาก step นี้ (ก่อน transition fade in)")]
+    public UnityEvent onEnd = new UnityEvent();
 }
 
 public class MinigameFlowManager : MonoBehaviour
@@ -92,6 +96,13 @@ public class MinigameFlowManager : MonoBehaviour
     [Tooltip("กล้อง fallback ใช้เมื่อ step ไม่มีกล้องของตัวเอง")]
     [SerializeField] private Camera defaultCamera;
 
+    // ─── Step Transition ──────────────────────────────────────────────────────
+    [Header("Step Transition")]
+    [Tooltip("CanvasGroup สำหรับ fade ระหว่าง step — เปิด → เพิ่ม alpha → ลด alpha → ปิด")]
+    [SerializeField] private CanvasGroup stepTransitionGroup;
+    [SerializeField] private float transitionFadeInDuration = 0.35f;
+    [SerializeField] private float transitionFadeOutDuration = 0.35f;
+
     // ─── Events (ต่อใน Inspector) ────────────────────────────────────────────
     [Header("Events")]
     public UnityEvent<MinigameFlowStep> onStepEntered;
@@ -110,9 +121,11 @@ public class MinigameFlowManager : MonoBehaviour
 
     // ─── Private ──────────────────────────────────────────────────────────────
     private bool stepDone;
+    private bool isTransitioning;
     private float pendingScore = -1f;
     private RecipeSO activeRecipe;
     private Coroutine pollRoutine;
+    private Coroutine transitionRoutine;
 
     // ═════════════════════════════════════════════════════════════════════════
     #region Unity Lifecycle
@@ -122,11 +135,16 @@ public class MinigameFlowManager : MonoBehaviour
         BuildDefaultStepsIfEmpty();
         HideAllStepRoots();
         DisableAllStepCameras();
+        PrepareTransitionOverlay();
         if (defaultCamera != null) defaultCamera.gameObject.SetActive(true);
         if (autoStartOnLoad) StartFlow();
     }
 
-    private void OnDestroy() => UnsubscribeAll();
+    private void OnDestroy()
+    {
+        StopTransitionRoutine();
+        UnsubscribeAll();
+    }
 
     #endregion
 
@@ -146,6 +164,7 @@ public class MinigameFlowManager : MonoBehaviour
 
     public void RestartFlow()
     {
+        StopTransitionRoutine();
         StopCurrentStep();
         HideAllStepRoots();
         StartFlow();
@@ -155,6 +174,7 @@ public class MinigameFlowManager : MonoBehaviour
     public void GoToNextStep()
     {
         if (!IsRunning) IsRunning = true;
+        if (isTransitioning) return;
 
         // บันทึกคะแนน step ปัจจุบันก่อน (ถ้ายังไม่ได้บันทึก)
         if (CurrentStepIndex >= 0 && !stepDone)
@@ -166,7 +186,9 @@ public class MinigameFlowManager : MonoBehaviour
 
         int next = CurrentStepIndex + 1;
         if (next >= steps.Count) { FinishFlow(); return; }
-        EnterStep(next);
+
+        StopTransitionRoutine();
+        transitionRoutine = StartCoroutine(TransitionToStep(next));
     }
 
     /// <summary>เรียกจาก folk script ที่ไม่มี event เมื่อ step นั้นเสร็จ</summary>
@@ -301,6 +323,8 @@ public class MinigameFlowManager : MonoBehaviour
 
     private void FinishFlow()
     {
+        GetCurrentConfig()?.onEnd?.Invoke();
+        StopTransitionRoutine();
         StopCurrentStep();
         HideAllStepRoots();
         SwitchCamera(null);
@@ -313,6 +337,73 @@ public class MinigameFlowManager : MonoBehaviour
         CurrentStep = MinigameFlowStep.FinalScore;
         Debug.Log($"[Flow] เสร็จสิ้น — คะแนนเฉลี่ย {final:0.##}");
         onFlowCompleted?.Invoke(final);
+    }
+
+    private IEnumerator TransitionToStep(int nextIndex)
+    {
+        isTransitioning = true;
+        bool hasPreviousStep = CurrentStepIndex >= 0;
+
+        if (hasPreviousStep)
+            GetCurrentConfig()?.onEnd?.Invoke();
+
+        if (hasPreviousStep && stepTransitionGroup != null)
+        {
+            stepTransitionGroup.gameObject.SetActive(true);
+            stepTransitionGroup.alpha = 0f;
+            yield return FadeCanvasGroup(stepTransitionGroup, 0f, 1f, transitionFadeInDuration);
+        }
+
+        EnterStep(nextIndex);
+
+        if (hasPreviousStep && stepTransitionGroup != null)
+        {
+            yield return FadeCanvasGroup(stepTransitionGroup, 1f, 0f, transitionFadeOutDuration);
+            stepTransitionGroup.gameObject.SetActive(false);
+        }
+
+        GetCurrentConfig()?.onStart?.Invoke();
+
+        isTransitioning = false;
+        transitionRoutine = null;
+    }
+
+    private static IEnumerator FadeCanvasGroup(CanvasGroup group, float from, float to, float duration)
+    {
+        if (group == null) yield break;
+
+        if (duration <= 0f)
+        {
+            group.alpha = to;
+            yield break;
+        }
+
+        group.alpha = from;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            group.alpha = Mathf.Lerp(from, to, elapsed / duration);
+            yield return null;
+        }
+
+        group.alpha = to;
+    }
+
+    private void PrepareTransitionOverlay()
+    {
+        if (stepTransitionGroup == null) return;
+        stepTransitionGroup.alpha = 0f;
+        stepTransitionGroup.gameObject.SetActive(false);
+    }
+
+    private void StopTransitionRoutine()
+    {
+        if (transitionRoutine == null) return;
+        StopCoroutine(transitionRoutine);
+        transitionRoutine = null;
+        isTransitioning = false;
+        PrepareTransitionOverlay();
     }
 
     #endregion

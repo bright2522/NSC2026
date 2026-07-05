@@ -22,8 +22,11 @@ public class SliceableFood : MonoBehaviour
     public float bounceUpForce = 0.5f;
     [Tooltip("แรงหมุนติ้วๆ ตอนกระเด็นให้ล้มคว่ำสมจริง")]
     public float torqueForce = 1.0f;
+    [Tooltip("รอหั่นซ้ำได้หลังหั่นล่าสุด (วินาที) — กันชิ้นดีด/หั่นซ้ำทันที")]
+    public float knifeSliceCooldown = 0.4f;
 
     private bool isSlicing;
+    private float knifeSliceReadyTime;
 
     private void Awake()
     {
@@ -70,7 +73,7 @@ public class SliceableFood : MonoBehaviour
 
     internal void OnKnifeHit(Collider knifeCollider)
     {
-        if (isSlicing || !knifeCollider.CompareTag("Knife"))
+        if (isSlicing || Time.time < knifeSliceReadyTime || !knifeCollider.CompareTag("Knife"))
             return;
 
         if (!IsKnifeChopping(knifeCollider))
@@ -146,10 +149,8 @@ public class SliceableFood : MonoBehaviour
         FinalizeGroup(upperGroup, isLeftPiece: false);
         FinalizeGroup(lowerGroup, isLeftPiece: true);
 
-        // กันชิ้นบน-ล่างดันกันเอง และกันใบมีดชนชิ้นจนกระเด็น
+        // กันชิ้นบน-ล่างดันกันเอง
         IgnoreCollisions(upperGroup, lowerGroup);
-        IgnoreCollisionsWith(upperGroup, knife);
-        IgnoreCollisionsWith(lowerGroup, knife);
 
         foreach (GameObject source in sourcesToDestroy)
         {
@@ -316,6 +317,8 @@ public class SliceableFood : MonoBehaviour
         sliceScript.pushForce = pushForce;
         sliceScript.bounceUpForce = bounceUpForce;
         sliceScript.torqueForce = torqueForce;
+        sliceScript.knifeSliceCooldown = knifeSliceCooldown;
+        sliceScript.knifeSliceReadyTime = Time.time + knifeSliceCooldown;
         sliceScript.isSlicing = false;
         sliceScript.SetupColliderRelays();
     }
@@ -326,20 +329,15 @@ public class SliceableFood : MonoBehaviour
         if (a == null || b == null) return;
         var colA = a.GetComponentsInChildren<Collider>();
         var colB = b.GetComponentsInChildren<Collider>();
-        foreach (var ca in colA)
-            foreach (var cb in colB)
-                if (ca && cb) Physics.IgnoreCollision(ca, cb, true);
-    }
-
-    // กันชิ้นชนกับใบมีด
-    private static void IgnoreCollisionsWith(GameObject piece, GameObject other)
-    {
-        if (piece == null || other == null) return;
-        var pieceCols = piece.GetComponentsInChildren<Collider>();
-        var otherCols = other.GetComponentsInChildren<Collider>();
-        foreach (var pc in pieceCols)
-            foreach (var oc in otherCols)
-                if (pc && oc) Physics.IgnoreCollision(pc, oc, true);
+        foreach (Collider ca in colA)
+        {
+            if (ca == null) continue;
+            foreach (Collider cb in colB)
+            {
+                if (cb != null)
+                    Physics.IgnoreCollision(ca, cb, true);
+            }
+        }
     }
 
     private static void EnsureCollider(GameObject piece)

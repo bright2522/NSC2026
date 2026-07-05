@@ -17,5 +17,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/bright/Gameplay.unity
     guid: 5b3ba51a929b83346811f2408b42a18b
+  - enabled: 1
+    path: Assets/Scenes/Scoring.unity
+    guid: a9450b73c3f1c3a4d858fbaf03fd55d0
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

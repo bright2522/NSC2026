@@ -18,6 +18,10 @@ namespace Pep.Minigames.Plating
         [SerializeField] private float indicatorScale = 0.35f;
         [SerializeField] private float indicatorHeightAbovePlate = 0.02f;
 
+        [Header("Finished Plate")]
+        [Tooltip("Optional empty plate/dish visual to include in the copy. Leave empty to copy just the placed ingredients.")]
+        [SerializeField] private Transform plateBaseVisual;
+
         public event Action<DraggablePlateItem> OnItemPlaced;
         public event Action<DraggablePlateItem> OnItemRemoved;
         public event Action OnPlateChanged;
@@ -219,6 +223,78 @@ namespace Pep.Minigames.Plating
             placedItems.Clear();
             occupiedSnapPoints.Clear();
             OnPlateChanged?.Invoke();
+        }
+
+        public GameObject CopyFinishedPlateTo(Vector3 position, Quaternion rotation)
+        {
+            var copyRoot = new GameObject("FinishedPlateCopy");
+            copyRoot.transform.SetPositionAndRotation(position, rotation);
+            copyRoot.transform.localScale = Vector3.one;
+
+            if (plateBaseVisual != null)
+                CloneUnderRoot(plateBaseVisual, copyRoot.transform);
+
+            foreach (var item in placedItems)
+            {
+                if (item == null) continue;
+                CloneUnderRoot(item.transform, copyRoot.transform);
+            }
+
+            return copyRoot;
+        }
+
+        /// <summary>
+        /// Clones <paramref name="source"/> (with all of its children) under
+        /// <paramref name="newParent"/>, preserving the source's original world
+        /// scale and rotation relative to this drop zone's own transform.
+        /// </summary>
+        private void CloneUnderRoot(Transform source, Transform newParent)
+        {
+            Vector3 relativePos = source.position - transform.position;
+            Quaternion relativeRot = Quaternion.Inverse(transform.rotation) * source.rotation;
+
+            GameObject clone = Instantiate(source.gameObject, newParent);
+            clone.transform.localPosition = relativePos;
+            clone.transform.localRotation = relativeRot;
+            clone.transform.localScale = source.lossyScale;
+
+            StripInteractiveComponents(clone);
+        }
+
+        public GameObject CopyFinishedPlateTo(Vector3 position)
+        {
+            return CopyFinishedPlateTo(position, transform.rotation);
+        }
+
+        public GameObject CopyFinishedPlateTo(Transform target)
+        {
+            if (target == null) return null;
+            return CopyFinishedPlateTo(target.position, target.rotation);
+        }
+
+        /// <summary>
+        /// Void wrapper for UnityEvent hookups (e.g. On End()) — UnityEvent only lists
+        /// methods that return void, so CopyFinishedPlateTo itself won't appear there.
+        /// </summary>
+        public void SpawnFinishedPlateAt(Transform target)
+        {
+            CopyFinishedPlateTo(target);
+        }
+
+        private static void StripInteractiveComponents(GameObject copy)
+        {
+            var draggable = copy.GetComponentInChildren<DraggablePlateItem>();
+            if (draggable != null) Destroy(draggable);
+
+            foreach (var rb in copy.GetComponentsInChildren<Rigidbody>())
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.isKinematic = true;
+            }
+
+            foreach (var col in copy.GetComponentsInChildren<Collider>())
+                col.enabled = false;
         }
 
         public bool ContainsItemId(string itemId)

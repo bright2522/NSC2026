@@ -18,7 +18,6 @@ public class KnifeMovement : MonoBehaviour
     private static readonly List<KnifeMovement> instances = new List<KnifeMovement>();
     private static KnifeMovement activeKnife;
 
-    private Camera mainCamera;
     private bool isDragging;
     private bool isChopping;
     private Plane dragPlane;
@@ -42,7 +41,6 @@ public class KnifeMovement : MonoBehaviour
 
     private void Start()
     {
-        mainCamera = Camera.main;
         BakeChildOffsetIntoRoot();
     }
 
@@ -89,18 +87,22 @@ public class KnifeMovement : MonoBehaviour
         if (activeKnife != null && activeKnife != this)
             return;
 
+        Camera activeCamera = Camera.main;
+        if (activeCamera == null)
+            return;
+
         Vector2 inputScreenPosition = GetInputPosition();
 
         if (IsInputPressedThisFrame())
         {
-            if (activeKnife == null && IsTopKnifeUnderCursor(inputScreenPosition))
+            if (activeKnife == null && IsTopKnifeUnderCursor(inputScreenPosition, activeCamera))
             {
                 isDragging = true;
                 activeKnife = this;
                 dragStartPosition = transform.position;
                 dragPlane = new Plane(Vector3.up, new Vector3(0f, topYPosition, 0f));
 
-                Ray ray = mainCamera.ScreenPointToRay(inputScreenPosition);
+                Ray ray = activeCamera.ScreenPointToRay(inputScreenPosition);
                 if (dragPlane.Raycast(ray, out float enter))
                     dragStartPointerX = ray.GetPoint(enter).x;
             }
@@ -108,7 +110,7 @@ public class KnifeMovement : MonoBehaviour
 
         if (isDragging && IsInputHeld())
         {
-            Ray ray = mainCamera.ScreenPointToRay(inputScreenPosition);
+            Ray ray = activeCamera.ScreenPointToRay(inputScreenPosition);
             if (dragPlane.Raycast(ray, out float enter))
             {
                 Vector3 hitPoint = ray.GetPoint(enter);
@@ -151,42 +153,39 @@ public class KnifeMovement : MonoBehaviour
         isDragging = false;
     }
 
-    private bool IsTopKnifeUnderCursor(Vector2 screenPosition)
+    private bool IsTopKnifeUnderCursor(Vector2 screenPosition, Camera camera)
     {
-        if (mainCamera == null || knifeCollider == null)
+        if (knifeCollider == null)
             return false;
 
-        return GetKnifeUnderCursor(screenPosition) == this;
+        return GetKnifeUnderCursor(screenPosition, camera) == this;
     }
 
-    private static KnifeMovement GetKnifeUnderCursor(Vector2 screenPosition)
+    private static KnifeMovement GetKnifeUnderCursor(Vector2 screenPosition, Camera camera)
     {
-        Camera camera = Camera.main;
         if (camera == null || instances.Count == 0)
             return null;
 
         Ray ray = camera.ScreenPointToRay(screenPosition);
-        KnifeMovement closestKnife = null;
-        float closestDistance = float.MaxValue;
+        RaycastHit[] hits = Physics.RaycastAll(
+            ray,
+            Mathf.Infinity,
+            Physics.AllLayers,
+            QueryTriggerInteraction.Collide);
 
-        for (int i = 0; i < instances.Count; i++)
+        if (hits.Length == 0)
+            return null;
+
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        for (int i = 0; i < hits.Length; i++)
         {
-            KnifeMovement knife = instances[i];
-            Collider col = knife.knifeCollider;
-            if (knife == null || col == null)
-                continue;
-
-            if (!col.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
-                continue;
-
-            if (hit.distance < closestDistance)
-            {
-                closestDistance = hit.distance;
-                closestKnife = knife;
-            }
+            KnifeMovement knife = hits[i].collider.GetComponentInParent<KnifeMovement>();
+            if (knife != null)
+                return knife;
         }
 
-        return closestKnife;
+        return null;
     }
 
     private void PlayChopTween()

@@ -1,13 +1,33 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityInput = UnityEngine.Input;
 
 namespace Pep.Minigames.Plating
 {
+    public enum PlateItemMode
+    {
+        Standard,
+        Sprinkle
+    }
+
     [RequireComponent(typeof(Collider))]
     [RequireComponent(typeof(Rigidbody))]
     public class DraggablePlateItem : MonoBehaviour
     {
+        [Header("Mode")]
+        [SerializeField] private PlateItemMode itemMode = PlateItemMode.Standard;
+
+        [Header("Sprinkle Mode")]
+        [Tooltip("The pieces to sprinkle one by one, in list order (or shuffled if Sprinkle Random Order is on).")]
+        [SerializeField] private List<Transform> sprinkleChildrenList = new List<Transform>();
+        [SerializeField] private float sprinkleInterval = 0.12f;
+        [SerializeField] private float sprinkleScatterRadius = 0.12f;
+        [SerializeField] private float sprinkleDropHeight = 0.15f;
+        [SerializeField] private bool sprinkleRandomOrder = true;
+        [SerializeField] private float sprinklePieceFreezeDelay = 1.2f;
+
         [Header("Lift")]
         [SerializeField] private float liftHeight = 0.6f;
         [SerializeField] private float liftAnimDuration = 0.22f;
@@ -62,6 +82,13 @@ namespace Pep.Minigames.Plating
         private bool isHoldingToRemove;
         private float holdProgress;
 
+        private readonly List<Transform> sprinklePieces = new List<Transform>();
+        private int nextSprinkleIndex;
+        private Coroutine sprinkleRoutine;
+        private bool isSprinkling;
+        private bool hasRegisteredSprinklePlacement;
+        private Transform trayRoot;
+
         private static readonly Color HoldEmission = new Color(0.8f, 0.1f, 0.05f);
 
         private void Awake()
@@ -72,6 +99,38 @@ namespace Pep.Minigames.Plating
             rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
             itemRenderer = GetComponentInChildren<Renderer>();
+
+            if (itemMode == PlateItemMode.Sprinkle)
+                CollectSprinklePieces();
+        }
+
+        private void CollectSprinklePieces()
+        {
+            sprinklePieces.Clear();
+            foreach (Transform piece in sprinkleChildrenList)
+            {
+                if (piece != null)
+                    sprinklePieces.Add(piece);
+            }
+
+            // Fallback: if no pieces were assigned in the inspector, auto-collect
+            // direct child transforms (e.g. pre-parented pieces like Pipe, Pipe (1), ...).
+            if (sprinklePieces.Count == 0)
+            {
+                for (int i = 0; i < transform.childCount; i++)
+                    sprinklePieces.Add(transform.GetChild(i));
+            }
+
+            if (sprinkleRandomOrder)
+            {
+                for (int i = sprinklePieces.Count - 1; i > 0; i--)
+                {
+                    int j = UnityEngine.Random.Range(0, i + 1);
+                    (sprinklePieces[i], sprinklePieces[j]) = (sprinklePieces[j], sprinklePieces[i]);
+                }
+            }
+
+            nextSprinkleIndex = 0;
         }
 
         public void Initialise(PlateItemSO data, Vector3 trayPos, PlatingItemCatalogManager catalogManager)
@@ -84,6 +143,7 @@ namespace Pep.Minigames.Plating
             mainCamera = Camera.main;
             dragPlane = new Plane(Vector3.up, trayPos);
             lastPos = transform.position;
+            trayRoot = transform.parent;
         }
 
         private void Update()
@@ -133,7 +193,14 @@ namespace Pep.Minigames.Plating
                 Time.deltaTime * dragFollowSpeed);
             transform.position = smooth;
 
-            currentDropZone?.UpdateSnapPreview(this);
+            if (itemMode != PlateItemMode.Sprinkle)
+                currentDropZone?.UpdateSnapPreview(this);
+
+            if (itemMode == PlateItemMode.Sprinkle)
+            {
+                if (isInDropZone) StartSprinkling();
+                else StopSprinkling();
+            }
 
             Vector3 delta = transform.position - lastPos;
             lastPos = transform.position;
@@ -161,15 +228,19 @@ namespace Pep.Minigames.Plating
                 return;
             }
 
-            if (catalog != null && !catalog.CanPlaceMore(ItemData.ItemId)) return;
+            // Sprinkle containers are reusable tools, not consumed placements —
+            // the placed-quota gate only applies to Standard items.
+            if (itemMode != PlateItemMode.Sprinkle
+                && catalog != null && !catalog.CanPlaceMore(ItemData.ItemId))
+                return;
+
             BeginDrag();
         }
 
         private void OnMouseDrag()
         {
             if (!IsDragging || isLifting) return;
-            Vector3 worldPos = GetMouseWorldPosition();
-            if (worldPos != Vector3.positiveInfinity)
+            if (TryGetMouseWorldPosition(out Vector3 worldPos))
                 targetDragPos = worldPos;
         }
 
@@ -252,14 +323,95 @@ namespace Pep.Minigames.Plating
         {
             IsDragging = false;
             isLifting = false;
-            currentDropZone?.HideSnapPreview();
+            if (itemMode != PlateItemMode.Sprinkle)
+                currentDropZone?.HideSnapPreview();
             transform.rotation = originalRotation;
             OnDropped?.Invoke(this);
+
+            if (itemMode == PlateItemMode.Sprinkle)
+            {
+                StopSprinkling();
+                ReturnToTray();
+                return;
+            }
 
             if (currentDropZone != null && currentDropZone.TryDrop(this))
                 DropWithPhysics(currentDropZone);
             else
                 ReturnToTray();
+        }
+
+        private void StartSprinkling()
+        {
+            if (isSprinkling || sprinkleRoutine != null) return;
+            if (nextSprinkleIndex >= sprinklePieces.Count) return;
+            sprinkleRoutine = StartCoroutine(SprinkleRoutine());
+        }
+
+        private void StopSprinkling()
+        {
+            if (sprinkleRoutine != null)
+            {
+                StopCoroutine(sprinkleRoutine);
+                sprinkleRoutine = null;
+            }
+            isSprinkling = false;
+        }
+
+        private IEnumerator SprinkleRoutine()
+        {
+            isSprinkling = true;
+
+            while (nextSprinkleIndex < sprinklePieces.Count)
+            {
+                Transform piece = sprinklePieces[nextSprinkleIndex];
+                nextSprinkleIndex++;
+
+                if (piece != null)
+                    ReleaseSprinklePiece(piece);
+
+                yield return new WaitForSeconds(sprinkleInterval);
+            }
+
+            isSprinkling = false;
+            sprinkleRoutine = null;
+        }
+
+        private void ReleaseSprinklePiece(Transform piece)
+        {
+            piece.SetParent(trayRoot, true);
+            piece.gameObject.SetActive(true);
+
+            Vector3 scatter = new Vector3(
+                UnityEngine.Random.Range(-sprinkleScatterRadius, sprinkleScatterRadius),
+                sprinkleDropHeight,
+                UnityEngine.Random.Range(-sprinkleScatterRadius, sprinkleScatterRadius));
+
+            piece.position = transform.position + scatter;
+            piece.rotation = UnityEngine.Random.rotation;
+
+            Rigidbody pieceRb = piece.GetComponent<Rigidbody>();
+            if (pieceRb == null) pieceRb = piece.gameObject.AddComponent<Rigidbody>();
+            pieceRb.isKinematic = false;
+            pieceRb.linearVelocity = Vector3.zero;
+            pieceRb.angularVelocity = Vector3.zero;
+
+            StartCoroutine(FreezeSprinklePieceAfterDelay(pieceRb));
+
+            if (!hasRegisteredSprinklePlacement)
+            {
+                hasRegisteredSprinklePlacement = true;
+                currentDropZone?.RegisterItemLanded(this, transform.position);
+            }
+        }
+
+        private IEnumerator FreezeSprinklePieceAfterDelay(Rigidbody pieceRb)
+        {
+            yield return new WaitForSeconds(sprinklePieceFreezeDelay);
+            if (pieceRb == null) yield break;
+            pieceRb.linearVelocity = Vector3.zero;
+            pieceRb.angularVelocity = Vector3.zero;
+            pieceRb.isKinematic = true;
         }
 
         private void DropWithPhysics(PlateDropZone zone)
@@ -328,6 +480,7 @@ namespace Pep.Minigames.Plating
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
+            StopSprinkling();
             LeanTween.cancel(gameObject);
 
             // Spin + shrink slightly, then elastic return
@@ -367,7 +520,8 @@ namespace Pep.Minigames.Plating
             if (!isInDropZone)
             {
                 isInDropZone = true;
-                zone.ShowSnapPreview(this);
+                if (itemMode != PlateItemMode.Sprinkle)
+                    zone.ShowSnapPreview(this);
             }
         }
 
@@ -375,7 +529,8 @@ namespace Pep.Minigames.Plating
         {
             var zone = other.GetComponent<PlateDropZone>();
             if (zone == null || currentDropZone != zone) return;
-            zone.HideSnapPreview();
+            if (itemMode != PlateItemMode.Sprinkle)
+                zone.HideSnapPreview();
             currentDropZone = null;
             isInDropZone = false;
         }
@@ -396,21 +551,28 @@ namespace Pep.Minigames.Plating
             itemRenderer.material.SetColor("_EmissionColor", Color.black);
         }
 
-        private Vector3 GetMouseWorldPosition()
+        private bool TryGetMouseWorldPosition(out Vector3 worldPos)
         {
-            if (mainCamera == null) mainCamera = Camera.main;
-            if (mainCamera == null) return Vector3.positiveInfinity;
+            worldPos = Vector3.zero;
+
+            // Re-resolve if the cached camera became inactive (e.g. MinigameFlowManager
+            // switched to a different step's camera after this item was initialised).
+            if (mainCamera == null || !mainCamera.isActiveAndEnabled)
+                mainCamera = Camera.main;
+            if (mainCamera == null) return false;
 
             Ray ray = mainCamera.ScreenPointToRay(UnityInput.mousePosition);
-            if (dragPlane.Raycast(ray, out float distance))
-                return ray.GetPoint(distance);
+            if (!dragPlane.Raycast(ray, out float distance)) return false;
 
-            return Vector3.positiveInfinity;
+            worldPos = ray.GetPoint(distance);
+            return !float.IsInfinity(worldPos.x) && !float.IsInfinity(worldPos.y) && !float.IsInfinity(worldPos.z)
+                && !float.IsNaN(worldPos.x) && !float.IsNaN(worldPos.y) && !float.IsNaN(worldPos.z);
         }
 
         private void OnDestroy()
         {
             LeanTween.cancel(gameObject);
+            StopSprinkling();
         }
     }
 }
