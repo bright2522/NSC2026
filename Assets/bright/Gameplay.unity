@@ -18979,6 +18979,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 2146869479}
+        m_TargetAssemblyTypeName: SliceProgress, Assembly-CSharp
+        m_MethodName: ResetProgress
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1169140231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33958,6 +33970,55 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2145915814}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2146869478
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2146869480}
+  - component: {fileID: 2146869479}
+  m_Layer: 0
+  m_Name: SliceProgress
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2146869479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146869478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9c4321445172da439d4e5b58aa0e3a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  countMode: 1
+  targetPieces: 7
+  startingPieces: 2
+  nextButton: {fileID: 1169140228}
+  progressLabel: {fileID: 0}
+--- !u!4 &2146869480
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146869478}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.14653587, y: 1.0420682, z: -10.928015}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &220756888622101864
 GameObject:
   m_ObjectHideFlags: 0
@@ -56963,7 +57024,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minVolumeThreshold: 0.005
   minAxisSize: 0.002
-  launchPieces: 1
+  launchPieces: 0
   spawnOffset: 0.02
   antiClipYOffset: 0.02
   pushForce: 4
@@ -75311,3 +75372,4 @@ SceneRoots:
   - {fileID: 316832942}
   - {fileID: 1551660720}
   - {fileID: 17007125}
+  - {fileID: 2146869480}

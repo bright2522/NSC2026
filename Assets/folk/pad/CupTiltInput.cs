@@ -24,13 +24,15 @@ public static class CupTiltInput
 
     public static float ReadPourAxis()
     {
-#if UNITY_EDITOR || UNITY_STANDALONE
+        // --- ปุ่มคีย์บอร์ด: ใช้ได้ทุกที่ (Game view + Simulator) ---
+        // ย้ายออกมานอก #if แล้ว เพื่อให้กด A/D เทได้แม้อยู่ใน Device Simulator
+        Debug.Log("กด A ติด!");
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
             return -1f;
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
             return 1f;
-#endif
 
+        // --- การเอียงเครื่อง (accelerometer) สำหรับมือถือจริง ---
         if (!calibrated)
             CalibrateNeutral();
 

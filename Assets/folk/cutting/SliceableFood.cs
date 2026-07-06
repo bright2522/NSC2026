@@ -151,6 +151,8 @@ public class SliceableFood : MonoBehaviour
 
         // กันชิ้นบน-ล่างดันกันเอง
         IgnoreCollisions(upperGroup, lowerGroup);
+        
+        if (SliceProgress.Instance != null) SliceProgress.Instance.AddSlice();
 
         foreach (GameObject source in sourcesToDestroy)
         {
