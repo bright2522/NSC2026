@@ -1,7 +1,0 @@
-﻿<linker>
-  <assembly fullname="Fusion" preserve="all">
-    <type fullname="Fusion.INetworkRunnerCallbacks">
-      <method name="OnSceneLoadDone"/>
-    </type>
-  </assembly>
-</linker>
