@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: cbbb3edc65d3c404c9fc29eabb490d10
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/UI/UnityUI/Components/LayoutElementWithMaxValues.cs
+  uploadId: 704776

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8c15546af747447849758b72857ae939
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/NinjutsuGames.FusionNetwork.Runtime.asmdef
+  uploadId: 704776

@@ -22,6 +22,7 @@ public class PanPrepManager : MonoBehaviour
 
     private bool eggDone;
     private bool sausageDone;
+    private bool prepBonusAwarded;
 
     public bool IsEggDone => eggDone;
     public bool IsSausageDone => sausageDone;
@@ -57,9 +58,14 @@ public class PanPrepManager : MonoBehaviour
 
     void LogStatus()
     {
-        if (IsAllPrepDone)
+        if (!IsAllPrepDone) return;
+
+        if (!prepBonusAwarded)
         {
-            Debug.Log("[PanPrep] วัตถุดิบครบแล้ว — หยิบตะหลิวผัดได้");
+            prepBonusAwarded = true;
+            GameplayScore.Instance?.AddScore(40);
         }
+
+        Debug.Log("[PanPrep] วัตถุดิบครบแล้ว — หยิบตะหลิวผัดได้");
     }
 }

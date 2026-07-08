@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 0f9f2ce83ef241fc84a93b2f2563d1f8
+timeCreated: 1707065648
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Network/Classes/PlayerSpawnData.cs
+  uploadId: 704776

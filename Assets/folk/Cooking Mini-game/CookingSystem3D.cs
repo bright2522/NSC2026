@@ -296,6 +296,7 @@ public class CookingSystem3D : MonoBehaviour
     void TriggerBurnt()
     {
         isBurnt = true;
+        GameplayScore.Instance?.AddScore(10);
         CancelTween(ref foodColorTweenId);
         if (foodRenderer != null) foodRenderer.material.color = burntColor;
         Debug.Log("<color=red><b>อาหารไหม้เกรียม! Game Over</b></color>");
@@ -304,6 +305,7 @@ public class CookingSystem3D : MonoBehaviour
     void TriggerCooked()
     {
         isCooked = true;
+        GameplayScore.Instance?.AddScore(Mathf.RoundToInt(cookingProgress));
         Debug.Log("<color=green><b>ทำอาหารเสร็จสมบูรณ์! Win!</b></color>");
         EndFunction();
     }

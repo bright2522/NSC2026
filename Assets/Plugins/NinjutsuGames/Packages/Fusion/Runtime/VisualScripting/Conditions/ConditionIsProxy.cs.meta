@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 859b970511344c9baebb0deafd8659d3
+timeCreated: 1707597190
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/VisualScripting/Conditions/ConditionIsProxy.cs
+  uploadId: 704776

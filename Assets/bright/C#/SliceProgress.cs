@@ -25,6 +25,7 @@ public class SliceProgress : MonoBehaviour
     public TMPro.TMP_Text progressLabel;
 
     private int count;
+    private bool completionBonusAwarded;
 
     void Awake()
     {
@@ -54,15 +55,25 @@ public class SliceProgress : MonoBehaviour
     public void ResetProgress()
     {
         count = (countMode == CountMode.TotalPieces) ? startingPieces : 0;
-        if (nextButton != null) nextButton.SetActive(false); // ซ่อนปุ่มอีกครั้ง
+        completionBonusAwarded = false;
+        if (nextButton != null) nextButton.SetActive(false);
         UpdateLabel();
     }
 
     void CheckDone()
     {
         UpdateLabel();
-        if (count >= targetPieces && nextButton != null)
-            nextButton.SetActive(true);
+        if (count >= targetPieces)
+        {
+            if (!completionBonusAwarded)
+            {
+                completionBonusAwarded = true;
+                GameplayScore.Instance?.AddScore(50);
+            }
+
+            if (nextButton != null)
+                nextButton.SetActive(true);
+        }
     }
 
     void UpdateLabel()

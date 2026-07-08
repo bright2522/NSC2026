@@ -212,6 +212,8 @@ public class SausageCupPourController : MonoBehaviour
             PanPrepManager.Instance.MarkSausageDone();
         }
 
+        GameplayScore.Instance?.AddScore(30);
+
         StartCoroutine(ReturnRoutine());
     }
 

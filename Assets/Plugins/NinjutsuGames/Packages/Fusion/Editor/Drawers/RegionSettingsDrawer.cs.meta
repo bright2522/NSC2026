@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 3b12fc2f5aa54034b2213b552ef2dafa
+timeCreated: 1722202958
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Editor/Drawers/RegionSettingsDrawer.cs
+  uploadId: 704776

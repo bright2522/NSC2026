@@ -234,6 +234,7 @@ public class EggClickCrackController : MonoBehaviour
 
         if (StirFryManager.Instance != null) StirFryManager.Instance.ResetProgress();
         if (PanPrepManager.Instance != null) PanPrepManager.Instance.MarkEggDone();
+        GameplayScore.Instance?.AddScore(25);
 
         PanDragCoordinator.End(this);
         Destroy(gameObject);

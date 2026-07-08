@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 9f6d1db335bf481fb05c9075be556678
+timeCreated: 1727822873
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Common/Utilities/BoneFinder.cs
+  uploadId: 704776

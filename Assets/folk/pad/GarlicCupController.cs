@@ -182,6 +182,7 @@ public class GarlicCupController : MonoBehaviour
         if (currentRotationZ > minReleaseAngle && !isGarlicReleased)
         {
             isGarlicReleased = true;
+            GameplayScore.Instance?.AddScore(20);
             StartCoroutine(SpawnGarlicRoutine());
         }
     }

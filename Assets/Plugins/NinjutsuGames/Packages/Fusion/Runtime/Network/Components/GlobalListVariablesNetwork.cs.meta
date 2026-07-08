@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 70b19457f4004a4494964cd6e3482b20
+timeCreated: 1723271916
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Network/Components/GlobalListVariablesNetwork.cs
+  uploadId: 704776

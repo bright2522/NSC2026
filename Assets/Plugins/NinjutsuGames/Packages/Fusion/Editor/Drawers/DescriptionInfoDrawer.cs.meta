@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: f7a749fbd1154320900425689725fcc7
+timeCreated: 1707594313
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Editor/Drawers/DescriptionInfoDrawer.cs
+  uploadId: 704776

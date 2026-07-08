@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 8d4648975c664a758bebef3b68c67f7b
+timeCreated: 1733781733
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.2.7
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Network/Components/RPCReceiver.cs
+  uploadId: 720428

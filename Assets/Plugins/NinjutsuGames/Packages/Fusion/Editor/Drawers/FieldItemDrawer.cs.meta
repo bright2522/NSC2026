@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 9c64f77d086e468fb931741ef5a48140
+timeCreated: 1723436164
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Editor/Drawers/FieldItemDrawer.cs
+  uploadId: 704776

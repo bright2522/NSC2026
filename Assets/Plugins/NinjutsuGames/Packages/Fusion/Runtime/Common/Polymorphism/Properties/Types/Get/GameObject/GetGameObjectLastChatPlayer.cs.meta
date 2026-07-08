@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: af6ea1192b6e494bb7d4dfe840708fe0
+timeCreated: 1723331661
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Common/Polymorphism/Properties/Types/Get/GameObject/GetGameObjectLastChatPlayer.cs
+  uploadId: 704776

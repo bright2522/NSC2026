@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: fa112b7bb92b4a75bc729bc9f2135852
+timeCreated: 1723612395
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/UI/UnityUI/Classes/DropdownReference.cs
+  uploadId: 704776

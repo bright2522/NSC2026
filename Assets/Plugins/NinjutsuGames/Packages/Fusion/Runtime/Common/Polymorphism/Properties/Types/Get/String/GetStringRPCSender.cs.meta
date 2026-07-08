@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 47498905fd3b406db6f1485f20ae7e19
+timeCreated: 1707323690
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Common/Polymorphism/Properties/Types/Get/String/GetStringRPCSender.cs
+  uploadId: 704776

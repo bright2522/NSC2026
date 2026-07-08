@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 78eeca43fcf24f0aaef9fe9827be56b6
+timeCreated: 1723920486
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Editor/Editors/RegionDropdownUIEditor.cs
+  uploadId: 704776

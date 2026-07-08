@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: fce65c90bb5e4ef0a62b798d3568538e
+timeCreated: 1723330876
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Editor/UI/Drawers/InputReferenceDrawer.cs
+  uploadId: 704776

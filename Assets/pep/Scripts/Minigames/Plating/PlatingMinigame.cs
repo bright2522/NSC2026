@@ -166,6 +166,8 @@ namespace Pep.Minigames.Plating
             bool success = score >= completeScoreThreshold;
             SetAllItemsInteractable(false);
 
+            GameplayScore.Instance?.AddScore(Mathf.RoundToInt(score));
+
             if (scoringManager != null)
                 scoringManager.ReportStepScore("pep/Plating", "Plating", score);
 

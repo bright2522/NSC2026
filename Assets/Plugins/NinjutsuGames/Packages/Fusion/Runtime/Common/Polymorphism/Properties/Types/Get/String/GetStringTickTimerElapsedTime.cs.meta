@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: fb43a2e29e934b4e96172e15f6f3120e
+timeCreated: 1722714849
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Common/Polymorphism/Properties/Types/Get/String/GetStringTickTimerElapsedTime.cs
+  uploadId: 704776

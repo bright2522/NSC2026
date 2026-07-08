@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 6e29381cb676419f82608c411cfa9073
+timeCreated: 1731959756
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.2.7
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Common/Polymorphism/Properties/Types/Get/Decimal/GetDecimalLocalRenderTime.cs
+  uploadId: 720428

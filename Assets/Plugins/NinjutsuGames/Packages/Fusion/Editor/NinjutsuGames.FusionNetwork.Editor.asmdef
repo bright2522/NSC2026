@@ -1,0 +1,21 @@
+{
+    "name": "NinjutsuGames.FusionNetwork.Editor",
+    "rootNamespace": "NinjutsuGames.FusionNetwork.Editor",
+    "references": [
+        "GUID:fa216a02d195f46dfac1c6346fe5a4ee",
+        "GUID:406c89e0bc84d48f4b079c3c4cd13320",
+        "GUID:8c15546af747447849758b72857ae939",
+        "GUID:4d449a4732e064d26a3069f2cfd88917"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

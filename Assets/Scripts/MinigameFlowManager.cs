@@ -126,6 +126,8 @@ public class MinigameFlowManager : MonoBehaviour
     private RecipeSO activeRecipe;
     private Coroutine pollRoutine;
     private Coroutine transitionRoutine;
+    private bool subscribedToGameplayTimer;
+    private bool timeBonusApplied;
 
     // ═════════════════════════════════════════════════════════════════════════
     #region Unity Lifecycle
@@ -137,6 +139,7 @@ public class MinigameFlowManager : MonoBehaviour
         DisableAllStepCameras();
         PrepareTransitionOverlay();
         if (defaultCamera != null) defaultCamera.gameObject.SetActive(true);
+        SubscribeGameplayTimer();
         if (autoStartOnLoad) StartFlow();
     }
 
@@ -144,6 +147,7 @@ public class MinigameFlowManager : MonoBehaviour
     {
         StopTransitionRoutine();
         UnsubscribeAll();
+        UnsubscribeGameplayTimer();
     }
 
     #endregion
@@ -154,12 +158,23 @@ public class MinigameFlowManager : MonoBehaviour
     public void StartFlow()
     {
         scoringManager?.ResetScores();
+        GameplayScore.Instance?.ResetScore();
+        timeBonusApplied = false;
+        if (GameplayTimer.Instance != null)
+            GameplayTimer.Instance.StartCountdown(GameplayTimer.Instance.SessionDuration);
+        SubscribeGameplayTimer();
         if (disturbanceManager != null) disturbanceManager.enabled = true;
         LoadFirstRecipe();
 
         IsRunning = true;
         CurrentStepIndex = -1;
         GoToNextStep();
+    }
+
+    public void EndSessionDueToTimeout()
+    {
+        if (!IsRunning) return;
+        FinishFlow();
     }
 
     public void RestartFlow()
@@ -332,15 +347,40 @@ public class MinigameFlowManager : MonoBehaviour
         StopCurrentStep();
         HideAllStepRoots();
         SwitchCamera(null);
+        GameplayTimer.Instance?.StopTimer();
+        ApplyTimeBonusScore();
 
         float final = scoringManager != null
             ? scoringManager.CompleteRecipeAndGetFinalAverage()
-            : 0f;
+            : GameplayScore.Instance != null ? GameplayScore.Instance.CurrentScore : 0f;
 
         IsRunning = false;
         CurrentStep = MinigameFlowStep.FinalScore;
-        Debug.Log($"[Flow] เสร็จสิ้น — คะแนนเฉลี่ย {final:0.##}");
+        Debug.Log($"[Flow] เสร็จสิ้น — คะแนนรวม {final:0.##}");
         onFlowCompleted?.Invoke(final);
+    }
+
+    private void SubscribeGameplayTimer()
+    {
+        if (subscribedToGameplayTimer || GameplayTimer.Instance == null) return;
+        GameplayTimer.Instance.OnTimeUp += EndSessionDueToTimeout;
+        subscribedToGameplayTimer = true;
+    }
+
+    private void UnsubscribeGameplayTimer()
+    {
+        if (!subscribedToGameplayTimer || GameplayTimer.Instance == null) return;
+        GameplayTimer.Instance.OnTimeUp -= EndSessionDueToTimeout;
+        subscribedToGameplayTimer = false;
+    }
+
+    private void ApplyTimeBonusScore()
+    {
+        if (timeBonusApplied) return;
+        if (GameplayTimer.Instance == null || GameplayScore.Instance == null) return;
+        if (GameplayTimer.Instance.IsTimeUp) return;
+        timeBonusApplied = true;
+        GameplayScore.Instance.AddScore(Mathf.RoundToInt(GameplayTimer.Instance.RemainingTime));
     }
 
     private IEnumerator TransitionToStep(int nextIndex)

@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 7295ef291700495db5a3bd15eee28e79
+timeCreated: 1707763739
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/VisualScripting/Events/EventNetworkObjectSpawned.cs
+  uploadId: 704776

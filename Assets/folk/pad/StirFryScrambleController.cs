@@ -155,6 +155,7 @@ public class StirFryScrambleController : MonoBehaviour
     void FinishScrambling()
     {
         isFinished = true;
+        GameplayScore.Instance?.AddScore(80);
         Debug.Log("🎉 ผัดไข่ข้นเสร็จเรียบร้อยแล้ว วัตถุดิบอื่นเลือนหายสมบูรณ์!");
 
         if (scrambledEggMat != null) 

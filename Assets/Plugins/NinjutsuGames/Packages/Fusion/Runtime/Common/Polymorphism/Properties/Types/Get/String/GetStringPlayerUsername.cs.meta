@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 2c42595e02a642388446e2de1770d741
+timeCreated: 1707066474
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Common/Polymorphism/Properties/Types/Get/String/GetStringPlayerUsername.cs
+  uploadId: 704776

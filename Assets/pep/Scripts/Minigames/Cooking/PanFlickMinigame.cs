@@ -121,6 +121,8 @@ namespace Pep.Minigames.Cooking
             float score = CalculateScore();
             bool success = score >= 55f;
 
+            GameplayScore.Instance?.AddScore(Mathf.RoundToInt(score * 0.8f));
+
             if (scoringManager != null)
             {
                 scoringManager.ReportStepScore("pep/PanFlick", "Pan Flick", score);

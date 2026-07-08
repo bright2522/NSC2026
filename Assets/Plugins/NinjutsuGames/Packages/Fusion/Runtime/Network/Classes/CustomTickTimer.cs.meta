@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 548de6b20d034c369daa4d2f013d4212
+timeCreated: 1722716499
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Network/Classes/CustomTickTimer.cs
+  uploadId: 704776

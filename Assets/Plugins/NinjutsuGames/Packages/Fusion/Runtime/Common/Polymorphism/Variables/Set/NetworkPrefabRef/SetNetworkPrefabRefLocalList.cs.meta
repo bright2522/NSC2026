@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 414e3f71205949d9a5b49234f0f8c47f
+timeCreated: 1724171229
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Common/Polymorphism/Variables/Set/NetworkPrefabRef/SetNetworkPrefabRefLocalList.cs
+  uploadId: 704776

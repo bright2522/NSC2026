@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 7a38f23bebae49a59415d19554639bef
+timeCreated: 1722213393
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Runtime/Common/Polymorphism/Properties/Types/Get/Color/GetColorPing.cs
+  uploadId: 704776

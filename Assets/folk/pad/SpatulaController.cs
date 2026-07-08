@@ -15,6 +15,7 @@ public class SpatulaController : MonoBehaviour
     private Quaternion initialRotation; 
     private Vector3 lastPosition; 
     private Collider spatulaCollider;
+    private float stirDistanceAccumulator;
 
     [Header("ระบบล็อกกล้องเฉพาะตัว (ป้องกันเอ๋อเมื่อมีกล้องหลายตัว)")]
     [Tooltip("ลากกล้องตัวที่ 3 (กล้องที่ใช้คุมการทำอาหารในซีนนี้) มาหย่อนใส่ช่องนี้ได้เลย")]
@@ -198,7 +199,15 @@ public class SpatulaController : MonoBehaviour
                     if (moveDistance > 0.001f && stirFryManager != null)
                     {
                         float progressAmount = moveDistance * progressMultiplier;
-                        stirFryManager.IncreaseProgress(progressAmount); 
+                        stirFryManager.IncreaseProgress(progressAmount);
+
+                        stirDistanceAccumulator += moveDistance;
+                        if (stirDistanceAccumulator >= 5f)
+                        {
+                            int stirPoints = Mathf.FloorToInt(stirDistanceAccumulator / 5f) * 2;
+                            stirDistanceAccumulator %= 5f;
+                            GameplayScore.Instance?.AddScore(stirPoints);
+                        }
                     }
 
                     lastPosition = transform.position;
@@ -232,6 +241,7 @@ public class SpatulaController : MonoBehaviour
 
     void OnPanShakeTriggered()
     {
+        GameplayScore.Instance?.AddScore(15);
         if (stirFryManager != null && panShakeProgressBoost > 0f)
             stirFryManager.IncreaseProgress(panShakeProgressBoost);
     }

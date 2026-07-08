@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 6c1709e8cbc64a599b72f1b782a5ea6f
+timeCreated: 1723432363
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Editor/Drawers/JoinLobbySettingsDrawer.cs
+  uploadId: 704776

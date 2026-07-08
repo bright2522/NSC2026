@@ -57,6 +57,7 @@ public class StirFryManager : MonoBehaviour
     void TriggerCookingSuccess()
     {
         isCookingFinished = true;
+        GameplayScore.Instance?.AddScore(100);
         Debug.Log("🍳✨ [SUCCESS] ผัดวัตถุดิบจนสุกได้ที่เรียบร้อย!");
 
         // เมื่อผัดเสร็จครบกำหนด สั่งให้ปุ่มวางตะหลิวเด้งขึ้นมาบนจอทันที!

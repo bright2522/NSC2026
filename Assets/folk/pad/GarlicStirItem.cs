@@ -18,6 +18,8 @@ public class GarlicStirItem : MonoBehaviour
                 StirFryManager.Instance.AddProgress(1f); 
             }
 
+            GameplayScore.Instance?.AddScore(5);
+
             // 🎨 เปลี่ยนสีตัวกระเทียมให้ดูสุกเหลืองทองนวลอมทองแบบสมจริง
             Renderer renderer = GetComponent<Renderer>();
             if (renderer != null)

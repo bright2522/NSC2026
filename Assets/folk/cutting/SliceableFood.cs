@@ -153,6 +153,7 @@ public class SliceableFood : MonoBehaviour
         IgnoreCollisions(upperGroup, lowerGroup);
         
         if (SliceProgress.Instance != null) SliceProgress.Instance.AddSlice();
+        GameplayScore.Instance?.AddScore(10);
 
         foreach (GameObject source in sourcesToDestroy)
         {

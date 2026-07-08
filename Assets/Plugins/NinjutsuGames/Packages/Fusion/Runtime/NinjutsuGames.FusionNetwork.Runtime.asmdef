@@ -1,0 +1,29 @@
+{
+    "name": "NinjutsuGames.FusionNetwork.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:406c89e0bc84d48f4b079c3c4cd13320",
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:d9d8635f8670c0c44ba7a8140f7ac7b9",
+        "GUID:1baf1ffff1031e948b3b228ab3453251",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:84651a3751eca9349aac36a66bba901b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Fusion.Common.dll",
+        "Fusion.Realtime.dll",
+        "Fusion.Runtime.dll",
+        "Fusion.Sockets.dll",
+        "Photon3Unity3D.dll",
+        "Fusion.Log.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

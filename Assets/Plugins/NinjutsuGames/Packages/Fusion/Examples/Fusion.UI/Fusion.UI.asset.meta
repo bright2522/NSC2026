@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ec53da0c5d44a469f87a4cbcce6f6886
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 198720
+  packageName: Fusion (Game Creator 2)
+  packageVersion: 1.1.6
+  assetPath: Assets/Plugins/NinjutsuGames/Packages/Fusion/Examples/Fusion.UI/Fusion.UI.asset
+  uploadId: 704776
