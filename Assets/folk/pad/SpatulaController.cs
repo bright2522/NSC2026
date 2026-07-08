@@ -43,6 +43,12 @@ public class SpatulaController : MonoBehaviour
     public StirFryManager stirFryManager; 
     public float progressMultiplier = 0.5f;
 
+    [Header("ระบบกระทะร้อน / เขย่ากระทะ")]
+    [Tooltip("ลาก PanShakeController จาก prefab กระทะมาใส่ (shakeTarget ควรเป็น mesh กระทะอย่างเดียว)")]
+    public PanShakeController panShakeController;
+    [Tooltip("เพิ่มความสุกเมื่อเขย่ากระทะสำเร็จ 1 ครั้ง")]
+    public float panShakeProgressBoost = 3f;
+
     [Header("Events")]
     [Tooltip("เรียกเมื่อใส่วัตถุดิบครบแล้ว (ไข่ + ไส้กรอก) — ลากฟังก์ชันอื่นมาเชื่อมใน Inspector ได้")]
     public UnityEvent onAllPrepDone = new UnityEvent();
@@ -154,6 +160,7 @@ public class SpatulaController : MonoBehaviour
 
         if (isHolding)
         {
+            HandlePanShakeInput();
             PanDragCoordinator.Maintain(this);
             if (Input.GetMouseButton(0))
             {
@@ -205,6 +212,28 @@ public class SpatulaController : MonoBehaviour
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(fpsRotation), Time.deltaTime * 10f);
             }
         }
+    }
+
+    void HandlePanShakeInput()
+    {
+        if (panShakeController == null) return;
+
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetKeyDown(KeyCode.W) && panShakeController.TriggerShake())
+            OnPanShakeTriggered();
+#endif
+
+        if (Input.acceleration.sqrMagnitude >= panShakeController.ShakeThreshold
+            && panShakeController.TriggerShake())
+        {
+            OnPanShakeTriggered();
+        }
+    }
+
+    void OnPanShakeTriggered()
+    {
+        if (stirFryManager != null && panShakeProgressBoost > 0f)
+            stirFryManager.IncreaseProgress(panShakeProgressBoost);
     }
 
     public void PutDownSpatula()

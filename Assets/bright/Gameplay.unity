@@ -734,7 +734,7 @@ GameObject:
   - component: {fileID: 44387016}
   - component: {fileID: 44387015}
   - component: {fileID: 44387014}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -883,7 +883,7 @@ GameObject:
   - component: {fileID: 45781296}
   - component: {fileID: 45781295}
   - component: {fileID: 45781294}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1216,7 +1216,7 @@ GameObject:
   - component: {fileID: 62652908}
   - component: {fileID: 62652907}
   - component: {fileID: 62652906}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1422,7 +1422,7 @@ GameObject:
   - component: {fileID: 68168505}
   - component: {fileID: 68168504}
   - component: {fileID: 68168503}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2377,7 +2377,7 @@ GameObject:
   - component: {fileID: 144358633}
   - component: {fileID: 144358632}
   - component: {fileID: 144358631}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2526,7 +2526,7 @@ GameObject:
   - component: {fileID: 156144269}
   - component: {fileID: 156144268}
   - component: {fileID: 156144267}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2675,7 +2675,7 @@ GameObject:
   - component: {fileID: 158125553}
   - component: {fileID: 158125552}
   - component: {fileID: 158125551}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2824,7 +2824,7 @@ GameObject:
   - component: {fileID: 160377578}
   - component: {fileID: 160377577}
   - component: {fileID: 160377576}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2973,7 +2973,7 @@ GameObject:
   - component: {fileID: 196761611}
   - component: {fileID: 196761610}
   - component: {fileID: 196761609}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3122,7 +3122,7 @@ GameObject:
   - component: {fileID: 205986152}
   - component: {fileID: 205986151}
   - component: {fileID: 205986150}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3271,7 +3271,7 @@ GameObject:
   - component: {fileID: 208351977}
   - component: {fileID: 208351976}
   - component: {fileID: 208351975}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3420,7 +3420,7 @@ GameObject:
   - component: {fileID: 214363810}
   - component: {fileID: 214363809}
   - component: {fileID: 214363808}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3891,7 +3891,7 @@ GameObject:
   - component: {fileID: 245686185}
   - component: {fileID: 245686184}
   - component: {fileID: 245686183}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4118,7 +4118,7 @@ GameObject:
   - component: {fileID: 248846304}
   - component: {fileID: 248846303}
   - component: {fileID: 248846302}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4608,7 +4608,7 @@ GameObject:
   - component: {fileID: 291758827}
   - component: {fileID: 291758826}
   - component: {fileID: 291758825}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4757,7 +4757,7 @@ GameObject:
   - component: {fileID: 295650596}
   - component: {fileID: 295650595}
   - component: {fileID: 295650594}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4906,7 +4906,7 @@ GameObject:
   - component: {fileID: 295858613}
   - component: {fileID: 295858612}
   - component: {fileID: 295858611}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5568,7 +5568,7 @@ GameObject:
   - component: {fileID: 331490158}
   - component: {fileID: 331490157}
   - component: {fileID: 331490156}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6135,7 +6135,7 @@ GameObject:
   - component: {fileID: 358116289}
   - component: {fileID: 358116288}
   - component: {fileID: 358116287}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6630,7 +6630,7 @@ GameObject:
   - component: {fileID: 407544080}
   - component: {fileID: 407544079}
   - component: {fileID: 407544078}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6779,7 +6779,7 @@ GameObject:
   - component: {fileID: 415097447}
   - component: {fileID: 415097446}
   - component: {fileID: 415097445}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6959,7 +6959,7 @@ GameObject:
   - component: {fileID: 431107971}
   - component: {fileID: 431107970}
   - component: {fileID: 431107969}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7108,7 +7108,7 @@ GameObject:
   - component: {fileID: 460574197}
   - component: {fileID: 460574196}
   - component: {fileID: 460574195}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7435,7 +7435,7 @@ GameObject:
   - component: {fileID: 481838480}
   - component: {fileID: 481838479}
   - component: {fileID: 481838478}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7578,9 +7578,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -7633,6 +7641,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7976,7 +7992,7 @@ GameObject:
   - component: {fileID: 515603384}
   - component: {fileID: 515603383}
   - component: {fileID: 515603382}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8423,9 +8439,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -8478,6 +8502,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8577,7 +8609,7 @@ GameObject:
   - component: {fileID: 575824160}
   - component: {fileID: 575824159}
   - component: {fileID: 575824158}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8726,7 +8758,7 @@ GameObject:
   - component: {fileID: 578455319}
   - component: {fileID: 578455318}
   - component: {fileID: 578455317}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8925,6 +8957,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 255522
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c4d700d15d4109a4e9014173103d7b09, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -9037,7 +9073,7 @@ GameObject:
   - component: {fileID: 607566765}
   - component: {fileID: 607566764}
   - component: {fileID: 607566763}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9280,7 +9316,7 @@ GameObject:
   - component: {fileID: 620168539}
   - component: {fileID: 620168538}
   - component: {fileID: 620168537}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9544,9 +9580,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -9599,6 +9643,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -9698,7 +9750,7 @@ GameObject:
   - component: {fileID: 629413026}
   - component: {fileID: 629413025}
   - component: {fileID: 629413024}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10159,7 +10211,7 @@ GameObject:
   - component: {fileID: 666259794}
   - component: {fileID: 666259793}
   - component: {fileID: 666259792}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10294,6 +10346,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1477239306}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &669465697
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 669465698}
+  m_Layer: 6
+  m_Name: Pancenter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &669465698
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669465697}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.70710677, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -31.100002, y: 0.4424672, z: -8.925}
+  m_LocalScale: {x: 7.5938, y: 7.5938, z: 7.5938}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &680840204
 GameObject:
   m_ObjectHideFlags: 0
@@ -10417,7 +10500,7 @@ GameObject:
   - component: {fileID: 696476740}
   - component: {fileID: 696476739}
   - component: {fileID: 696476738}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10696,9 +10779,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -10751,6 +10842,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11173,6 +11272,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 255552
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c4d700d15d4109a4e9014173103d7b09, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -11409,7 +11512,7 @@ GameObject:
   - component: {fileID: 740860704}
   - component: {fileID: 740860703}
   - component: {fileID: 740860702}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11848,7 +11951,7 @@ GameObject:
   - component: {fileID: 759385866}
   - component: {fileID: 759385865}
   - component: {fileID: 759385864}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12543,7 +12646,7 @@ GameObject:
   - component: {fileID: 804164863}
   - component: {fileID: 804164862}
   - component: {fileID: 804164861}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12851,9 +12954,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -12906,6 +13017,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -14068,7 +14187,7 @@ GameObject:
   - component: {fileID: 890717667}
   - component: {fileID: 890717666}
   - component: {fileID: 890717665}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14404,7 +14523,7 @@ GameObject:
   - component: {fileID: 907737306}
   - component: {fileID: 907737305}
   - component: {fileID: 907737304}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15160,7 +15279,7 @@ GameObject:
   - component: {fileID: 946861907}
   - component: {fileID: 946861906}
   - component: {fileID: 946861905}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15309,7 +15428,7 @@ GameObject:
   - component: {fileID: 947862533}
   - component: {fileID: 947862532}
   - component: {fileID: 947862531}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15819,7 +15938,7 @@ GameObject:
   - component: {fileID: 968014722}
   - component: {fileID: 968014721}
   - component: {fileID: 968014720}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -16043,7 +16162,7 @@ GameObject:
   - component: {fileID: 996744796}
   - component: {fileID: 996744795}
   - component: {fileID: 996744794}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17030,7 +17149,7 @@ GameObject:
   - component: {fileID: 1073486541}
   - component: {fileID: 1073486540}
   - component: {fileID: 1073486539}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17179,7 +17298,7 @@ GameObject:
   - component: {fileID: 1084460388}
   - component: {fileID: 1084460387}
   - component: {fileID: 1084460386}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17385,7 +17504,7 @@ GameObject:
   - component: {fileID: 1090687904}
   - component: {fileID: 1090687903}
   - component: {fileID: 1090687902}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17534,7 +17653,7 @@ GameObject:
   - component: {fileID: 1105158987}
   - component: {fileID: 1105158986}
   - component: {fileID: 1105158985}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17907,7 +18026,7 @@ GameObject:
   - component: {fileID: 1126913465}
   - component: {fileID: 1126913464}
   - component: {fileID: 1126913463}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18056,7 +18175,7 @@ GameObject:
   - component: {fileID: 1141292575}
   - component: {fileID: 1141292574}
   - component: {fileID: 1141292573}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18420,6 +18539,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1151495124}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1151495129}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1151495128}
   m_SourcePrefab: {fileID: 100100000, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
 --- !u!1 &1151495123 stripped
 GameObject:
@@ -18448,6 +18573,58 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8629865316344829511, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
+--- !u!4 &1151495127 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 23304ce4161d8bd45af1c4395c748055, type: 3}
+  m_PrefabInstance: {fileID: 1151495122}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1151495128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151495123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e856e354b73ca2498ad4301ce25dcac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shakeTarget: {fileID: 1151495127}
+  panCenter: {fileID: 669465698}
+  ingredientCaptureRadius: 1.2
+  ingredientLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  includeChildRigidbodies: 1
+  includeNearbyRigidbodies: 1
+  shakeDuration: 1.15
+  maxRotationZ: 15
+  maxBobY: 0.35
+  maxSlideX: 0.12
+  cooldown: 0.65
+  listenForInput: 0
+  keyboardKey: 119
+  shakeThreshold: 2
+--- !u!114 &1151495129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151495123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 058e0c26077fcd44087021cdb306c1af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  totalDuration: 8
+  requiredFlickCount: 1
+  idealWindowStart: 0.25
+  idealWindowEnd: 0.7
+  createUiOnStart: 0
+  flickDetector: {fileID: 0}
+  scoringManager: {fileID: 0}
 --- !u!1 &1151542634
 GameObject:
   m_ObjectHideFlags: 0
@@ -18601,7 +18778,7 @@ GameObject:
   - component: {fileID: 1157281703}
   - component: {fileID: 1157281702}
   - component: {fileID: 1157281701}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18750,7 +18927,7 @@ GameObject:
   - component: {fileID: 1161796026}
   - component: {fileID: 1161796025}
   - component: {fileID: 1161796024}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19043,7 +19220,7 @@ GameObject:
   - component: {fileID: 1173536233}
   - component: {fileID: 1173536232}
   - component: {fileID: 1173536231}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19278,7 +19455,7 @@ GameObject:
   - component: {fileID: 1199214025}
   - component: {fileID: 1199214024}
   - component: {fileID: 1199214023}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19427,7 +19604,7 @@ GameObject:
   - component: {fileID: 1199901537}
   - component: {fileID: 1199901536}
   - component: {fileID: 1199901535}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19936,7 +20113,7 @@ GameObject:
   - component: {fileID: 1217257279}
   - component: {fileID: 1217257278}
   - component: {fileID: 1217257277}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20085,7 +20262,7 @@ GameObject:
   - component: {fileID: 1219657712}
   - component: {fileID: 1219657711}
   - component: {fileID: 1219657710}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20513,9 +20690,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -20568,6 +20753,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -20772,7 +20965,7 @@ GameObject:
   - component: {fileID: 1244936575}
   - component: {fileID: 1244936574}
   - component: {fileID: 1244936573}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -21490,7 +21683,7 @@ GameObject:
   - component: {fileID: 1265667463}
   - component: {fileID: 1265667462}
   - component: {fileID: 1265667461}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -21670,7 +21863,7 @@ GameObject:
   - component: {fileID: 1283364060}
   - component: {fileID: 1283364059}
   - component: {fileID: 1283364058}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -22144,6 +22337,8 @@ MonoBehaviour:
   stirFrySliderObject: {fileID: 0}
   stirFryManager: {fileID: 827610610}
   progressMultiplier: 2
+  panShakeController: {fileID: 1151495128}
+  panShakeProgressBoost: 3
   onAllPrepDone:
     m_PersistentCalls:
       m_Calls:
@@ -22566,7 +22761,7 @@ GameObject:
   - component: {fileID: 1371135976}
   - component: {fileID: 1371135975}
   - component: {fileID: 1371135974}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -23602,7 +23797,7 @@ GameObject:
   - component: {fileID: 1457624184}
   - component: {fileID: 1457624183}
   - component: {fileID: 1457624182}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -23800,6 +23995,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: c4d700d15d4109a4e9014173103d7b09, type: 3}
       propertyPath: m_Name
       value: 22555
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c4d700d15d4109a4e9014173103d7b09, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -24037,7 +24236,7 @@ GameObject:
   - component: {fileID: 1497541568}
   - component: {fileID: 1497541567}
   - component: {fileID: 1497541566}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24186,7 +24385,7 @@ GameObject:
   - component: {fileID: 1530629559}
   - component: {fileID: 1530629558}
   - component: {fileID: 1530629557}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24329,9 +24528,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -24384,6 +24591,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -24914,7 +25129,7 @@ GameObject:
   - component: {fileID: 1555708905}
   - component: {fileID: 1555708904}
   - component: {fileID: 1555708903}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25194,7 +25409,7 @@ GameObject:
   - component: {fileID: 1576444922}
   - component: {fileID: 1576444921}
   - component: {fileID: 1576444920}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25737,7 +25952,7 @@ GameObject:
   - component: {fileID: 1604126559}
   - component: {fileID: 1604126558}
   - component: {fileID: 1604126557}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25996,7 +26211,7 @@ GameObject:
   - component: {fileID: 1634822016}
   - component: {fileID: 1634822015}
   - component: {fileID: 1634822014}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26991,7 +27206,7 @@ GameObject:
   - component: {fileID: 1708067462}
   - component: {fileID: 1708067461}
   - component: {fileID: 1708067460}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -27848,7 +28063,7 @@ GameObject:
   - component: {fileID: 1765247743}
   - component: {fileID: 1765247742}
   - component: {fileID: 1765247741}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -28072,7 +28287,7 @@ GameObject:
   - component: {fileID: 1806018431}
   - component: {fileID: 1806018430}
   - component: {fileID: 1806018429}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -28569,7 +28784,7 @@ GameObject:
   - component: {fileID: 1833416044}
   - component: {fileID: 1833416043}
   - component: {fileID: 1833416042}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -28840,7 +29055,7 @@ GameObject:
   - component: {fileID: 1841294939}
   - component: {fileID: 1841294938}
   - component: {fileID: 1841294937}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -30132,7 +30347,7 @@ GameObject:
   - component: {fileID: 1944065911}
   - component: {fileID: 1944065910}
   - component: {fileID: 1944065909}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -30415,9 +30630,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -30470,6 +30693,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -30930,7 +31161,7 @@ GameObject:
   - component: {fileID: 1985165062}
   - component: {fileID: 1985165061}
   - component: {fileID: 1985165060}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31079,7 +31310,7 @@ GameObject:
   - component: {fileID: 1993806787}
   - component: {fileID: 1993806786}
   - component: {fileID: 1993806785}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31222,9 +31453,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 601406808}
     m_Modifications:
+    - target: {fileID: 1127683350485531105, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_Name
       value: SausageSlice (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1236665822573757687, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalScale.x
@@ -31277,6 +31516,14 @@ PrefabInstance:
     - target: {fileID: 1901176206818041421, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5671352046017458219, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8996800767028215686, guid: 7b8dd37b37e41584cbdff926385ce640, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -31521,7 +31768,7 @@ GameObject:
   - component: {fileID: 2023942493}
   - component: {fileID: 2023942492}
   - component: {fileID: 2023942491}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31670,7 +31917,7 @@ GameObject:
   - component: {fileID: 2028908309}
   - component: {fileID: 2028908308}
   - component: {fileID: 2028908307}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32058,7 +32305,7 @@ GameObject:
   - component: {fileID: 2048608129}
   - component: {fileID: 2048608128}
   - component: {fileID: 2048608127}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -32293,7 +32540,7 @@ GameObject:
   - component: {fileID: 2053093497}
   - component: {fileID: 2053093496}
   - component: {fileID: 2053093495}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -33084,7 +33331,7 @@ GameObject:
   - component: {fileID: 2127482939}
   - component: {fileID: 2127482938}
   - component: {fileID: 2127482937}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -33233,7 +33480,7 @@ GameObject:
   - component: {fileID: 2135154603}
   - component: {fileID: 2135154602}
   - component: {fileID: 2135154601}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -33593,7 +33840,7 @@ GameObject:
   - component: {fileID: 2141034137}
   - component: {fileID: 2141034136}
   - component: {fileID: 2141034135}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: carrot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -75319,6 +75566,7 @@ SceneRoots:
   - {fileID: 1426705721}
   - {fileID: 1363872720}
   - {fileID: 1976856124}
+  - {fileID: 669465698}
   - {fileID: 1151495122}
   - {fileID: 333676782}
   - {fileID: 2136523302}
