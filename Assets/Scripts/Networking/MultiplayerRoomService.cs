@@ -154,6 +154,34 @@ public class MultiplayerRoomService : MonoBehaviour
         }
     }
 
+    private static string ToFriendlyMessage(Exception exception)
+    {
+        string message = exception.Message ?? string.Empty;
+        string lower = message.ToLowerInvariant();
+
+        if (lower.Contains("lobby not found") || lower.Contains("session not found"))
+        {
+            return "ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง";
+        }
+
+        if (lower.Contains("rate limit") || lower.Contains("too many requests"))
+        {
+            return "ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่";
+        }
+
+        if (lower.Contains("already in") && lower.Contains("session"))
+        {
+            return "คุณอยู่ในห้องอยู่แล้ว ออกจากห้องก่อนแล้วลองใหม่";
+        }
+
+        if (lower.Contains("full") || lower.Contains("lobby is full"))
+        {
+            return "ห้องเต็มแล้ว";
+        }
+
+        return message;
+    }
+
     private async Task RunRoomAction(Func<Task> action)
     {
         if (_isBusy)
@@ -170,8 +198,8 @@ public class MultiplayerRoomService : MonoBehaviour
         }
         catch (Exception exception)
         {
-            string message = exception.Message;
-            Debug.LogError($"[MultiplayerRoomService] {message}");
+            string message = ToFriendlyMessage(exception);
+            Debug.LogError($"[MultiplayerRoomService] {exception.Message}");
             OnRoomError?.Invoke(message);
             SetStatus(message);
         }

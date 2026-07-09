@@ -59,9 +59,9 @@ public class HostLobbySidebarUI : MonoBehaviour
 
         if (centerPanel != null)
         {
+            LobbyUIAnimations.CancelAndReset(centerPanel.gameObject);
             centerPanel.anchoredPosition = Vector2.zero;
             centerPanel.localScale = Vector3.one;
-            LobbyUIAnimations.StaggerChildrenIn(centerPanel, 0.06f);
         }
 
         if (startButton != null)
@@ -125,13 +125,7 @@ public class HostLobbySidebarUI : MonoBehaviour
 
         if (startButton != null)
         {
-            bool canStart = namedGuests > 0;
-            if (canStart && !startButton.interactable)
-            {
-                LobbyUIAnimations.AnimateReveal(startButton.gameObject, 0.05f);
-            }
-
-            startButton.interactable = canStart;
+            startButton.interactable = namedGuests > 0;
         }
     }
 
@@ -226,7 +220,6 @@ public class HostLobbySidebarUI : MonoBehaviour
         if (sidebarTitleText != null)
         {
             sidebarTitleText.text = "Players";
-            LobbyUIAnimations.AnimateElementIn(sidebarTitleText.gameObject, 0.15f);
         }
     }
 
