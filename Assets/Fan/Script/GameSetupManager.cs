@@ -3,48 +3,37 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// คุม flow การเลือกค่าก่อนเริ่มเกม ทั้งหมดอยู่ใน Scene เดียวกัน
-/// ขั้นตอน: เลือกช่วงอายุ -> เลือกโหมด -> เลือกเดี่ยว/เพื่อน -> เลือกเมนู -> โหลด Scene เกมจริง (หรือเปิด panel ห้องถ้าเลือกเพื่อน)
-///
-/// *** อัปเดต: เพิ่มหมวดที่ 4 = เลือกเมนู (หลังเดี่ยว/เพื่อน) ***
-/// - เดี่ยว: เลือกเดี่ยว -> เลือกเมนู -> โหลด Scene ทันที
-/// - เพื่อน: เลือกเพื่อน -> เลือกเมนู -> เปิด panel สร้าง/เข้าร่วมห้อง
-///
-/// การตั้งค่าเพิ่มเติมใน Inspector:
-/// - ลาก Category_Menu (SetupCategory) ใส่ช่อง "Category Menu" (แต่ละตัวเลือกย่อย = 1 เมนู เรียง index 0,1,2,...)
-/// - กรอกชื่อเมนูใน "Menu Names" ให้ index ตรงกับตัวเลือกใน Category_Menu (ใช้เก็บลง PlayerPrefs)
+/// คุม flow การเลือกค่าก่อนเริ่มเกม (อยู่ Scene เดียว)
+/// อายุ -> โหมด -> [เด้งไป UI ของโหมดนั้น] ...
+/// *** อัปเดต: ยืนยันโหมดแล้วเด้งไป UI ที่กำหนดไว้ต่อโหมด (Mode Panels) ***
 /// </summary>
 public class GameSetupManager : MonoBehaviour
 {
     public static GameSetupManager Instance { get; private set; }
 
-    // ---------- Enum สำหรับค่าที่เลือก ----------
     public enum AgeGroup { None = -1, Child = 0, Adult = 1, Elderly = 2 }
     public enum ModeOption { None = -1, OptionA = 0, OptionB = 1 }
     public enum PlayType { None = -1, Solo = 0, Friend = 1 }
 
-    // ---------- ค่าที่ระบบจะ "จำ" ไว้ ----------
     public AgeGroup SelectedAge { get; private set; } = AgeGroup.None;
     public ModeOption SelectedMode { get; private set; } = ModeOption.None;
     public PlayType SelectedPlayType { get; private set; } = PlayType.None;
-    public int SelectedMenuIndex { get; private set; } = -1; // เมนูที่เลือก (-1 = ยังไม่เลือก)
+    public int SelectedMenuIndex { get; private set; } = -1;
 
-    // ---------- ขั้นตอนปัจจุบัน ----------
-    private enum SetupStep
-    {
-        Age = 0,
-        Mode = 1,
-        PlayType = 2,
-        Menu = 3        // *** หมวดใหม่ ***
-    }
-
+    private enum SetupStep { Age = 0, Mode = 1, PlayType = 2, Menu = 3 }
     private SetupStep currentStep = SetupStep.Age;
 
     [Header("หมวดหมู่ (ลากของจริงใน Scene มาใส่ ตามลำดับ)")]
     [SerializeField] private SetupCategory categoryAge;
     [SerializeField] private SetupCategory categoryMode;
     [SerializeField] private SetupCategory categoryPlayType;
-    [SerializeField] private SetupCategory categoryMenu;   // *** หมวดเมนูใหม่ ***
+    [SerializeField] private SetupCategory categoryMenu;
+
+    [Header("*** UI ที่จะเด้งไปตามโหมด (ลากใส่ตรง ๆ ไม่ต้องนับเลข) ***")]
+    [Tooltip("เลือกโหมดแรก (OptionA) แล้วเด้งไปหน้านี้")]
+    [SerializeField] private GameObject panelModeA;
+    [Tooltip("เลือกโหมดสอง (OptionB) แล้วเด้งไปหน้านี้")]
+    [SerializeField] private GameObject panelModeB;
 
     [Header("รายชื่อเมนู (index ให้ตรงกับตัวเลือกใน Category Menu)")]
     [SerializeField] private List<string> menuNames = new List<string>();
@@ -58,19 +47,17 @@ public class GameSetupManager : MonoBehaviour
     [SerializeField] private string sceneFireSolo;
     [SerializeField] private string sceneFireFriend;
 
-    [Header("PlayerPrefs Keys (ไม่ต้องแก้ถ้าไม่จำเป็น)")]
+    [Header("PlayerPrefs Keys")]
     [SerializeField] private string prefKeyAge = "Setup_AgeGroup";
     [SerializeField] private string prefKeyMode = "Setup_Mode";
     [SerializeField] private string prefKeyPlayType = "Setup_PlayType";
-    [SerializeField] private string prefKeyMenu = "Setup_MenuIndex"; // *** key ใหม่ ***
+    [SerializeField] private string prefKeyMenu = "Setup_MenuIndex";
+
+    private int activeModePanel = -1; // -1 = ไม่ได้เปิด mode panel อยู่
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
 
@@ -78,89 +65,104 @@ public class GameSetupManager : MonoBehaviour
     {
         currentStep = SetupStep.Age;
         if (friendRoomPanel != null) friendRoomPanel.SetActive(false);
+        HideAllModePanels();
         ShowCurrentStep();
     }
 
-    // =====================================================
-    //  เรียกจาก SetupCategory ตอนผู้เล่นกดซ้ำที่ตัวเลือกเดิม (ยืนยันแล้ว)
-    // =====================================================
     public void OnConfirmSelection(int selectedIndex)
     {
         switch (currentStep)
         {
             case SetupStep.Age:
                 SelectedAge = (AgeGroup)selectedIndex;
-                Debug.Log($"[GameSetupManager] ยืนยันช่วงอายุ: {SelectedAge}");
+                Debug.Log($"[Setup] ยืนยันช่วงอายุ: {SelectedAge}");
                 GoToNextStep();
                 break;
 
             case SetupStep.Mode:
                 SelectedMode = (ModeOption)selectedIndex;
-                Debug.Log($"[GameSetupManager] ยืนยันโหมด: {SelectedMode}");
-                GoToNextStep();
+                Debug.Log($"[Setup] ยืนยันโหมด: {SelectedMode}");
+                HandleModeConfirmed(selectedIndex); // *** เด้งไป UI ของโหมดนั้น ***
                 break;
 
             case SetupStep.PlayType:
                 SelectedPlayType = (PlayType)selectedIndex;
-                Debug.Log($"[GameSetupManager] ยืนยันรูปแบบการเล่น: {SelectedPlayType}");
-                GoToNextStep(); // *** ไปหมวดเมนูต่อ (ไม่โหลดซีนทันที) ***
+                Debug.Log($"[Setup] ยืนยันรูปแบบการเล่น: {SelectedPlayType}");
+                GoToNextStep();
                 break;
 
             case SetupStep.Menu:
                 SelectedMenuIndex = selectedIndex;
-                string menuName = GetMenuName(selectedIndex);
-                Debug.Log($"[GameSetupManager] ยืนยันเมนู: [{selectedIndex}] {menuName}");
-                HandleFinalConfirm(); // *** ทำขั้นสุดท้ายหลังเลือกเมนู ***
+                Debug.Log($"[Setup] ยืนยันเมนู: [{selectedIndex}] {GetMenuName(selectedIndex)}");
+                HandleFinalConfirm();
                 break;
         }
     }
 
-    // =====================================================
-    //  จัดการผลลัพธ์หลังเลือกเมนู (ขั้นสุดท้าย)
-    // =====================================================
+    // *** ยืนยันโหมด -> เด้งไปหน้าตามโหมดตรง ๆ ***
+    private void HandleModeConfirmed(int modeIndex)
+    {
+        // เลือกหน้าตามโหมด
+        GameObject targetPanel = null;
+        if (modeIndex == (int)ModeOption.OptionA) targetPanel = panelModeA;
+        else if (modeIndex == (int)ModeOption.OptionB) targetPanel = panelModeB;
+
+        if (targetPanel != null)
+        {
+            if (categoryMode != null) categoryMode.SetCategoryActive(false);
+            HideAllModePanels();
+            targetPanel.SetActive(true);
+            activeModePanel = modeIndex;
+        }
+        else
+        {
+            // ไม่ได้ลากหน้าใส่ -> ใช้ flow เดิม (ไปหมวด PlayType)
+            GoToNextStep();
+        }
+    }
+
+    private void HideAllModePanels()
+    {
+        if (panelModeA != null) panelModeA.SetActive(false);
+        if (panelModeB != null) panelModeB.SetActive(false);
+        activeModePanel = -1;
+    }
+
     private void HandleFinalConfirm()
     {
         SaveToPlayerPrefs();
-
-        if (SelectedPlayType == PlayType.Solo)
-        {
-            LoadGameScene(); // เดี่ยว -> โหลดซีนเกมจริงทันที
-        }
-        else if (SelectedPlayType == PlayType.Friend)
-        {
-            ShowFriendRoomPanel(); // เพื่อน -> เปิด panel ห้อง
-        }
+        if (SelectedPlayType == PlayType.Solo) LoadGameScene();
+        else if (SelectedPlayType == PlayType.Friend) ShowFriendRoomPanel();
     }
 
     private void ShowFriendRoomPanel()
     {
-        // ปิดหมวดเมนู (หมวดที่กำลังแสดงอยู่) แล้วเปิด panel ห้องแทน
         if (categoryMenu != null) categoryMenu.SetCategoryActive(false);
-
         if (friendRoomPanel != null) friendRoomPanel.SetActive(true);
-        else Debug.LogWarning("[GameSetupManager] ยังไม่ได้ลาก Friend Room Panel ใส่ใน Inspector");
+        else Debug.LogWarning("[Setup] ยังไม่ได้ลาก Friend Room Panel");
     }
 
     public void OnCreateRoomPressed()
     {
-        string targetScene = GetTargetSceneName();
-        Debug.Log($"[GameSetupManager] กดสร้างห้อง -> Scene ที่ควรไปในอนาคต: {targetScene}");
-        // TODO: เชื่อมต่อระบบสร้างห้อง multiplayer แล้วค่อยเรียก SceneManager.LoadScene(targetScene)
+        Debug.Log($"[Setup] กดสร้างห้อง -> Scene: {GetTargetSceneName()}");
     }
 
     public void OnJoinRoomPressed()
     {
-        string targetScene = GetTargetSceneName();
-        Debug.Log($"[GameSetupManager] กดเข้าร่วมห้อง -> Scene ที่ควรไปในอนาคต: {targetScene}");
-        // TODO: เชื่อมต่อระบบเข้าร่วมห้อง multiplayer แล้วค่อยเรียก SceneManager.LoadScene(targetScene)
+        Debug.Log($"[Setup] กดเข้าร่วมห้อง -> Scene: {GetTargetSceneName()}");
     }
 
-    // =====================================================
-    //  ปุ่ม "ย้อนกลับ"
-    // =====================================================
     public void OnBackButtonPressed()
     {
-        // ถ้าอยู่ที่ Friend Room Panel -> ย้อนกลับไปหมวดเมนู
+        // ถ้ากำลังเปิด mode panel อยู่ -> ย้อนกลับไปหมวดโหมด
+        if (activeModePanel != -1)
+        {
+            HideAllModePanels();
+            if (categoryMode != null) categoryMode.SetCategoryActive(true);
+            currentStep = SetupStep.Mode;
+            return;
+        }
+
         if (friendRoomPanel != null && friendRoomPanel.activeSelf)
         {
             friendRoomPanel.SetActive(false);
@@ -170,7 +172,7 @@ public class GameSetupManager : MonoBehaviour
 
         if (currentStep == SetupStep.Age)
         {
-            Debug.Log("[GameSetupManager] อยู่ขั้นตอนแรกแล้ว ไม่สามารถย้อนกลับได้");
+            Debug.Log("[Setup] อยู่ขั้นแรกแล้ว ย้อนกลับไม่ได้");
             return;
         }
 
@@ -178,12 +180,9 @@ public class GameSetupManager : MonoBehaviour
         ShowCurrentStep();
     }
 
-    // =====================================================
-    //  ฟังก์ชันภายใน
-    // =====================================================
     private void GoToNextStep()
     {
-        if (currentStep == SetupStep.Menu) return; // หมวดสุดท้ายแล้ว
+        if (currentStep == SetupStep.Menu) return;
         currentStep++;
         ShowCurrentStep();
     }
@@ -203,25 +202,19 @@ public class GameSetupManager : MonoBehaviour
         PlayerPrefs.SetInt(prefKeyPlayType, (int)SelectedPlayType);
         PlayerPrefs.SetInt(prefKeyMenu, SelectedMenuIndex);
         PlayerPrefs.Save();
-
-        Debug.Log($"[GameSetupManager] บันทึกแล้ว -> Age: {SelectedAge}, Mode: {SelectedMode}, PlayType: {SelectedPlayType}, Menu: [{SelectedMenuIndex}] {GetMenuName(SelectedMenuIndex)}");
     }
 
     private string GetMenuName(int index)
-    {
-        if (index >= 0 && index < menuNames.Count) return menuNames[index];
-        return "(ไม่มีชื่อ)";
-    }
+        => (index >= 0 && index < menuNames.Count) ? menuNames[index] : "(ไม่มีชื่อ)";
 
     private void LoadGameScene()
     {
         string targetScene = GetTargetSceneName();
         if (string.IsNullOrEmpty(targetScene))
         {
-            Debug.LogError($"[GameSetupManager] ยังไม่ได้ตั้งชื่อ Scene สำหรับคู่ Mode: {SelectedMode}, PlayType: {SelectedPlayType}");
+            Debug.LogError($"[Setup] ยังไม่ได้ตั้งชื่อ Scene สำหรับ {SelectedMode} x {SelectedPlayType}");
             return;
         }
-        Debug.Log($"[GameSetupManager] โหลด Scene: {targetScene}");
         SceneManager.LoadScene(targetScene);
     }
 
@@ -231,8 +224,6 @@ public class GameSetupManager : MonoBehaviour
         if (SelectedMode == ModeOption.OptionA && SelectedPlayType == PlayType.Friend) return sceneNormalFriend;
         if (SelectedMode == ModeOption.OptionB && SelectedPlayType == PlayType.Solo)   return sceneFireSolo;
         if (SelectedMode == ModeOption.OptionB && SelectedPlayType == PlayType.Friend) return sceneFireFriend;
-
-        Debug.LogError("[GameSetupManager] ไม่พบ Mode หรือ PlayType ที่เลือก (None)");
         return null;
     }
 }
