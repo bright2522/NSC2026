@@ -1,0 +1,7 @@
+{
+  "sceneRef": {
+    "instanceID": 0,
+    "assetPath": "Assets/Scenes/CreateRoom.unity"
+  },
+  "loadSceneMode": "Single"
+}

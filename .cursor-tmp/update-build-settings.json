@@ -1,0 +1,7 @@
+{
+  "isMethodBody": false,
+  "className": "BuildSettingsUpdater",
+  "methodName": "Run",
+  "parameters": [],
+  "csharpCode": "using System.Linq;\nusing UnityEditor;\nusing UnityEditor.SceneManagement;\n\npublic static class BuildSettingsUpdater\n{\n    public static string Run()\n    {\n        var scenes = EditorBuildSettings.scenes.ToList();\n        const string createRoomPath = \"Assets/Scenes/CreateRoom.unity\";\n\n        if (!scenes.Any(scene => scene.path == createRoomPath))\n        {\n            scenes.Insert(0, new EditorBuildSettingsScene(createRoomPath, true));\n            EditorBuildSettings.scenes = scenes.ToArray();\n        }\n\n        return \"Build settings updated\";\n    }\n}"
+}

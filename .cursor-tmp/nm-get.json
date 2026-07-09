@@ -1,0 +1,8 @@
+{
+  "gameObjectRef": {
+    "name": "NetworkManager"
+  },
+  "componentRef": {
+    "typeName": "Unity.Netcode.NetworkManager"
+  }
+}
