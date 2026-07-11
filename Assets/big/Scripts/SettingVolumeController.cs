@@ -18,8 +18,8 @@ public class SettingVolumeController : MonoBehaviour
         volumeSlider.wholeNumbers = false;
 
         // โหลดค่าเสียงที่เคยบันทึกไว้
-        // ถ้าไม่เคยมีค่า ให้เริ่มที่ 0
-        float savedVolume = PlayerPrefs.GetFloat(VolumeKey, 0f);
+        // ถ้าไม่เคยมีค่า ให้เริ่มที่ 100
+        float savedVolume = PlayerPrefs.GetFloat(VolumeKey, 1f);
 
         volumeSlider.value = savedVolume;
         ApplyVolume(savedVolume);
