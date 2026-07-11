@@ -13406,6 +13406,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   putDownButtonObject: {fileID: 2145851208}
+  nextButtonObject: {fileID: 1169140228}
   maxProgress: 100
 --- !u!224 &827610611
 RectTransform:
@@ -27266,6 +27267,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   putDownButtonObject: {fileID: 0}
+  nextButtonObject: {fileID: 0}
   maxProgress: 100
 --- !u!1 &1708067459
 GameObject:
@@ -27613,6 +27615,7 @@ GameObject:
   - component: {fileID: 1738493836}
   - component: {fileID: 1738493841}
   - component: {fileID: 1738493840}
+  - component: {fileID: 1738493842}
   m_Layer: 0
   m_Name: plates (1)
   m_TagString: Untagged
@@ -27755,6 +27758,21 @@ PlayableDirector:
     value: {fileID: 402538174}
   m_ExposedReferences:
     m_References: []
+--- !u!114 &1738493842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1738493835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0da240f4c9b16e43a6cf7530a1b060b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  director: {fileID: 1738493841}
+  objectToActivate: {fileID: 1169140228}
+  deactivateOnPlay: 1
 --- !u!1 &1759629778
 GameObject:
   m_ObjectHideFlags: 0
@@ -28082,7 +28100,7 @@ MonoBehaviour:
   disturbanceManager: {fileID: 0}
   preparationState: {fileID: 0}
   tiltPourMinigame: {fileID: 0}
-  stirFryManager: {fileID: 0}
+  stirFryManager: {fileID: 827610610}
   folkCookingSystem: {fileID: 0}
   cookingState: {fileID: 0}
   panFlickMinigame: {fileID: 0}

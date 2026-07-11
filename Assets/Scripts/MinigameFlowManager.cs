@@ -283,6 +283,7 @@ public class MinigameFlowManager : MonoBehaviour
 
             // ── ผัดไปเรื่อยๆ + ควบคุมไฟ ──────────────────────────────────────
             case MinigameFlowStep.CookAndControlHeat:
+                stirFryManager?.ResetProgress();
                 if (cookingState != null)
                 {
                     cookingState.enabled = true;
