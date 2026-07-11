@@ -1,0 +1,437 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 41,
+      "max": [
+        0.3984886705875397,
+        0.1837296336889267,
+        0.14660590887069702
+      ],
+      "min": [
+        -0.4297020137310028,
+        -0.18368923664093018,
+        -0.20042091608047485
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 492,
+      "componentType": 5126,
+      "count": 41,
+      "max": [
+        0.9762969613075256,
+        0.866022527217865,
+        0.5000051856040955
+      ],
+      "min": [
+        -0.9677133560180664,
+        -0.8660255074501038,
+        -0.9957743883132935
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 41,
+      "max": [
+        0.11997058987617493,
+        -0.49999988079071045,
+        0.866022527217865,
+        1.0
+      ],
+      "min": [
+        -0.054103195667266846,
+        -0.9998339414596558,
+        -0.866025447845459,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 41,
+      "max": [
+        0.9448347687721252,
+        0.9998494386672974
+      ],
+      "min": [
+        0.00015055954281706363,
+        0.00015055750554893166
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 328,
+      "componentType": 5126,
+      "count": 41,
+      "max": [
+        0.9448347687721252,
+        0.9998494386672974
+      ],
+      "min": [
+        0.00015055954281706363,
+        0.00015055750554893166
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 126,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 984,
+      "componentType": 5126,
+      "count": 473,
+      "max": [
+        0.3924330770969391,
+        0.16734249889850616,
+        0.13523626327514648
+      ],
+      "min": [
+        -0.4221780300140381,
+        -0.16755053400993347,
+        -0.19941189885139465
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 6660,
+      "componentType": 5126,
+      "count": 473,
+      "max": [
+        0.9958091378211975,
+        0.9719310998916626,
+        0.9999733567237854
+      ],
+      "min": [
+        -0.9995852708816528,
+        -0.968868613243103,
+        -0.9981324076652527
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 656,
+      "componentType": 5126,
+      "count": 473,
+      "max": [
+        0.9858860969543457,
+        0.267559677362442,
+        0.9804524183273315,
+        1.0
+      ],
+      "min": [
+        -0.9869874119758606,
+        -0.99994957447052,
+        -0.9868037700653076,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 656,
+      "componentType": 5126,
+      "count": 473,
+      "max": [
+        0.9448347687721252,
+        0.9998494386672974
+      ],
+      "min": [
+        0.00015055954281706363,
+        0.0001505575201008469
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 4440,
+      "componentType": 5126,
+      "count": 473,
+      "max": [
+        0.9448347687721252,
+        0.9998494386672974
+      ],
+      "min": [
+        0.00015055954281706363,
+        0.0001505575201008469
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 504,
+      "componentType": 5125,
+      "count": 1848,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "LordCinn (https://sketchfab.com/LordCinn)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/limes-should-be-free-ff79de6334604137adef2d0ddde70991",
+      "title": "Limes should be free"
+    },
+    "generator": "Sketchfab-16.21.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 7896,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 8224,
+      "byteOffset": 7896,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 12336,
+      "byteOffset": 16120,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 8224,
+      "byteOffset": 28456,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 36680,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/92498_lime_wedge_1_1_baseColor.jpeg"
+    },
+    {
+      "uri": "textures/92498_lime_wedge_1_1_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/92498_lime_wedge_1_1_normal.jpeg"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "92498_lime_wedge_1_1",
+      "normalTexture": {
+        "index": 2
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.0,
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "92498_lime_wedge_1_1.001_92498_lime_wedge_1_1_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3,
+            "TEXCOORD_1": 4
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "92498_lime_wedge_1_1.002_92498_lime_wedge_1_1_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 7,
+            "POSITION": 6,
+            "TANGENT": 8,
+            "TEXCOORD_0": 9,
+            "TEXCOORD_1": 10
+          },
+          "indices": 11,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "00ebc827254449bbac51c3c652c6c1d9.fbx"
+    },
+    {
+      "children": [
+        3,
+        5
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        100.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.629206793918314e-05,
+        -99.99999999999868,
+        0.0,
+        0.0,
+        99.99999999999868,
+        -1.629206793918314e-05,
+        0.0,
+        0.0,
+        0.0,
+        33.03759002685547,
+        1.0
+      ],
+      "name": "92498_lime_wedge_1_1.001"
+    },
+    {
+      "mesh": 0,
+      "name": "92498_lime_wedge_1_1.001_92498_lime_wedge_1_1_0"
+    },
+    {
+      "children": [
+        6
+      ],
+      "matrix": [
+        100.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.629206793918314e-05,
+        -99.99999999999868,
+        0.0,
+        0.0,
+        99.99999999999868,
+        -1.629206793918314e-05,
+        0.0,
+        0.0,
+        0.0,
+        -33.00879669189453,
+        1.0
+      ],
+      "name": "92498_lime_wedge_1_1.002"
+    },
+    {
+      "mesh": 1,
+      "name": "92498_lime_wedge_1_1.002_92498_lime_wedge_1_1_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Green Curry Thai
+* source:	https://sketchfab.com/3d-models/green-curry-thai-121310a3fb834e0791a35c95d5b5ec30
+* author:	Siriphat (https://sketchfab.com/Siriphat.Chimchan)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Green Curry Thai" (https://sketchfab.com/3d-models/green-curry-thai-121310a3fb834e0791a35c95d5b5ec30) by Siriphat (https://sketchfab.com/Siriphat.Chimchan) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

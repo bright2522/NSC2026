@@ -1,0 +1,11 @@
+Model Information:
+* title:	Food - Thai Noodle
+* source:	https://sketchfab.com/3d-models/food-thai-noodle-676409cd5a7c468d89611c4621f61aee
+* author:	KimtueKP (https://sketchfab.com/kimtuekp)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Food - Thai Noodle" (https://sketchfab.com/3d-models/food-thai-noodle-676409cd5a7c468d89611c4621f61aee) by KimtueKP (https://sketchfab.com/kimtuekp) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

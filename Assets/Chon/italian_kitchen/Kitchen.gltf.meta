@@ -1,0 +1,103 @@
+fileFormatVersion: 2
+guid: 96a770063b28e9344bddc9ca61a67987
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 715df9372183c47e389bb6e19fbc3b52, type: 3}
+  editorImportSettings:
+    generateSecondaryUVSet: 0
+  importSettings:
+    nodeNameMethod: 1
+    animationMethod: 2
+    generateMipMaps: 1
+    texturesReadable: 0
+    defaultMinFilterMode: 9729
+    defaultMagFilterMode: 9729
+    anisotropicFilterLevel: 1
+  instantiationSettings:
+    mask: -1
+    layer: 0
+    skinUpdateWhenOffscreen: 1
+    lightIntensityFactor: 1
+    sceneObjectCreation: 2
+  assetDependencies:
+  - type: 0
+    originalUri: Assets\Chon\italian_kitchen\scene.bin
+    assetPath: Assets\Chon\italian_kitchen\scene.bin
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\CoverPaglia1_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\CoverPaglia1_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\CoverPaglia1_normal.png
+    assetPath: Assets\Chon\italian_kitchen\textures\CoverPaglia1_normal.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Etiquette_nutella_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Etiquette_nutella_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\GamlaGialla_A01_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\GamlaGialla_A01_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Gamla_Rosa_Liscia_D1_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Gamla_Rosa_Liscia_D1_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Gamla_Tonda_Red_A1_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Gamla_Tonda_Red_A1_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Internonero_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Internonero_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Internonero_metallicRoughness.png
+    assetPath: Assets\Chon\italian_kitchen\textures\Internonero_metallicRoughness.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\K0_End01_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\K0_End01_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\K0_End01_normal.png
+    assetPath: Assets\Chon\italian_kitchen\textures\K0_End01_normal.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Metal1_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Metal1_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Pavimento01_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Pavimento01_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Pavimento01_metallicRoughness.png
+    assetPath: Assets\Chon\italian_kitchen\textures\Pavimento01_metallicRoughness.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Pavimento01_normal.png
+    assetPath: Assets\Chon\italian_kitchen\textures\Pavimento01_normal.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Piastrelle001_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Piastrelle001_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Piastrelle001_metallicRoughness.png
+    assetPath: Assets\Chon\italian_kitchen\textures\Piastrelle001_metallicRoughness.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Piatto01_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Piatto01_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Soffitto01_normal.png
+    assetPath: Assets\Chon\italian_kitchen\textures\Soffitto01_normal.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Tappo_normal.png
+    assetPath: Assets\Chon\italian_kitchen\textures\Tappo_normal.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\Walls01_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\Walls01_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\WoodSedia1_baseColor.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\WoodSedia1_baseColor.jpeg
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\WoodSedia1_normal.png
+    assetPath: Assets\Chon\italian_kitchen\textures\WoodSedia1_normal.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\wooden_desk_baseColor.png
+    assetPath: Assets\Chon\italian_kitchen\textures\wooden_desk_baseColor.png
+  - type: 1
+    originalUri: Assets\Chon\italian_kitchen\textures\wooden_desk_emissive.jpeg
+    assetPath: Assets\Chon\italian_kitchen\textures\wooden_desk_emissive.jpeg
+  reportItems: []

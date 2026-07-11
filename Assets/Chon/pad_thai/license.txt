@@ -1,0 +1,11 @@
+Model Information:
+* title:	Pad Thai
+* source:	https://sketchfab.com/3d-models/pad-thai-41ecc0e94287457fac4cbaad41013ca9
+* author:	PiyalakNuchim (https://sketchfab.com/PiyalakNuchim)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Pad Thai" (https://sketchfab.com/3d-models/pad-thai-41ecc0e94287457fac4cbaad41013ca9) by PiyalakNuchim (https://sketchfab.com/PiyalakNuchim) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
