@@ -1,48 +1,56 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// ปัดซ้าย/ขวา เพื่อสลับสเตชัน (หั่น -> ทอด -> ต้ม) ในซีนเดียว
-public class SwipeStationSwitcher : MonoBehaviour
+// สลับสเตชันแบบสไลด์: อันเก่าเลื่อนออก อันใหม่เลื่อนเข้ามาแทนตำแหน่งเดิม
+// ทุกสเตชันวางไว้ตำแหน่งเดียวกัน (ตรงกลาง) ตอนสลับค่อยเลื่อน
+public class StationSlideSwitcher : MonoBehaviour
 {
-    [Header("สเตชันแต่ละอย่าง (เรียงซ้าย -> ขวา)")]
-    [Tooltip("เช่น 0=หั่น, 1=ทอด, 2=ต้ม")]
-    public List<GameObject> stations = new List<GameObject>();
+    [Header("สเตชันทั้งหมด (เรียง หั่น/ทอด/ต้ม)")]
+    public List<Transform> stations = new List<Transform>();
 
-    public int startIndex = 0;
+    [Header("ตำแหน่งกลาง (จุดที่สเตชันควรมาอยู่)")]
+    [Tooltip("ระยะที่อันเก่าเลื่อนออกไปด้านข้าง (world units)")]
+    public float slideOutDistance = 25f;
+    [Tooltip("ความเร็วสไลด์")]
+    public float slideSpeed = 10f;
 
     [Header("การปัด")]
-    [Tooltip("ระยะปัดขั้นต่ำ (พิกเซล) ถึงจะนับว่าปัด")]
     public float minSwipeDistance = 120f;
-    [Tooltip("ปัดวนได้ไหม (ปัดซ้ายจากอันสุดท้ายกลับมาอันแรก)")]
-    public bool loop = false;
-    [Tooltip("เปิด/ปิดการปัด — ปิดตอนกำลังหั่นเพื่อไม่ให้ชนกับการลากมีด")]
     public bool swipeEnabled = true;
 
-    private int current;
+    private int current = 0;
+    private Vector3 centerPos;      // ตำแหน่งกลางที่สเตชันมาอยู่
+    private bool animating;
+
     private Vector2 startPos;
     private bool tracking;
 
     void Start()
     {
-        current = Mathf.Clamp(startIndex, 0, stations.Count - 1);
-        ShowOnly(current);
+        // ใช้ตำแหน่งของสเตชันแรกเป็นจุดกลาง
+        centerPos = stations.Count > 0 ? stations[0].position : transform.position;
+
+        // วางทุกอันไว้กลาง แล้วเปิดเฉพาะอันแรก ปิดที่เหลือ
+        for (int i = 0; i < stations.Count; i++)
+        {
+            if (stations[i] == null) continue;
+            stations[i].position = centerPos;
+            stations[i].gameObject.SetActive(i == current);
+        }
     }
 
     void Update()
     {
-        if (!swipeEnabled) return;
+        if (!swipeEnabled || animating) return;
 
-        // --- จอสัมผัส ---
         if (Input.touchCount > 0)
         {
             Touch t = Input.GetTouch(0);
             if (t.phase == TouchPhase.Began) { startPos = t.position; tracking = true; }
             else if ((t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) && tracking)
-            {
-                EndSwipe(t.position); tracking = false;
-            }
+            { EndSwipe(t.position); tracking = false; }
         }
-        // --- เมาส์ (ทดสอบใน Editor) ---
         else
         {
             if (Input.GetMouseButtonDown(0)) { startPos = Input.mousePosition; tracking = true; }
@@ -52,49 +60,65 @@ public class SwipeStationSwitcher : MonoBehaviour
 
     void EndSwipe(Vector2 endPos)
     {
-        Vector2 delta = endPos - startPos;
+        Vector2 d = endPos - startPos;
+        if (Mathf.Abs(d.x) < minSwipeDistance) return;
+        if (Mathf.Abs(d.x) < Mathf.Abs(d.y)) return;
 
-        if (Mathf.Abs(delta.x) < minSwipeDistance) return;    // ปัดสั้นไป ไม่นับ
-        if (Mathf.Abs(delta.x) < Mathf.Abs(delta.y)) return;  // เป็นการปัดแนวตั้งมากกว่า ไม่นับ
-
-        if (delta.x < 0) Next();      // ปัดซ้าย -> ถัดไป (ทอด/ต้ม)
-        else Previous();              // ปัดขวา -> ย้อนกลับ (หั่น)
+        if (d.x < 0) Next();      // ปัดซ้าย -> ถัดไป
+        else Previous();          // ปัดขวา -> ย้อนกลับ
     }
 
-    // ไปสเตชันถัดไป (เรียกจากปุ่มลูกศรก็ได้)
     public void Next()
     {
-        if (current < stations.Count - 1) current++;
-        else if (loop) current = 0;
-        else return;
-        ShowOnly(current);
+        if (current >= stations.Count - 1) return;
+        StartCoroutine(SlideTo(current + 1, fromRight: true));
     }
 
-    // ย้อนกลับสเตชันก่อนหน้า
     public void Previous()
     {
-        if (current > 0) current--;
-        else if (loop) current = stations.Count - 1;
-        else return;
-        ShowOnly(current);
+        if (current <= 0) return;
+        StartCoroutine(SlideTo(current - 1, fromRight: false));
     }
 
-    // ไปสเตชันตาม index ตรง ๆ (เผื่อผูกปุ่ม)
-    public void GoTo(int index)
+    // อันใหม่เลื่อนเข้ามาแทนอันเก่า
+    IEnumerator SlideTo(int newIndex, bool fromRight)
     {
-        if (index < 0 || index >= stations.Count) return;
-        current = index;
-        ShowOnly(current);
+        animating = true;
+
+        Transform oldS = stations[current];
+        Transform newS = stations[newIndex];
+
+        // อันใหม่เริ่มจากด้านข้าง (ขวาถ้าปัดซ้าย, ซ้ายถ้าปัดขวา)
+        float side = fromRight ? 1f : -1f;
+        Vector3 newStart = centerPos + Vector3.right * (slideOutDistance * side);
+        Vector3 oldEnd   = centerPos + Vector3.right * (slideOutDistance * -side);
+
+        newS.position = newStart;
+        newS.gameObject.SetActive(true);
+
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime * slideSpeed;
+            float e = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
+
+            if (oldS != null) oldS.position = Vector3.Lerp(centerPos, oldEnd, e);   // อันเก่าเลื่อนออก
+            newS.position = Vector3.Lerp(newStart, centerPos, e);                    // อันใหม่เลื่อนเข้า
+            yield return null;
+        }
+
+        // จบ: อันใหม่อยู่กลาง อันเก่าปิด+คืนตำแหน่ง
+        newS.position = centerPos;
+        if (oldS != null)
+        {
+            oldS.gameObject.SetActive(false);
+            oldS.position = centerPos;
+        }
+
+        current = newIndex;
+        animating = false;
     }
 
-    // เปิด/ปิดการปัด (ผูกกับ event ตอนเริ่ม/จบการหั่นได้)
-    public void SetSwipeEnabled(bool value) => swipeEnabled = value;
-
-    void ShowOnly(int index)
-    {
-        for (int i = 0; i < stations.Count; i++)
-            if (stations[i] != null) stations[i].SetActive(i == index);
-    }
-
+    public void SetSwipeEnabled(bool v) => swipeEnabled = v;
     public int CurrentIndex => current;
 }
