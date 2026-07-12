@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.ivanmurzak.unity.mcp": "0.82.4",
+    "com.ivanmurzak.unity.mcp": "0.83.1",
     "com.ivanmurzak.unity.mcp.inputsystem": "1.0.5",
     "com.unity.ai.navigation": "2.0.9",
     "com.unity.cloud.gltfast": "6.19.0",
