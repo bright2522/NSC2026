@@ -468,6 +468,7 @@ GameObject:
   - component: {fileID: 563280355}
   - component: {fileID: 563280354}
   - component: {fileID: 563280353}
+  - component: {fileID: 563280357}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -558,12 +559,32 @@ Transform:
   m_GameObject: {fileID: 563280352}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 857.45, y: 6.05, z: -448.46}
+  m_LocalPosition: {x: 837.75, y: 6.05, z: -448.46}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1957392765}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &563280357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 563280352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ff8fc3600c97a842933463504cba587, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spacing: 20
+  stationCount: 3
+  startIndex: 1
+  snapSpeed: 10
+  switchThreshold: 0.2
+  flickSpeed: 4
+  swipeEnabled: 1
 --- !u!1 &1385519260
 GameObject:
   m_ObjectHideFlags: 0
@@ -673,76 +694,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1790348700
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1790348702}
-  - component: {fileID: 1790348701}
-  - component: {fileID: 1790348703}
-  m_Layer: 0
-  m_Name: 'StationSwitcher '
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1790348701
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1790348700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a52143ce9e9f5fc4abb46ea96ceaebea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stations:
-  - {fileID: 563280352}
-  - {fileID: 1957392761}
-  startIndex: 0
-  minSwipeDistance: 120
-  loop: 0
-  swipeEnabled: 1
---- !u!4 &1790348702
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1790348700}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 858.8719, y: -1.2496222, z: -455.7809}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1790348703
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1790348700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ff8fc3600c97a842933463504cba587, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spacing: 20
-  stationCount: 3
-  startIndex: 0
-  snapSpeed: 8
-  switchThreshold: 0.25
-  swipeEnabled: 1
 --- !u!1 &1957392761
 GameObject:
   m_ObjectHideFlags: 0
@@ -844,12 +795,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1957392761}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 848.86, y: 6.05, z: -448.46}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 18.940002, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 563280356}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -860,5 +811,3 @@ SceneRoots:
   - {fileID: 63662160}
   - {fileID: 1385519264}
   - {fileID: 563280356}
-  - {fileID: 1957392765}
-  - {fileID: 1790348702}
