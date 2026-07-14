@@ -191,8 +191,8 @@ public class MinigameFlowManager : MonoBehaviour
         if (!IsRunning) IsRunning = true;
         if (isTransitioning) return;
 
-        // บันทึกคะแนน step ปัจจุบันก่อน (ถ้ายังไม่ได้บันทึก)
-        if (CurrentStepIndex >= 0 && !stepDone)
+        // บันทึกคะแนน step ปัจจุบันก่อน (ถ้ายังไม่ได้บันทึก) — ยกเว้น FinalScore ซึ่งไม่ใช่ step ที่มีคะแนนของตัวเอง
+        if (CurrentStepIndex >= 0 && !stepDone && CurrentStep != MinigameFlowStep.FinalScore)
         {
             float s = pendingScore >= 0f ? pendingScore : GetCurrentConfig()?.fallbackScore ?? 70f;
             pendingScore = -1f;
@@ -214,10 +214,9 @@ public class MinigameFlowManager : MonoBehaviour
 
         if (cfg.waitForNextButton)
         {
-            // รอกดปุ่ม — แค่เก็บคะแนนไว้ก่อน
+            // รอกดปุ่ม — แค่เก็บคะแนนไว้ก่อน (onStepCompleted จะยิงตอน RecordStepScore ตอนกด Next เท่านั้น เพื่อไม่ให้ซ้ำ)
             WaitingForNextButton = true;
             pendingScore = score;
-            onStepCompleted?.Invoke(CurrentStep, score);
             return;
         }
 
