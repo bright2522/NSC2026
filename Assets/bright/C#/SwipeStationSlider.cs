@@ -9,7 +9,7 @@ public class SwipeStationSlider : MonoBehaviour
 
     [Header("จำนวนสเตชัน")]
     public int stationCount = 3;
-    public int startIndex = 1;
+    public int startIndex = 0;
 
     [Header("ความลื่น")]
     public float snapSpeed = 10f;
@@ -66,6 +66,15 @@ public class SwipeStationSlider : MonoBehaviour
 
         if (dragging && GetPressHeld(out Vector2 movePos))
         {
+            // Knife input has priority. Stop this swipe as soon as a knife has
+            // actually been picked up, but keep swiping available everywhere else.
+            if (KnifeMovement.IsAnyKnifeDragging)
+            {
+                dragging = false;
+                targetPosition = PositionForIndex(current);
+                return;
+            }
+
             float wx = ScreenToWorldX(movePos);
             float delta = wx - dragStartWorldX;
             transform.position = new Vector3(dragStartRowPos.x + delta, dragStartRowPos.y, dragStartRowPos.z);

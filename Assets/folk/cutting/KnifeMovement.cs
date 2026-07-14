@@ -24,8 +24,11 @@ public class KnifeMovement : MonoBehaviour
     private Collider knifeCollider;
     private Vector3 dragStartPosition;
     private float dragStartPointerX;
+    private float topWorldY;
+    private float bottomWorldY;
 
     public bool IsSliceActive { get; private set; }
+    public static bool IsAnyKnifeDragging => activeKnife != null && activeKnife.isDragging;
 
     private void Awake()
     {
@@ -41,43 +44,10 @@ public class KnifeMovement : MonoBehaviour
 
     private void Start()
     {
-        BakeChildOffsetIntoRoot();
-    }
-
-    private void BakeChildOffsetIntoRoot()
-    {
-        Transform visualChild = GetPositionedVisualChild();
-        if (visualChild != null)
-        {
-            Vector3 worldPos = visualChild.position;
-            transform.position = new Vector3(worldPos.x, topYPosition, worldPos.z);
-            visualChild.SetParent(transform, true);
-            return;
-        }
-
-        transform.position = new Vector3(transform.position.x, topYPosition, transform.position.z);
-    }
-
-    private Transform GetPositionedVisualChild()
-    {
-        if (transform.childCount == 0)
-            return null;
-
-        Transform bestChild = null;
-        float largestLocalSqr = 0f;
-
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            Transform child = transform.GetChild(i);
-            float localSqr = child.localPosition.sqrMagnitude;
-            if (localSqr <= largestLocalSqr)
-                continue;
-
-            largestLocalSqr = localSqr;
-            bestChild = child;
-        }
-
-        return largestLocalSqr > 0.0001f ? bestChild : null;
+        // Preserve the position placed in the scene. Only the vertical travel
+        // distance is derived from the inspector values during the chop animation.
+        topWorldY = transform.position.y;
+        bottomWorldY = topWorldY - Mathf.Abs(topYPosition - bottomYPosition);
     }
 
     private void Update()
@@ -100,7 +70,7 @@ public class KnifeMovement : MonoBehaviour
                 isDragging = true;
                 activeKnife = this;
                 dragStartPosition = transform.position;
-                dragPlane = new Plane(Vector3.up, new Vector3(0f, topYPosition, 0f));
+                dragPlane = new Plane(Vector3.up, new Vector3(0f, topWorldY, 0f));
 
                 Ray ray = activeCamera.ScreenPointToRay(inputScreenPosition);
                 if (dragPlane.Raycast(ray, out float enter))
@@ -117,7 +87,7 @@ public class KnifeMovement : MonoBehaviour
                 float deltaX = hitPoint.x - dragStartPointerX;
                 transform.position = new Vector3(
                     dragStartPosition.x + deltaX,
-                    topYPosition,
+                    topWorldY,
                     dragStartPosition.z);
             }
         }
@@ -194,11 +164,11 @@ public class KnifeMovement : MonoBehaviour
         IsSliceActive = false;
         LeanTween.cancel(gameObject);
 
-        Vector3 chopPos = new Vector3(transform.position.x, bottomYPosition, transform.position.z);
-        Vector3 topPos = new Vector3(transform.position.x, topYPosition, transform.position.z);
+        Vector3 chopPos = new Vector3(transform.position.x, bottomWorldY, transform.position.z);
+        Vector3 topPos = new Vector3(transform.position.x, topWorldY, transform.position.z);
 
-        float chopDuration = Mathf.Max(0.01f, Mathf.Abs(transform.position.y - bottomYPosition) / chopSpeed);
-        float resetDuration = Mathf.Max(0.01f, Mathf.Abs(topYPosition - bottomYPosition) / resetSpeed);
+        float chopDuration = Mathf.Max(0.01f, Mathf.Abs(transform.position.y - bottomWorldY) / chopSpeed);
+        float resetDuration = Mathf.Max(0.01f, Mathf.Abs(topWorldY - bottomWorldY) / resetSpeed);
 
         LeanTween.move(gameObject, chopPos, chopDuration)
             .setEase(chopEase)
