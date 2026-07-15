@@ -13136,7 +13136,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8114074676016132679, guid: dec359be22705ff4083532aaa01ea290, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.892
+      value: 0.745
       objectReference: {fileID: 0}
     - target: {fileID: 8114074676016132679, guid: dec359be22705ff4083532aaa01ea290, type: 3}
       propertyPath: m_LocalPosition.z
@@ -13215,7 +13215,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   topYPosition: 0.7
   bottomYPosition: 0.3
-  chopSpeed: 5
+  chopSpeed: 2.5
   resetSpeed: 5
   chopHoldDuration: 0.04
   chopEase: 3
@@ -26630,7 +26630,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8114074676016132679, guid: dec359be22705ff4083532aaa01ea290, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.892
+      value: 0.745
       objectReference: {fileID: 0}
     - target: {fileID: 8114074676016132679, guid: dec359be22705ff4083532aaa01ea290, type: 3}
       propertyPath: m_LocalPosition.z
