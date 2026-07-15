@@ -6358,7 +6358,7 @@ MonoBehaviour:
   maxTime: 5
   scoreReward: 100
   moneyReward: 20
-  gameOverSceneName: EndGame
+  gameOverSceneName: scwi
   delayAfterAnimation: 2
 --- !u!4 &1372696949
 Transform:
