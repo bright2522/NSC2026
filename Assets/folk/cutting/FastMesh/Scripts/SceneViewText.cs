@@ -1,5 +1,8 @@
 using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace FastMesh_Example
 {
@@ -10,17 +13,22 @@ namespace FastMesh_Example
         string text2 = "These 3D models, all created with \"Fast Mesh - 3D Asset Creation Tool\" (click)"; 
         Color backgroundColor = Color.white;
         Color textColor = Color.black; 
-    
+
         private void OnEnable()
         {
+#if UNITY_EDITOR
             SceneView.duringSceneGui += OnSceneGUI;
+#endif
         }
-    
+
         private void OnDisable()
         {
+#if UNITY_EDITOR
             SceneView.duringSceneGui -= OnSceneGUI;
+#endif
         }
-    
+
+#if UNITY_EDITOR
         private void OnSceneGUI(SceneView sceneView)
         {
             if (isShow == false) return;
@@ -31,13 +39,12 @@ namespace FastMesh_Example
             style.fontSize = 20;
             style.normal.textColor = textColor;
             style.wordWrap = true;
-    
+
             float width = 420f;
             float height = 50f;
             float x = (sceneView.position.width - width) / 2f;
-            // float y = (sceneView.position.height - height) / 2f;
             float y = 10f;
-    
+
             GUI.color = backgroundColor;
             GUI.DrawTexture(new Rect(x - 10, y - 10, width + 20, height + 20), Texture2D.whiteTexture);
             GUI.color = Color.white;
@@ -46,13 +53,9 @@ namespace FastMesh_Example
             {
                 Application.OpenURL("https://assetstore.unity.com/packages/slug/288711");
             }
-    
-            // GUILayout.BeginArea(new Rect(x, y, width, height));
-            // GUILayout.Label(text, style);
-            // GUILayout.EndArea();
+
             Handles.EndGUI();
         }
+#endif
     }
 }
-
-
