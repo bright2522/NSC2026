@@ -123,8 +123,7 @@ public class CuttingMinigameController : MonoBehaviour
 
     private static int CountCurrentPieces()
     {
-        if (SlicedFoodManager.Instance == null) return 0;
-        return SlicedFoodManager.Instance.transform.childCount;
+        return SlicedFoodManager.Instance != null ? SlicedFoodManager.Instance.PieceCount : 0;
     }
 }
 

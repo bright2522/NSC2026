@@ -211,9 +211,17 @@ public class SliceableFood : MonoBehaviour
 
         Transform groupTransform = group.transform;
         groupTransform.SetPositionAndRotation(transform.position, transform.rotation);
-        groupTransform.SetParent(SlicedFoodManager.Container, true);
+        // อยู่ใต้ parent เดียวกับต้นฉบับ (เช่น station/row ของ SwipeStationSlider) ไม่ใช่ SlicedFoodManager
+        // เพื่อให้ชิ้นที่หั่นแล้วเลื่อนตามสเตชันไปด้วยตอน swipe
+        groupTransform.SetParent(transform.parent, true);
+        SlicedFoodManager.RegisterPiece(group);
 
         return group;
+    }
+
+    private void OnDestroy()
+    {
+        SlicedFoodManager.UnregisterPiece(gameObject);
     }
 
     private bool HasRemainingMeshes()

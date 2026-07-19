@@ -13,10 +13,12 @@ public class SwipeStationSlider : MonoBehaviour
 
     [Header("ความลื่น")]
     public float snapSpeed = 10f;
-    [Tooltip("ลากเกินเศษนี้ของ 1 หน้า ถึงจะเปลี่ยนหน้า (0.2 = ปัดนิดเดียวก็เปลี่ยน)")]
+    [Tooltip("ลากเกินเศษนี้ของ 'ความกว้างจอ' ถึงจะเปลี่ยนหน้า (0.2 = ลาก 20% ของความกว้างจอ)")]
     public float switchThreshold = 0.2f;
-    [Tooltip("ปัดเร็ว ๆ (flick) เปลี่ยนหน้าได้แม้ลากไม่ไกล")]
-    public float flickSpeed = 4f;
+    // เปลี่ยนชื่อ field จาก flickSpeed เดิม (หน่วย world-unit/วิ) เพื่อทิ้งค่าเก่าที่ serialize ไว้ในซีน
+    // ไม่ให้ค่าเก่า (เช่น 4) มาทับ default ใหม่ที่เป็นพิกเซล/วินาที
+    [Tooltip("ปัดเร็ว ๆ (flick) เปลี่ยนหน้าได้แม้ลากไม่ไกล — หน่วยเป็นพิกเซล/วินาที")]
+    public float flickSpeedPixels = 600f;
 
     [Header("เปิด/ปิดการเลื่อน (ปิดตอนหั่น)")]
     public bool swipeEnabled = true;
@@ -30,7 +32,6 @@ public class SwipeStationSlider : MonoBehaviour
     private float dragStartWorldX;
     private float dragStartScreenX;
     private Vector3 dragStartRowPos;
-    private float lastWorldX;
     private float lastScreenX;
     private float velocity;
 
@@ -55,10 +56,13 @@ public class SwipeStationSlider : MonoBehaviour
     {
         if (GetPressDown(out Vector2 downPos))
         {
+            // ถ้ามีของในซีน pad ถูกจับอยู่ (ถ้วยไส้กรอก/ตะหลิว/ไข่/กระเทียม ผ่าน PanDragCoordinator)
+            // ห้ามเริ่ม swipe — ไม่งั้นแถวจะเลื่อนหนีระหว่างผู้เล่นลากของใส่กระทะ
+            if (PanDragCoordinator.HasActiveInteraction) return;
+
             dragging = true;
             dragStartWorldX = ScreenToWorldX(downPos);
             dragStartScreenX = downPos.x;
-            lastWorldX = dragStartWorldX;
             lastScreenX = dragStartScreenX;
             dragStartRowPos = transform.position;
             velocity = 0f;
@@ -66,11 +70,13 @@ public class SwipeStationSlider : MonoBehaviour
 
         if (dragging && GetPressHeld(out Vector2 movePos))
         {
-            // Knife input has priority. Stop this swipe as soon as a knife has
-            // actually been picked up, but keep swiping available everywhere else.
-            if (KnifeMovement.IsAnyKnifeDragging)
+            // ของอื่นมีสิทธิ์ก่อน swipe: ทั้งมีด (KnifeMovement) และ draggable ในซีน pad
+            // (PanDragCoordinator อาจถูกจับทีหลังในเฟรมเดียวกัน เพราะลำดับ Update ไม่แน่นอน
+            //  จึงต้องเช็คระหว่างลากด้วย แล้วยกเลิก swipe คืนตำแหน่งเดิมทันที)
+            if (KnifeMovement.IsAnyKnifeDragging || PanDragCoordinator.HasActiveInteraction)
             {
                 dragging = false;
+                transform.position = dragStartRowPos;
                 targetPosition = PositionForIndex(current);
                 return;
             }
@@ -79,8 +85,9 @@ public class SwipeStationSlider : MonoBehaviour
             float delta = wx - dragStartWorldX;
             transform.position = new Vector3(dragStartRowPos.x + delta, dragStartRowPos.y, dragStartRowPos.z);
 
-            velocity = (wx - lastWorldX) / Mathf.Max(Time.deltaTime, 0.0001f);
-            lastWorldX = wx;
+            // ใช้ความเร็วแบบพิกเซลจอ ไม่ใช่ world-unit เพราะ world-unit ขึ้นกับกล้อง/ระยะ
+            // ทำให้ threshold เพี้ยนไปตามฉาก (ลากยากหรือง่ายเกินไปแบบสุ่ม)
+            velocity = (movePos.x - lastScreenX) / Mathf.Max(Time.deltaTime, 0.0001f);
             lastScreenX = movePos.x;
         }
 
@@ -88,39 +95,46 @@ public class SwipeStationSlider : MonoBehaviour
         {
             dragging = false;
 
-            // Use the screen-space direction for navigation.  A camera rotated 180
-            // degrees reverses world X, but a left swipe should always mean "next".
-            float movedSlots = Mathf.Abs(transform.position.x - dragStartRowPos.x) / spacing;
-            bool swipedLeft = lastScreenX < dragStartScreenX;
+            // ระยะที่ลากตัดสินด้วยพิกเซลจอ (สม่ำเสมอทุกกล้อง/ทุกจอ)
+            float screenMoved = Mathf.Abs(lastScreenX - dragStartScreenX);
+            float screenFraction = screenMoved / Mathf.Max(Screen.width, 1f);
+
+            // ทิศทางตัดสินจากการเคลื่อนของแถวจริง ๆ เทียบกับแนวเรียงสเตชัน
+            // (ไม่เดาจากทิศจอ เพราะกล้องหมุน 180° ทำให้ซ้าย-ขวากลับด้านได้)
+            // ค่าบวก = ลากให้สเตชัน index สูงขึ้นเข้ามาในจอ
+            float draggedTowardNext = Vector3.Dot(dragStartRowPos - transform.position, StationAxis()) / spacing;
 
             // ลากไกลพอ หรือ ปัดเร็ว (flick) = เปลี่ยนหน้า
-            bool flick = Mathf.Abs(velocity) > flickSpeed;
+            bool flick = Mathf.Abs(velocity) > flickSpeedPixels;
 
-            if (swipedLeft && (movedSlots > switchThreshold || flick))
-                current = NextIndex();
-            else if (!swipedLeft && (movedSlots > switchThreshold || flick))
-                current = PreviousIndex();
+            if (screenFraction > switchThreshold || flick)
+            {
+                if (draggedTowardNext > 0.001f) current = NextIndex();
+                else if (draggedTowardNext < -0.001f) current = PreviousIndex();
+            }
 
             targetPosition = PositionForIndex(current);
         }
     }
 
-    Vector3 PositionForIndex(int index) => homePosition + ScreenLeftDirection() * (spacing * index);
+    // แถวต้องเลื่อนสวนทางกับแนวเรียงสเตชัน เพื่อดึงสเตชันถัดไปเข้ามากลางจอ
+    Vector3 PositionForIndex(int index) => homePosition - StationAxis() * (spacing * index);
 
-    Vector3 ScreenLeftDirection()
+    // แกนที่สเตชันเรียงต่อกัน: ลูก ๆ ของแถววางห่างกันตาม local +X และแถวเลื่อนเฉพาะแกน X โลก
+    Vector3 StationAxis()
     {
-        if (cam == null) cam = Camera.main;
-
-        // This slider moves only along world X, so preserve that constraint while
-        // choosing the X direction that appears as left to the active camera.
-        float x = -cam.transform.right.x;
-        return Mathf.Abs(x) < 0.001f ? Vector3.left : Vector3.right * Mathf.Sign(x);
+        Vector3 axis = transform.rotation * Vector3.right;
+        return Mathf.Abs(axis.x) < 0.001f ? Vector3.right : Vector3.right * Mathf.Sign(axis.x);
     }
 
     float ScreenToWorldX(Vector2 screenPos)
     {
         if (cam == null) cam = Camera.main;
-        float depth = Mathf.Abs(cam.transform.position.z - transform.position.z);
+
+        // ระยะที่ ScreenToWorldPoint ต้องการ คือระยะห่างตามแกน forward ของกล้อง ไม่ใช่ผลต่างแกน Z ตรง ๆ
+        // กล้องในฉากนี้ก้มมองลงเกือบ 90 องศา (forward ชี้ลงตามแกน Y เป็นหลัก) ถ้าใช้ผลต่าง Z
+        // จะได้ค่า depth ที่เพี้ยนไปมาก ทำให้การลากตามนิ้วไม่แม่นยำ/ไม่ขยับตามที่ลาก
+        float depth = Vector3.Dot(transform.position - cam.transform.position, cam.transform.forward);
         return cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, depth)).x;
     }
 

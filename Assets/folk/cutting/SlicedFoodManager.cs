@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SlicedFoodManager : MonoBehaviour
@@ -5,6 +6,12 @@ public class SlicedFoodManager : MonoBehaviour
     public static SlicedFoodManager Instance { get; private set; }
 
     [SerializeField] private string containerName = "SlicedPieces";
+
+    // ชิ้นที่หั่นแล้วอยู่ใต้ parent ของสเตชันตัวเอง (ไม่ใช่ลูกของ manager นี้) เพื่อให้เลื่อนตาม
+    // SwipeStationSlider ได้ จึงต้องนับจำนวนผ่าน registry แทน transform.childCount
+    private readonly HashSet<GameObject> trackedPieces = new HashSet<GameObject>();
+
+    public int PieceCount => trackedPieces.Count;
 
     public static Transform Container
     {
@@ -34,9 +41,22 @@ public class SlicedFoodManager : MonoBehaviour
         gameObject.name = containerName;
     }
 
+    public static void RegisterPiece(GameObject piece)
+    {
+        if (piece == null) return;
+        if (Instance == null) _ = Container; // สร้าง instance ถ้ายังไม่มี
+        Instance.trackedPieces.Add(piece);
+    }
+
+    public static void UnregisterPiece(GameObject piece)
+    {
+        Instance?.trackedPieces.Remove(piece);
+    }
+
     public void ClearAllSlicedPieces()
     {
-        for (int i = transform.childCount - 1; i >= 0; i--)
-            Destroy(transform.GetChild(i).gameObject);
+        foreach (GameObject piece in trackedPieces)
+            if (piece != null) Destroy(piece);
+        trackedPieces.Clear();
     }
 }

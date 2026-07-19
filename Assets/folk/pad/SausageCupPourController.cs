@@ -14,8 +14,9 @@ public class SausageCupPourController : MonoBehaviour
     private float zCoord;
     private Vector3 targetSnapPosition; 
 
-    private Vector3 initialPosition;    
-    private Quaternion initialRotation; 
+    // เก็บเป็น local space เพื่อให้กลับที่เดิมถูกต้องแม้แถวสเตชัน (SwipeStationSlider) จะเลื่อนไปแล้ว
+    private Vector3 initialLocalPosition;
+    private Quaternion initialLocalRotation;
     private Collider cupCollider;
 
     [Header("ระบบล็อกกล้องเฉพาะตัว (ป้องกันเอ๋อเมื่อมีกล้องหลายตัว)")]
@@ -54,8 +55,8 @@ public class SausageCupPourController : MonoBehaviour
             Debug.LogWarning($"[SausageCup] ไม่พบการใส่กล้องในช่อง Custom Camera จึงสลับไปใช้ Camera.main ส่วนกลาง");
         }
 
-        initialPosition = transform.position;
-        initialRotation = transform.rotation;
+        initialLocalPosition = transform.localPosition;
+        initialLocalRotation = transform.localRotation;
         cupCollider = GetComponent<Collider>();
 
         SetSausagesKinematic(true);
@@ -67,6 +68,8 @@ public class SausageCupPourController : MonoBehaviour
 
         if (isSnapping && lockTarget != null)
         {
+            // คำนวณจุด snap ใหม่ทุกเฟรม เผื่อกระทะ/แถวสเตชันขยับระหว่าง snap
+            targetSnapPosition = AlignLaterallyWith(lockTarget.position);
             transform.position = Vector3.Lerp(transform.position, targetSnapPosition, Time.deltaTime * snapSpeed);
 
             if (Vector3.Distance(transform.position, targetSnapPosition) < 0.05f)
@@ -83,13 +86,13 @@ public class SausageCupPourController : MonoBehaviour
 
         if (isReturningToStart)
         {
-            transform.position = Vector3.Lerp(transform.position, initialPosition, Time.deltaTime * snapSpeed);
-            transform.rotation = Quaternion.Lerp(transform.rotation, initialRotation, Time.deltaTime * snapSpeed);
+            transform.localPosition = Vector3.Lerp(transform.localPosition, initialLocalPosition, Time.deltaTime * snapSpeed);
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, initialLocalRotation, Time.deltaTime * snapSpeed);
 
-            if (Vector3.Distance(transform.position, initialPosition) < 0.05f)
+            if (Vector3.Distance(transform.localPosition, initialLocalPosition) < 0.05f)
             {
-                transform.position = initialPosition;
-                transform.rotation = initialRotation;
+                transform.localPosition = initialLocalPosition;
+                transform.localRotation = initialLocalRotation;
                 isReturningToStart = false;
             }
         }
@@ -115,8 +118,9 @@ public class SausageCupPourController : MonoBehaviour
 
             if (isDragging && Input.GetMouseButton(0))
             {
-                Vector3 targetPos = GetMouseWorldPos() + offset;
-                transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
+                // เลื่อนในระนาบกล้อง (คงระยะลึกตามแกน forward ของกล้อง) — ห้ามล็อกแกน z ตรง ๆ
+                // เพราะกับกล้อง top-down แกนลึกคือ Y ถ้าล็อก z ถ้วยจะมุดลงพื้นแทนที่จะเลื่อนตามนิ้ว
+                transform.position = GetMouseWorldPos() + offset;
             }
 
             if (Input.GetMouseButtonUp(0) && isDragging)
@@ -125,15 +129,13 @@ public class SausageCupPourController : MonoBehaviour
 
                 if (lockTarget != null)
                 {
-                    Vector2 cupPos2D = new Vector2(transform.position.x, transform.position.y);
-                    Vector2 targetPos2D = new Vector2(lockTarget.position.x, lockTarget.position.y);
-
-                    float finalDistance = Vector2.Distance(cupPos2D, targetPos2D);
+                    // วัดระยะเฉพาะในระนาบกล้อง (ตัดแกนลึกออก) ใช้ได้ทั้งกล้องหน้าตรงและ top-down
+                    float finalDistance = LateralDistanceTo(lockTarget.position);
 
                     if (finalDistance < snapDistance)
                     {
                         isSnapping = true;
-                        targetSnapPosition = new Vector3(lockTarget.position.x, lockTarget.position.y, transform.position.z);
+                        targetSnapPosition = AlignLaterallyWith(lockTarget.position);
                     }
                     else
                     {
@@ -153,6 +155,12 @@ public class SausageCupPourController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
+            // กล้องอาจถูกสลับเปิด/ปิดระหว่าง step (MinigameFlowManager) — ถ้าตัวที่ถืออยู่ปิดไปแล้ว
+            // ให้หาตัวที่ active จริงตอนนี้ ไม่งั้น raycast/แปลงพิกัดจะเพี้ยนหมด
+            if (activeCamera == null || !activeCamera.isActiveAndEnabled)
+                activeCamera = (customCamera != null && customCamera.isActiveAndEnabled) ? customCamera : Camera.main;
+            if (activeCamera == null) return;
+
             // 🎯 เปลี่ยนมาทำ Raycast ผ่านตัวแปร activeCamera (ซึ่งผูกกับกล้องตัวที่ 3 แล้ว)
             Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -175,8 +183,27 @@ public class SausageCupPourController : MonoBehaviour
     {
         Vector3 mousePoint = Input.mousePosition;
         mousePoint.z = zCoord;
-        // 🎯 เปลี่ยนมาแปลงพิกัดหน้าจอสู่พิกัดโลกด้วยกล้องที่เราเลือกโดยตรง
-        return activeCamera.ScreenPointToRay(mousePoint).GetPoint(zCoord);
+        // ScreenToWorldPoint คืออินเวิร์สที่แท้จริงของ WorldToScreenPoint (zCoord = ระยะตามแกน forward)
+        // ต่างจาก ray.GetPoint(zCoord) ที่จะเพี้ยนเมื่อเมาส์อยู่ห่างกลางจอ (ray เฉียง ระยะไม่เท่า depth)
+        return activeCamera.ScreenToWorldPoint(mousePoint);
+    }
+
+    // ── ตัวช่วยเรขาคณิตแบบไม่ผูกกับทิศกล้อง ─────────────────────────────────
+    // ระยะห่างจากถ้วยถึงเป้า เฉพาะในระนาบตั้งฉากกับแกนมองของกล้อง (ตัดความต่างเชิงลึกทิ้ง)
+    float LateralDistanceTo(Vector3 target)
+    {
+        Vector3 f = activeCamera != null ? activeCamera.transform.forward : Vector3.forward;
+        Vector3 d = target - transform.position;
+        return (d - f * Vector3.Dot(d, f)).magnitude;
+    }
+
+    // จุดที่ตรงกับเป้าในระนาบกล้อง แต่คงระยะลึกปัจจุบันของถ้วยไว้
+    // (กล้องหน้าตรง: เทียบเท่า (target.x, target.y, cup.z) แบบโค้ดเดิมเป๊ะ)
+    Vector3 AlignLaterallyWith(Vector3 target)
+    {
+        Vector3 f = activeCamera != null ? activeCamera.transform.forward : Vector3.forward;
+        Vector3 d = target - transform.position;
+        return transform.position + d - f * Vector3.Dot(d, f);
     }
 
     void HandleTilt()
