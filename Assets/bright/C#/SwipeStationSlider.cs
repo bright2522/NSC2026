@@ -1,9 +1,9 @@
 using UnityEngine;
 
-// เลื่อนแบบหน้าจอมือถือ: ทั้งแถว (พร้อมของทุกอย่าง) เลื่อนตามนิ้ว ปล่อยแล้ว snap เข้าหน้า
-// ** ตัวนี้ต้องเป็นแม่ของทุกสเตชัน และสเตชันวางเรียงตามแกน X ห่างเท่า spacing **
 public class SwipeStationSlider : MonoBehaviour
 {
+    public static SwipeStationSlider Instance { get; private set; }
+
     [Header("ระยะห่างระหว่างสเตชัน (world units)")]
     public float spacing = 20f;
 
@@ -15,13 +15,14 @@ public class SwipeStationSlider : MonoBehaviour
     public float snapSpeed = 10f;
     [Tooltip("ลากเกินเศษนี้ของ 'ความกว้างจอ' ถึงจะเปลี่ยนหน้า (0.2 = ลาก 20% ของความกว้างจอ)")]
     public float switchThreshold = 0.2f;
-    // เปลี่ยนชื่อ field จาก flickSpeed เดิม (หน่วย world-unit/วิ) เพื่อทิ้งค่าเก่าที่ serialize ไว้ในซีน
-    // ไม่ให้ค่าเก่า (เช่น 4) มาทับ default ใหม่ที่เป็นพิกเซล/วินาที
     [Tooltip("ปัดเร็ว ๆ (flick) เปลี่ยนหน้าได้แม้ลากไม่ไกล — หน่วยเป็นพิกเซล/วินาที")]
     public float flickSpeedPixels = 600f;
 
-    [Header("เปิด/ปิดการเลื่อน (ปิดตอนหั่น)")]
-    public bool swipeEnabled = true;
+    [Header("เปิด/ปิดการเลื่อน")]
+    public bool swipeEnabled = false; // 👈 ตั้ง Default ไว้เป็น false (ล็อกไว้ก่อน)
+
+    [Header("ระบบจำกัดการเลื่อนแค่ 1 ครั้ง")]
+    public bool allowOneSwipeOnly = false; 
 
     private int current;
     private Vector3 homePosition;
@@ -35,6 +36,24 @@ public class SwipeStationSlider : MonoBehaviour
     private float lastScreenX;
     private float velocity;
 
+    // --- เพิ่มตัวแปรสำหรับนับการเลื่อนหน้าจอ ---
+    private int successfulSwipeCount = 0; 
+
+    // --- ป้องกันการสร้าง Loop ซ้ำในเฟรมเดียวกัน ---
+    private bool hasTriggeredLoop = false;
+
+    private void Awake()
+    {
+        // 💡 ปรับปรุง: ย้าย Instance มาชี้ที่สเตชันใหม่ล่าสุดเสมอ (ไม่สั่ง Destroy)
+        Instance = this;
+    }
+
+    private void OnEnable()
+    {
+        // 🔄 รีเซ็ตค่าป้องกันการสร้าง Loop ซ้ำทุกครั้งที่ Component ถูกเปิดใช้งาน
+        hasTriggeredLoop = false;
+    }
+
     void Start()
     {
         cam = Camera.main;
@@ -46,18 +65,23 @@ public class SwipeStationSlider : MonoBehaviour
 
     void Update()
     {
-        if (swipeEnabled) HandleDrag();
+        // ถ้า swipeEnabled เป็น false จะไม่รับ Input การลากเลย
+        if (swipeEnabled) 
+        {
+            HandleDrag();
+        }
 
+        // ค่อยๆ Lerp หน้าจอไปยังเป้าหมายเสมอ
         if (!dragging)
+        {
             transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * snapSpeed);
+        }
     }
 
     void HandleDrag()
     {
         if (GetPressDown(out Vector2 downPos))
         {
-            // ถ้ามีของในซีน pad ถูกจับอยู่ (ถ้วยไส้กรอก/ตะหลิว/ไข่/กระเทียม ผ่าน PanDragCoordinator)
-            // ห้ามเริ่ม swipe — ไม่งั้นแถวจะเลื่อนหนีระหว่างผู้เล่นลากของใส่กระทะ
             if (PanDragCoordinator.HasActiveInteraction) return;
 
             dragging = true;
@@ -70,14 +94,9 @@ public class SwipeStationSlider : MonoBehaviour
 
         if (dragging && GetPressHeld(out Vector2 movePos))
         {
-            // ของอื่นมีสิทธิ์ก่อน swipe: ทั้งมีด (KnifeMovement) และ draggable ในซีน pad
-            // (PanDragCoordinator อาจถูกจับทีหลังในเฟรมเดียวกัน เพราะลำดับ Update ไม่แน่นอน
-            //  จึงต้องเช็คระหว่างลากด้วย แล้วยกเลิก swipe คืนตำแหน่งเดิมทันที)
             if (KnifeMovement.IsAnyKnifeDragging || PanDragCoordinator.HasActiveInteraction)
             {
-                dragging = false;
-                transform.position = dragStartRowPos;
-                targetPosition = PositionForIndex(current);
+                CancelDrag();
                 return;
             }
 
@@ -85,42 +104,108 @@ public class SwipeStationSlider : MonoBehaviour
             float delta = wx - dragStartWorldX;
             transform.position = new Vector3(dragStartRowPos.x + delta, dragStartRowPos.y, dragStartRowPos.z);
 
-            // ใช้ความเร็วแบบพิกเซลจอ ไม่ใช่ world-unit เพราะ world-unit ขึ้นกับกล้อง/ระยะ
-            // ทำให้ threshold เพี้ยนไปตามฉาก (ลากยากหรือง่ายเกินไปแบบสุ่ม)
             velocity = (movePos.x - lastScreenX) / Mathf.Max(Time.deltaTime, 0.0001f);
             lastScreenX = movePos.x;
         }
 
         if (dragging && GetPressUp())
         {
-            dragging = false;
-
-            // ระยะที่ลากตัดสินด้วยพิกเซลจอ (สม่ำเสมอทุกกล้อง/ทุกจอ)
-            float screenMoved = Mathf.Abs(lastScreenX - dragStartScreenX);
-            float screenFraction = screenMoved / Mathf.Max(Screen.width, 1f);
-
-            // ทิศทางตัดสินจากการเคลื่อนของแถวจริง ๆ เทียบกับแนวเรียงสเตชัน
-            // (ไม่เดาจากทิศจอ เพราะกล้องหมุน 180° ทำให้ซ้าย-ขวากลับด้านได้)
-            // ค่าบวก = ลากให้สเตชัน index สูงขึ้นเข้ามาในจอ
-            float draggedTowardNext = Vector3.Dot(dragStartRowPos - transform.position, StationAxis()) / spacing;
-
-            // ลากไกลพอ หรือ ปัดเร็ว (flick) = เปลี่ยนหน้า
-            bool flick = Mathf.Abs(velocity) > flickSpeedPixels;
-
-            if (screenFraction > switchThreshold || flick)
-            {
-                if (draggedTowardNext > 0.001f) current = NextIndex();
-                else if (draggedTowardNext < -0.001f) current = PreviousIndex();
-            }
-
-            targetPosition = PositionForIndex(current);
+            CompleteSwipe();
         }
     }
 
-    // แถวต้องเลื่อนสวนทางกับแนวเรียงสเตชัน เพื่อดึงสเตชันถัดไปเข้ามากลางจอ
+    private void CompleteSwipe()
+    {
+        dragging = false;
+
+        float screenMoved = Mathf.Abs(lastScreenX - dragStartScreenX);
+        float screenFraction = screenMoved / Mathf.Max(Screen.width, 1f);
+
+        // คำนวณระยะทางและทิศทางที่ลาก (ค่าเป็นบวกเมื่อลากไปทางซ้ายเพื่อไปหน้าถัดไป)
+        float draggedDelta = dragStartWorldX - transform.position.x; 
+        bool flick = Mathf.Abs(velocity) > flickSpeedPixels;
+
+        int oldIndex = current;
+
+        // เปลี่ยนหน้าถ้าปัดเกินระยะกำหนด
+        if (screenFraction > switchThreshold || flick)
+        {
+            if (draggedDelta > 0.05f) current = NextIndex();
+            else if (draggedDelta < -0.05f) current = PreviousIndex();
+        }
+
+        targetPosition = PositionForIndex(current);
+
+        // 🎯 1. เมื่อเลื่อนเปลี่ยนหน้าสำเร็จจริง (Index เปลี่ยน)
+        if (current != oldIndex)
+        {
+            // --- นับการเลื่อนหน้าจอและเพิ่มคะแนน ---
+            successfulSwipeCount++;
+
+            if (ScoreManager.Instance != null)
+            {
+                if (successfulSwipeCount == 1)
+                {
+                    ScoreManager.Instance.AddScore(100);
+                    Debug.Log("<color=green>เลื่อนหน้าจอครั้งแรก ได้คะแนน +100</color>");
+                }
+                else if (successfulSwipeCount == 2)
+                {
+                    ScoreManager.Instance.AddScore(40);
+                    Debug.Log("<color=green>เลื่อนหน้าจอครั้งที่สอง ได้คะแนน +40</color>");
+                }
+            }
+
+            // 🖼️ สั่งซ่อนรูปภาพ / ปุ่ม Next
+            if (SliceProgress.Instance != null)
+            {
+                SliceProgress.Instance.HideNextButton();
+            }
+
+            // 🔒 สั่งล็อกหน้าจอทันทีหากอยู่ในโหมดปัด 1 ครั้ง
+            if (allowOneSwipeOnly)
+            {
+                allowOneSwipeOnly = false;
+                swipeEnabled = false;
+                Debug.Log("<color=orange>🔒 ปัดเปลี่ยนหน้าสำเร็จแล้ว สั่งล็อกการเลื่อนจอทันที!</color>");
+            }
+        }
+
+        // 🔄 2. ตรวจสอบการสร้าง Loop: เมื่ออยู่สเตชันสุดท้าย แล้วพยายามปัดไปสเตชันถัดไปอีก
+        bool isAtLastStation = (oldIndex == stationCount - 1);
+        bool swipingForward = (draggedDelta > 0.05f || (flick && velocity < 0));
+
+        if (isAtLastStation && swipingForward && !hasTriggeredLoop)
+        {
+            hasTriggeredLoop = true;
+
+            StationLoopManager loopManager = StationLoopManager.Instance;
+            if (loopManager == null)
+            {
+                loopManager = FindFirstObjectByType<StationLoopManager>();
+            }
+
+            if (loopManager != null)
+            {
+                Debug.Log("<color=cyan><b>🚀 ปัดที่สเตชันสุดท้ายแล้ว! กำลังเรียก StationLoopManager ให้สร้างชุดใหม่...</b></color>");
+                loopManager.SpawnNextStation();
+            }
+            else
+            {
+                Debug.LogError("<color=red>❌ ไม่พบ StationLoopManager ใน Scene! กรุณาวาง GameObject ที่แปะ StationLoopManager ไว้ใน Scene หลัก</color>");
+            }
+        }
+    }
+
+    private void CancelDrag()
+    {
+        dragging = false;
+        transform.position = dragStartRowPos;
+        targetPosition = PositionForIndex(current);
+    }
+
     Vector3 PositionForIndex(int index) => homePosition - StationAxis() * (spacing * index);
 
-    // แกนที่สเตชันเรียงต่อกัน: ลูก ๆ ของแถววางห่างกันตาม local +X และแถวเลื่อนเฉพาะแกน X โลก
     Vector3 StationAxis()
     {
         Vector3 axis = transform.rotation * Vector3.right;
@@ -130,17 +215,35 @@ public class SwipeStationSlider : MonoBehaviour
     float ScreenToWorldX(Vector2 screenPos)
     {
         if (cam == null) cam = Camera.main;
+        if (cam == null) return 0f;
 
-        // ระยะที่ ScreenToWorldPoint ต้องการ คือระยะห่างตามแกน forward ของกล้อง ไม่ใช่ผลต่างแกน Z ตรง ๆ
-        // กล้องในฉากนี้ก้มมองลงเกือบ 90 องศา (forward ชี้ลงตามแกน Y เป็นหลัก) ถ้าใช้ผลต่าง Z
-        // จะได้ค่า depth ที่เพี้ยนไปมาก ทำให้การลากตามนิ้วไม่แม่นยำ/ไม่ขยับตามที่ลาก
         float depth = Vector3.Dot(transform.position - cam.transform.position, cam.transform.forward);
         return cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, depth)).x;
     }
 
-    public void Next()     { current = NextIndex();     targetPosition = PositionForIndex(current); }
+    public void Next() { current = NextIndex(); targetPosition = PositionForIndex(current); }
     public void Previous() { current = PreviousIndex(); targetPosition = PositionForIndex(current); }
-    public void SetSwipeEnabled(bool v) => swipeEnabled = v;
+    
+    public void SetSwipeEnabled(bool v) 
+    { 
+        swipeEnabled = v; 
+    }
+
+    /// <summary>
+    /// เรียกฟังก์ชันนี้หลังหั่นไส้กรอกเสร็จ
+    /// </summary>
+    public void EnableOneTimeSwipe()
+    {
+        allowOneSwipeOnly = true;
+        swipeEnabled = true;
+        Debug.Log("<color=yellow>🔓 ปลดล็อกให้ปัดเปลี่ยนหน้าได้ 1 ครั้ง</color>");
+    }
+
+    public void GoToIndex(int index)
+    {
+        current = Mathf.Clamp(index, 0, stationCount - 1);
+        targetPosition = PositionForIndex(current);
+    }
 
     int NextIndex()
     {

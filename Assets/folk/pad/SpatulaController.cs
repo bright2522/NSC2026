@@ -1,32 +1,39 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI; 
+using UnityEngine.UI;
 
 public class SpatulaController : MonoBehaviour
 {
-    private bool isHolding = false; 
-    private bool isReturningToStart = false; 
+    private bool isHolding = false;
+    private bool isReturningToStart = false;
     private bool hasInvokedPrepDoneEvent = false;
-    
-    // 🎥 เปลี่ยนตัวแปรหลักมาใช้ตัวที่เลือกกำหนดได้เอง ป้องกันปัญหากล้องหลายตัวตีกัน
+
+    // 🎥 ตัวแปรกล้องที่ใช้งานอยู่
     private Camera activeCamera;
 
-    private Vector3 initialPosition;    
-    private Quaternion initialRotation; 
-    private Vector3 lastPosition; 
+    private Vector3 initialPosition;
+    private Quaternion initialRotation;
+    private Vector3 lastPosition;
     private Collider spatulaCollider;
     private float stirDistanceAccumulator;
 
+    // 🎯 ตัวแปรนับคะแนนที่ได้รับจากตะหลิวชิ้นนี้
+    private int currentSpatulaScore = 0;
+
+    [Header("Score Cap Setup")]
+    [Tooltip("คะแนนสูงสุดที่ยอมให้เก็บได้จากตะหลิว")]
+    public int maxScore = 50;
+
     [Header("ระบบล็อกกล้องเฉพาะตัว (ป้องกันเอ๋อเมื่อมีกล้องหลายตัว)")]
-    [Tooltip("ลากกล้องตัวที่ 3 (กล้องที่ใช้คุมการทำอาหารในซีนนี้) มาหย่อนใส่ช่องนี้ได้เลย")]
+    [Tooltip("ลากกล้องตัวที่ใช้คุมการทำอาหารในซีนนี้มาใส่ หากปล่อยว่างจะใช้ Camera.main")]
     public Camera customCamera;
 
     [Header("Spatula Rotation Setup")]
-    public Vector3 lockedRotation = new Vector3(-45f, 180f, 0f); 
+    public Vector3 lockedRotation = new Vector3(-45f, 180f, 0f);
     public Vector3 fpsRotation = new Vector3(0f, 180f, 0f);
 
     [Header("ระบบล็อกขอบเขตกระทะแบบอิสระ (Custom Boundary)")]
-    public Transform customBoundary; 
+    public Transform customBoundary;
 
     [Header("FPS Mode Position (ตอนกดหยิบตะหลิวมาถือ)")]
     public Vector3 fpsOffset = new Vector3(1f, -1f, -0.2f);
@@ -36,28 +43,26 @@ public class SpatulaController : MonoBehaviour
 
     [Header("UI Control")]
     [Tooltip("ลาก GameObject ของปุ่ม 'วางตะหลิว' (PutDownButton) มาใส่ช่องนี้")]
-    public GameObject putDownButtonObject; 
+    public GameObject putDownButtonObject;
     [Tooltip("ลาก GameObject ของหลอดสไลเดอร์ (StirFrySlider) มาใส่ช่องนี้")]
-    public GameObject stirFrySliderObject; 
+    public GameObject stirFrySliderObject;
 
     [Header("ระบบคะแนนการผัด (Stir Fry Progress)")]
-    public StirFryManager stirFryManager; 
+    public StirFryManager stirFryManager;
     public float progressMultiplier = 0.5f;
 
     [Header("ระบบกระทะร้อน / เขย่ากระทะ")]
-    [Tooltip("ลาก PanShakeController จาก prefab กระทะมาใส่ (shakeTarget ควรเป็น mesh กระทะอย่างเดียว)")]
+    [Tooltip("ลาก PanShakeController จาก prefab กระทะมาใส่")]
     public PanShakeController panShakeController;
     [Tooltip("เพิ่มความสุกเมื่อเขย่ากระทะสำเร็จ 1 ครั้ง")]
     public float panShakeProgressBoost = 3f;
 
     [Header("Events")]
-    [Tooltip("เรียกเมื่อใส่วัตถุดิบครบแล้ว (ไข่ + ไส้กรอก) — ลากฟังก์ชันอื่นมาเชื่อมใน Inspector ได้")]
+    [Tooltip("เรียกเมื่อใส่วัตถุดิบครบแล้ว")]
     public UnityEvent onAllPrepDone = new UnityEvent();
 
     void Start()
     {
-        // 🛠️ ลอจิกเลือกกล้อง: ถ้ามีการลากกล้องตัวที่ 3 มาใส่ในช่องกิซโม ให้เลือกใช้ตัวนั้นทันที
-        // แต่ถ้าลืมลากใส่ (เป็นค่าว่าง) จะยอมถอยกลับไปใช้ Camera.main ตัวหลักเพื่อความปลอดภัยครับ
         if (customCamera != null)
         {
             activeCamera = customCamera;
@@ -65,7 +70,6 @@ public class SpatulaController : MonoBehaviour
         else
         {
             activeCamera = Camera.main;
-            Debug.LogWarning($"[Spatula] ไม่พบการใส่กล้องในช่อง Custom Camera จึงสลับไปใช้ Camera.main ส่วนกลาง");
         }
 
         initialPosition = transform.position;
@@ -93,6 +97,11 @@ public class SpatulaController : MonoBehaviour
 
     void Update()
     {
+        if (customCamera == null && activeCamera != Camera.main && Camera.main != null)
+        {
+            activeCamera = Camera.main;
+        }
+
         TryInvokePrepDoneEvent();
         UpdateSpatulaInteractable();
         HandleFPSControl();
@@ -113,7 +122,7 @@ public class SpatulaController : MonoBehaviour
 
     bool CanPickupSpatula()
     {
-        return PanPrepManager.Instance.IsAllPrepDone;
+        return PanPrepManager.Instance != null && PanPrepManager.Instance.IsAllPrepDone;
     }
 
     void TryInvokePrepDoneEvent()
@@ -132,11 +141,10 @@ public class SpatulaController : MonoBehaviour
 
     void HandleFPSControl()
     {
-        if (isReturningToStart) return;
+        if (isReturningToStart || activeCamera == null) return;
 
         if (Input.GetMouseButtonDown(0))
         {
-            // 🎯 จุดที่ 1: เปลี่ยน Raycast ตอนเช็คหยิบตะหลิวให้ยิงผ่านหน้ากล้อง activeCamera (กล้องตัวที่ 3)
             Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
@@ -147,8 +155,8 @@ public class SpatulaController : MonoBehaviour
                     if (PanDragCoordinator.TryBegin(this))
                     {
                         isHolding = true;
-                        lastPosition = transform.position; 
-                        
+                        lastPosition = transform.position;
+
                         if (stirFrySliderObject != null)
                         {
                             stirFrySliderObject.SetActive(true);
@@ -163,12 +171,12 @@ public class SpatulaController : MonoBehaviour
         {
             HandlePanShakeInput();
             PanDragCoordinator.Maintain(this);
+
             if (Input.GetMouseButton(0))
             {
                 float currentHeight = customBoundary.position.y;
                 Plane projectPlane = new Plane(Vector3.up, new Vector3(0, currentHeight, 0));
-                
-                // 🎯 จุดที่ 2: เปลี่ยน Raycast ระบบคำนวณการลากผัดวนในกระทะให้ยิงผ่านกล้อง activeCamera 
+
                 Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
                 float enter = 0.0f;
 
@@ -181,9 +189,9 @@ public class SpatulaController : MonoBehaviour
                     {
                         Vector3 centerPos = new Vector3(customBoundary.position.x, currentHeight, customBoundary.position.z);
                         Vector3 offsetFromCenter = calculatedPos - centerPos;
-                        
+
                         float radius = customBoundary.localScale.x;
-                        
+
                         offsetFromCenter = Vector3.ClampMagnitude(offsetFromCenter, radius);
                         transform.position = centerPos + offsetFromCenter;
                     }
@@ -195,7 +203,7 @@ public class SpatulaController : MonoBehaviour
                     transform.rotation = Quaternion.Euler(lockedRotation);
 
                     float moveDistance = Vector3.Distance(transform.position, lastPosition);
-                    
+
                     if (moveDistance > 0.001f && stirFryManager != null)
                     {
                         float progressAmount = moveDistance * progressMultiplier;
@@ -206,7 +214,9 @@ public class SpatulaController : MonoBehaviour
                         {
                             int stirPoints = Mathf.FloorToInt(stirDistanceAccumulator / 5f) * 2;
                             stirDistanceAccumulator %= 5f;
-                            GameplayScore.Instance?.AddScore(stirPoints);
+
+                            // 🎯 เพิ่มคะแนนการผัด (จำกัดไม่เกิน 50)
+                            AddCappedScore(stirPoints);
                         }
                     }
 
@@ -215,7 +225,6 @@ public class SpatulaController : MonoBehaviour
             }
             else
             {
-                // 🎯 จุดที่ 3: เปลี่ยนระบบคำนวณค่าพิกัดลอยตามเมาส์ในโหมด FPS ให้แปลงตำแหน่งอิงจากกล้อง activeCamera
                 Vector3 fpsPos = activeCamera.transform.TransformPoint(fpsOffset);
                 transform.position = Vector3.Lerp(transform.position, fpsPos, Time.deltaTime * 10f);
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(fpsRotation), Time.deltaTime * 10f);
@@ -241,9 +250,33 @@ public class SpatulaController : MonoBehaviour
 
     void OnPanShakeTriggered()
     {
-        GameplayScore.Instance?.AddScore(15);
+        // 🎯 เพิ่มคะแนนเขย่ากระทะ (จำกัดไม่เกิน 50)
+        AddCappedScore(15);
+
         if (stirFryManager != null && panShakeProgressBoost > 0f)
             stirFryManager.IncreaseProgress(panShakeProgressBoost);
+    }
+
+    // 💡 ฟังก์ชันคำนวณและเพิ่มคะแนนโดยใช้ Local Tracker (ปลอดภัย ไม่ติด Error แน่นอน)
+    private void AddCappedScore(int pointsToAdd)
+    {
+        if (currentSpatulaScore >= maxScore) return;
+
+        int allowedPoints = Mathf.Min(pointsToAdd, maxScore - currentSpatulaScore);
+
+        if (allowedPoints > 0)
+        {
+            currentSpatulaScore += allowedPoints;
+
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.AddScore(allowedPoints);
+            }
+            else if (GameplayScore.Instance != null)
+            {
+                GameplayScore.Instance.AddScore(allowedPoints);
+            }
+        }
     }
 
     public void PutDownSpatula()
@@ -251,11 +284,12 @@ public class SpatulaController : MonoBehaviour
         if (isHolding)
         {
             isHolding = false;
-            isReturningToStart = true; 
             PanDragCoordinator.End(this);
 
             if (putDownButtonObject != null) putDownButtonObject.SetActive(false);
             if (stirFrySliderObject != null) stirFrySliderObject.SetActive(false);
+
+            Destroy(gameObject);
         }
     }
 

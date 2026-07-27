@@ -40,12 +40,20 @@ public class KnifeMovement : MonoBehaviour
     private void OnEnable()
     {
         instances.Add(this);
+        // 💡 รีเซ็ตสถานะเผื่อกรณี Instantiate หรือเปิดการทำงานใหม่
+        isDragging = false;
+        isChopping = false;
+        if (activeKnife == this) activeKnife = null;
     }
 
     private void Start()
     {
-        // Preserve the position placed in the scene. Only the vertical travel
-        // distance is derived from the inspector values during the chop animation.
+        UpdateWorldYPositions();
+    }
+
+    // 💡 คำนวณขอบเขต Y ใหม่ตามตำแหน่งจริงของวัตถุ
+    private void UpdateWorldYPositions()
+    {
         topWorldY = transform.position.y;
         bottomWorldY = topWorldY - Mathf.Abs(topYPosition - bottomYPosition);
     }
@@ -57,8 +65,9 @@ public class KnifeMovement : MonoBehaviour
         if (activeKnife != null && activeKnife != this)
             return;
 
+        // 💡 ค้นหากล้องหลักปัจจุบันเสมอ (รองรับกล้องใน Prefab ใหม่)
         Camera activeCamera = Camera.main;
-        if (activeCamera == null)
+        if (activeCamera == null || !activeCamera.enabled)
             return;
 
         Vector2 inputScreenPosition = GetInputPosition();
@@ -67,6 +76,8 @@ public class KnifeMovement : MonoBehaviour
         {
             if (activeKnife == null && IsTopKnifeUnderCursor(inputScreenPosition, activeCamera))
             {
+                UpdateWorldYPositions(); // 💡 อัปเดตตำแหน่ง Y ปัจจุบันอีกครั้งป้องกันค่าเพี้ยน
+
                 isDragging = true;
                 activeKnife = this;
                 dragStartPosition = transform.position;
@@ -151,7 +162,7 @@ public class KnifeMovement : MonoBehaviour
         for (int i = 0; i < hits.Length; i++)
         {
             KnifeMovement knife = hits[i].collider.GetComponentInParent<KnifeMovement>();
-            if (knife != null)
+            if (knife != null && knife.enabled) // 💡 ตรวจเช็กว่าสคริปต์เปิดทำงานอยู่
                 return knife;
         }
 

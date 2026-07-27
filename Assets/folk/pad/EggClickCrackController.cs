@@ -14,6 +14,10 @@ public class EggClickCrackController : MonoBehaviour
     [Header("ระบบล็อกกล้องเฉพาะตัว (ป้องกันเอ๋อเมื่อมีกล้องหลายตัว)")]
     public Camera customCamera;
 
+    [Header("ระบบทำอาหาร (Cooking System)")]
+    [Tooltip("ลาก GameObject ที่มีสคริปต์ CookingSystem3D มาใส่ที่นี่")]
+    public CookingSystem3D cookingSystem; 
+
     [Header("ระบบล็อกตำแหน่งเหนือกระทะ")]
     public Transform panLockTarget;
     public float snapDistance = 3.0f;
@@ -63,6 +67,12 @@ public class EggClickCrackController : MonoBehaviour
 
         initialPosition = transform.position;
 
+        // ปิดสคริปต์ CookingSystem3D ซ้ำอีกทีตอนเริ่มเกมเพื่อความชัวร์
+        if (cookingSystem != null)
+        {
+            cookingSystem.enabled = false;
+        }
+
         GameObject scrambledEggModel = GameObject.Find(scrambledEggObjectName);
         if (scrambledEggModel == null) scrambledEggModel = GameObject.Find("ScrambledEgg");
 
@@ -108,11 +118,6 @@ public class EggClickCrackController : MonoBehaviour
         else
         {
             HandleDrag();
-
-            if (!isDragging && transform.position != initialPosition)
-            {
-                transform.position = Vector3.Lerp(transform.position, initialPosition, Time.deltaTime * 5f);
-            }
         }
     }
 
@@ -228,8 +233,14 @@ public class EggClickCrackController : MonoBehaviour
             eggRb.useGravity = true;
             eggRb.constraints = RigidbodyConstraints.FreezeRotation; 
 
-            // สั่งเปิดระบบเช็คระยะทางจริงแทนการชน
             friedEgg.AddComponent<EggFlattenEffect>().Setup(eggFlattenedScale, flattenSpeed, eggWhiteObjectName, panCenterTarget);
+        }
+
+        // 🎯 สั่งเปิดและเริ่มทำงาน CookingSystem3D ทันทีที่ตอกไข่
+        if (cookingSystem != null)
+        {
+            cookingSystem.enabled = true;
+            cookingSystem.StartFunction();
         }
 
         if (StirFryManager.Instance != null) StirFryManager.Instance.ResetProgress();
@@ -323,7 +334,7 @@ public class ShellClickDestroy : MonoBehaviour
 }
 
 // ==========================================
-// 🛠️ [ยกเครื่องใหม่ทั้งหมด] สคริปต์ผู้ช่วยชุดที่ 2: ใช้ระบบ Check Distance ตัดปัญหาการชนบั๊ก
+// สคริปต์ผู้ช่วยชุดที่ 2: เอฟเฟกต์ไข่แผ่ตัว
 // ==========================================
 public class EggFlattenEffect : MonoBehaviour
 {
@@ -360,7 +371,6 @@ public class EggFlattenEffect : MonoBehaviour
             rb.constraints = RigidbodyConstraints.FreezeRotation; 
         }
 
-        // 🎯 สั่งปิดทิ้งทุกฟิสิกส์คอลลิชันของตัวมันเอง ป้องกันปัญหาชนซ้อนเฟรมแรกกับเปลือกไข่เด็ดขาด!
         Collider c = GetComponent<Collider>();
         if (c != null) c.enabled = false;
         foreach (Collider childCollider in GetComponentsInChildren<Collider>())
@@ -371,10 +381,8 @@ public class EggFlattenEffect : MonoBehaviour
 
     void Update()
     {
-        // ถ้ายังลงไม่ถึงกระทะ ให้เช็คระยะห่างแกนดิ่ง (Y) ตลอดเวลา
         if (!hasHitPan && centerTarget != null)
         {
-            // ถ้าความสูง (Y) ร่วงลงมาใกล้เคียง หรือ ต่ำกว่าพิกัดของก้นกระทะแล้ว ให้ทำงานทันที!
             if (transform.position.y <= centerTarget.position.y + 0.2f)
             {
                 TriggerFlatten();

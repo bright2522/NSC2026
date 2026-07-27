@@ -239,7 +239,16 @@ public class SausageCupPourController : MonoBehaviour
             PanPrepManager.Instance.MarkSausageDone();
         }
 
-        GameplayScore.Instance?.AddScore(30);
+        // 🎯 เชื่อมต่อกับ ScoreManager เพื่อเพิ่มคะแนน +20 เมื่อเทไส้กรอกลงกระทะ
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddScore(20);
+            Debug.Log("<color=green><b>เทไส้กรอกเรียบร้อย! บวกคะแนน +20 สำเร็จ</b></color>");
+        }
+        else
+        {
+            Debug.LogWarning("หา ScoreManager ไม่เจอในฉาก กรุณาตรวจสอบว่ามี ScoreManager อยู่หรือไม่!");
+        }
 
         StartCoroutine(ReturnRoutine());
     }

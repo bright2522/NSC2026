@@ -29,8 +29,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Fan/EndGame.unity
     guid: 36a3e5e0cc248b348909d12a2d757e0a
-  - enabled: 1
-    path: Assets/folk/score/scwi.unity
-    guid: 0e874573f72dd8546b60f90503a09712
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

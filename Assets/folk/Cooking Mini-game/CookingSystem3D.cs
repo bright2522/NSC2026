@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -5,24 +6,58 @@ using TMPro;
 
 public class CookingSystem3D : MonoBehaviour
 {
+    [Header("🎯 UI Parent Panel (วัตถุแม่ที่รวม UI ทั้งหมด)")]
+    [Tooltip("ลาก Panel หรือ GameObject แม่ที่รวม UI ทั้งหมดของระบบทำอาหารมาใส่ที่นี่")]
+    public GameObject uiPanel; 
+
     [Header("UI References (ลาก UI มาใส่ที่นี่)")]
     public RectTransform gaugeRect;         
     public Image arrowIndicator;            
     public Image cookingFillImage;          
-    public TextMeshProUGUI timerText;          // ตัวเลขจับเวลาแบบข้อความดิจิทัล
-    public TextMeshProUGUI cookingValueText;   // ตัวเลขเปอร์เซ็นต์ค่าความสุก
+    public TextMeshProUGUI timerText;          
+    public TextMeshProUGUI cookingValueText;   
     [Tooltip("ลาก IdealZoneOverlay ที่คุณจัดตำแหน่งไว้ใน Editor มาใส่ที่นี่")]
-    public RectTransform idealZoneOverlay;     // แถบเป้าหมาย UI
+    public RectTransform idealZoneOverlay;    
 
     [Header("3D Food Settings (ลากโมเดลอาหารมาใส่)")]
-    public Renderer foodRenderer;           
+    public Renderer foodRenderer;          
     public Color normalColor = Color.white; 
     public Color burntColor = new Color(0.15f, 0.08f, 0.08f); 
 
+    [Header("✨ Spawn New Object Settings (เสกออบเจกต์ใหม่เมื่อสุก)")]
+    [Tooltip("ลาก Prefab อาหารสุก หรือออบเจกต์ที่เตรียมไว้ที่จะให้เสกออกมาใส่ที่นี่")]
+    public GameObject cookedPrefabToSpawn;
+
+    [Tooltip("จุดที่จะให้เสกออบเจกต์ออกมา (ถ้าไม่ใส่จะเสกตรงจุด clearAreaCenter)")]
+    public Transform spawnPoint;
+
+    [Tooltip("🎯 ลาก Transform แม่ (Parent) ที่ต้องการให้วัตถุใหม่เข้าไปเป็นลูกมาใส่ที่นี่")]
+    public Transform spawnParent;
+
+    [Header("🧹 Area & Target Clear Settings (ตั้งค่าการลบโมเดลในกระทะ)")]
+    [Tooltip("Tag ของอาหาร/วัตถุดิบ เช่น 'Food' (หากตั้งไว้ ระบบจะลบวัตถุที่มี Tag นี้ทั้งหมดทันทีเมื่อสุก)")]
+    public string foodTag = "Food";
+
+    [Tooltip("จุดศูนย์กลางของพื้นที่ที่จะสแกนลบ (ลากกระทะ หรือ Transform ศูนย์กลางกระทะมาใส่)")]
+    public Transform clearAreaCenter;
+    
+    [Tooltip("ขนาดของแอเรียกล่องที่จะคลุมกระทะ (กว้าง x สูง x ลึก)")]
+    public Vector3 clearAreaSize = new Vector3(2f, 2f, 2f);
+
+    [Tooltip("ลาก GameObject กระทะหลักมาใส่ที่นี่")]
+    public GameObject panObjectToIgnore;
+
+    [Tooltip("🛡️ เพิ่มวัตถุอื่นๆ ที่ไม่อยากให้ถูกลบ/สแกนโดนที่นี่ (เช่น เตา, ตะกร้า, เครื่องปรุง)")]
+    public List<GameObject> additionalObjectsToIgnore = new List<GameObject>();
+
+    [Tooltip("🎯 ติ๊กถูกหากต้องการแค่ 'ซ่อน' กระทะ (Disable) เมื่อหลอดเต็ม หรือเอาติ๊กออกเพื่อ 'ลบกระทะทิ้ง' (Destroy)")]
+    public bool hidePanOnCooked = true;
+
+    [Tooltip("Layer ของวัตถุที่จะถูกลบ (ถ้าตั้งไว้เป็น Everything จะตรวจจับทั้งหมด)")]
+    public LayerMask objectsToClearLayer = ~0; 
+
     [Header("Cooking Speed Settings (ปรับความเร็ว)")]
-    [Tooltip("ความเร็วการทำอาหารปกติเมื่ออยู่ในโซนอุดมคติ")]
     public float idealProgressSpeed = 3.0f;  
-    [Tooltip("ความเร็วการทำอาหารที่ช้าลงอย่างมากเมื่ออยู่นอกโซน")]
     public float slowProgressSpeed = 0.15f;  
 
     [Header("Time Settings (ตั้งเวลาเกมเป็นวินาที)")]
@@ -38,14 +73,13 @@ public class CookingSystem3D : MonoBehaviour
     public float foodColorSmoothTime = 0.35f;
     public LeanTweenType uiEase = LeanTweenType.easeOutQuad;
 
-    [Header("Gameplay Settings (ดูค่าสถานะในเกม)")]
+    [Header("Gameplay Settings")]
     public float currentHeat = 0f; 
     [HideInInspector] public float targetHeat = 0f; 
 
-    [Header("Cooking Status (ดูค่าสถานะในเกม)")]
+    [Header("Cooking Status")]
     [SerializeField] private float cookingProgress = 0f;
     private float maxCookingProgress = 100f;
-    [Tooltip("เวลาชีวิตถ้าบิดไฟแรงเกินโซน (3 วินาทีก่อนไหม้)")]
     [SerializeField] private float burnTimer = 3f;   
     private float maxBurnTime = 3f;
 
@@ -60,7 +94,6 @@ public class CookingSystem3D : MonoBehaviour
     private bool isPlaying;
     private bool hasInvokedEnd;
 
-    // ตัวแปรภายในสำหรับเก็บค่าโซนที่คำนวณได้จากตำแหน่ง UI จริง
     private float idealMin;
     private float idealMax;
 
@@ -69,6 +102,14 @@ public class CookingSystem3D : MonoBehaviour
     private int heatArrowTweenId = -1;
     private int foodColorTweenId = -1;
 
+    void Awake()
+    {
+        if (uiPanel != null)
+        {
+            uiPanel.SetActive(false);
+        }
+    }
+
     void Start()
     {
         CalculateZonesFromUI();
@@ -76,6 +117,17 @@ public class CookingSystem3D : MonoBehaviour
 
     public void StartFunction()
     {
+        if (uiPanel != null)
+        {
+            uiPanel.SetActive(true);
+        }
+
+        // 🍳 แสดงกระทะกลับมาเมื่อเริ่มรอบใหม่
+        if (panObjectToIgnore != null)
+        {
+            panObjectToIgnore.SetActive(true);
+        }
+
         hasInvokedEnd = false;
         isPlaying = true;
         isBurnt = false;
@@ -113,6 +165,11 @@ public class CookingSystem3D : MonoBehaviour
         CancelTween(ref heatArrowTweenId);
         CancelTween(ref foodColorTweenId);
 
+        if (uiPanel != null)
+        {
+            uiPanel.SetActive(false);
+        }
+
         whenEnd?.Invoke();
     }
 
@@ -127,7 +184,6 @@ public class CookingSystem3D : MonoBehaviour
     {
         if (!isPlaying || isCooked || isBurnt || isTimeOut) return;
 
-        // --- ระบบจับเวลาและควบคุมลูกศร (เดิม) ---
         currentTimer -= Time.deltaTime;
         if (currentTimer < 0) currentTimer = 0;
         UpdateTimerTextDisplay();
@@ -138,10 +194,8 @@ public class CookingSystem3D : MonoBehaviour
 
         Color foodTargetColor = normalColor;
 
-        // --- ตรรกะการทำอาหารและไหม้เกรียม (อ้างอิงตามโซนจาก UI จริง) ---
         if (currentHeat > idealMax)
         {
-            // --- 1. โซนไฟแรงเกินแถบเป้าหมาย ---
             cookingProgress += slowProgressSpeed * Time.deltaTime; 
             burnTimer -= Time.deltaTime; 
 
@@ -152,13 +206,11 @@ public class CookingSystem3D : MonoBehaviour
         }
         else if (currentHeat >= idealMin)
         {
-            // --- 2. โซนในอุดมคติ (อยู่ภายในแถบพอดี) ---
             cookingProgress += idealProgressSpeed * Time.deltaTime; 
             burnTimer = maxBurnTime;
         }
         else
         {
-            // --- 3. โซนไฟอ่อนเกินแถบเป้าหมาย ---
             cookingProgress += slowProgressSpeed * Time.deltaTime; 
             burnTimer = maxBurnTime;
         }
@@ -166,36 +218,33 @@ public class CookingSystem3D : MonoBehaviour
         SmoothFoodColor(foodTargetColor);
         SmoothCookingFill(cookingProgress / maxCookingProgress);
 
-        if (cookingProgress >= maxCookingProgress && !isBurnt) TriggerCooked();
+        // 🎯 เช็คเมื่อหลอดเต็ม (cookingProgress >= 100)
+        if (cookingProgress >= maxCookingProgress && !isBurnt)
+        {
+            TriggerCooked();
+        }
     }
 
-    // --- ฟังก์ชันใหม่: อ่านค่าตำแหน่งและขนาดของ UI จริงเพื่อแปลงเป็นค่าความร้อน 0-100 ---
     void CalculateZonesFromUI()
     {
         if (idealZoneOverlay != null && gaugeRect != null)
         {
             float gaugeHeight = gaugeRect.rect.height;
 
-            // หาตำแหน่ง Y ของขอบบนและขอบล่างของแถบเป้าหมายจริงใน Unity Editor
             float overlayY = idealZoneOverlay.localPosition.y;
             float overlayHeight = idealZoneOverlay.rect.height;
 
             float yTop = overlayY + (overlayHeight / 2f);
             float yBottom = overlayY - (overlayHeight / 2f);
 
-            // แปลงค่าพิกัดพิกเซล Y กลับมาเป็นค่าอุณหภูมิระบบเกม (0 - 100)
             idealMax = ((yTop + (gaugeHeight / 2f)) / gaugeHeight) * 100f;
             idealMin = ((yBottom + (gaugeHeight / 2f)) / gaugeHeight) * 100f;
 
-            // ป้องกันไม่ให้ค่าหลุดขอบเกินโครงสร้างเกจ
             idealMax = Mathf.Clamp(idealMax, 0f, 100f);
             idealMin = Mathf.Clamp(idealMin, 0f, 100f);
-
-            Debug.Log($"<color=cyan>ตั้งค่าโซนสำเร็จ! -> โซนปกติอยู่ที่อุณหภูมิเกม: {idealMin:F1} ถึง {idealMax:F1}</color>");
         }
         else
         {
-            // ค่าสำรองกรณีลืมลาก UI มาใส่
             idealMin = 50f;
             idealMax = 70f;
         }
@@ -293,22 +342,201 @@ public class CookingSystem3D : MonoBehaviour
         }
     }
 
+    // 🎯 ฟังก์ชันสแกนและลบวัตถุเก่าออกจากกระทะ (พร้อมระบบกรอง Ignore)
+    void ClearPanObjects()
+    {
+        if (!string.IsNullOrEmpty(foodTag))
+        {
+            GameObject[] taggedObjects = GameObject.FindGameObjectsWithTag(foodTag);
+            foreach (GameObject obj in taggedObjects)
+            {
+                if (!IsObjectIgnored(obj))
+                {
+                    Destroy(obj);
+                }
+            }
+        }
+
+        GameObject[] allObjects = FindObjectsOfType<GameObject>();
+        foreach (GameObject obj in allObjects)
+        {
+            if (obj.name.Contains("FriedEgg_Combined") || obj.name.Contains("FriedEgg"))
+            {
+                if (!IsObjectIgnored(obj))
+                {
+                    Destroy(obj);
+                }
+            }
+        }
+
+        Transform centerPoint = (clearAreaCenter != null) ? clearAreaCenter : transform;
+        Collider[] hitColliders = Physics.OverlapBox(
+            centerPoint.position, 
+            clearAreaSize / 2f, 
+            centerPoint.rotation, 
+            objectsToClearLayer
+        );
+
+        foreach (Collider col in hitColliders)
+        {
+            GameObject objToDestroy = col.gameObject;
+
+            if (IsObjectIgnored(objToDestroy))
+            {
+                continue; 
+            }
+
+            Transform rootParent = objToDestroy.transform;
+            while (rootParent.parent != null && rootParent.parent != centerPoint)
+            {
+                if (IsObjectIgnored(rootParent.parent.gameObject)) break;
+                rootParent = rootParent.parent;
+            }
+
+            if (!IsObjectIgnored(rootParent.gameObject))
+            {
+                Destroy(rootParent.gameObject);
+            }
+        }
+
+        Debug.Log("<color=cyan>🧹 ลบวัตถุเก่าเรียบร้อยแล้ว (ข้ามวัตถุที่อยู่ในรายการ Ignore)</color>");
+    }
+
+    private bool IsObjectIgnored(GameObject obj)
+    {
+        if (obj == null) return true;
+
+        if (panObjectToIgnore != null)
+        {
+            if (obj == panObjectToIgnore || obj.transform.IsChildOf(panObjectToIgnore.transform))
+            {
+                return true;
+            }
+        }
+
+        foreach (GameObject ignoredObj in additionalObjectsToIgnore)
+        {
+            if (ignoredObj != null)
+            {
+                if (obj == ignoredObj || obj.transform.IsChildOf(ignoredObj.transform))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void HandlePanRemoval()
+    {
+        if (panObjectToIgnore != null)
+        {
+            if (hidePanOnCooked)
+            {
+                panObjectToIgnore.SetActive(false); 
+                Debug.Log("<color=yellow>🍳 หลอดเต็มแล้ว: ซ่อนกระทะเรียบร้อย</color>");
+            }
+            else
+            {
+                Destroy(panObjectToIgnore); 
+                Debug.Log("<color=red>🍳 หลอดเต็มแล้ว: ลบกระทะออกเรียบร้อย</color>");
+            }
+        }
+    }
+
+    void SpawnCookedObject()
+    {
+        if (cookedPrefabToSpawn != null)
+        {
+            Vector3 targetPosition = transform.position;
+            Quaternion targetRotation = Quaternion.identity;
+
+            if (spawnPoint != null)
+            {
+                targetPosition = spawnPoint.position;
+                targetRotation = spawnPoint.rotation;
+            }
+            else if (clearAreaCenter != null)
+            {
+                targetPosition = clearAreaCenter.position;
+                targetRotation = clearAreaCenter.rotation;
+            }
+
+            GameObject spawnedObj;
+
+            if (spawnParent != null)
+            {
+                spawnedObj = Instantiate(cookedPrefabToSpawn, targetPosition, targetRotation, spawnParent);
+            }
+            else
+            {
+                spawnedObj = Instantiate(cookedPrefabToSpawn, targetPosition, targetRotation);
+            }
+
+            Debug.Log($"<color=yellow>✨ เสกวัตถุใหม่เรียบร้อยแล้ว: {spawnedObj.name}</color>");
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Transform centerPoint = (clearAreaCenter != null) ? clearAreaCenter : transform;
+        Gizmos.color = new Color(0f, 1f, 0f, 0.4f);
+        Gizmos.matrix = Matrix4x4.TRS(centerPoint.position, centerPoint.rotation, Vector3.one);
+        Gizmos.DrawCube(Vector3.zero, clearAreaSize);
+        Gizmos.DrawWireCube(Vector3.zero, clearAreaSize);
+    }
+
     void TriggerBurnt()
     {
         isBurnt = true;
-        GameplayScore.Instance?.AddScore(10);
+        // ถ้าต้องการให้ระบบไหม้บวกคะแนนด้วย (สามารถเปลี่ยนหรือลบได้ตามต้องการ)
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddScore(10);
+        }
+        
         CancelTween(ref foodColorTweenId);
         if (foodRenderer != null) foodRenderer.material.color = burntColor;
         Debug.Log("<color=red><b>อาหารไหม้เกรียม! Game Over</b></color>");
         EndFunction();
     }
+
     void TriggerCooked()
     {
         isCooked = true;
-        GameplayScore.Instance?.AddScore(Mathf.RoundToInt(cookingProgress));
+
+        // 🎯 เชื่อมกับ ScoreManager บวกคะแนน +100 เมื่อหลอดทำอาหารเต็ม 100
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddScore(100);
+            Debug.Log("<color=green><b>หลอดทำอาหารเต็ม! บวกคะแนน +100 สำเร็จ</b></color>");
+        }
+        else
+        {
+            Debug.LogWarning("หา ScoreManager ไม่เจอในฉาก กรุณาตรวจสอบ!");
+        }
+
         Debug.Log("<color=green><b>ทำอาหารเสร็จสมบูรณ์! Win!</b></color>");
+
+        // 1. ลบของเก่าในกระทะ
+        ClearPanObjects();
+
+        // 2. ซ่อน/ลบกระทะออก (กระทะจะหายไปทันทีเมื่อหลอดเต็ม)
+        HandlePanRemoval();
+
+        // 3. เสกของใหม่ใส่เข้าไปใน Spawn Parent
+        SpawnCookedObject();
+
+        // 4. ปลดล็อกการปัดหน้าจอ
+        if (SwipeStationSlider.Instance != null)
+        {
+            SwipeStationSlider.Instance.SetSwipeEnabled(true);
+        }
+
         EndFunction();
     }
+
     void TriggerTimeOut()
     {
         isTimeOut = true;

@@ -8,6 +8,7 @@ TagManager:
   - Sliceable
   - Spatula
   - SnapZone
+  - Food
   layers:
   - Default
   - TransparentFX
