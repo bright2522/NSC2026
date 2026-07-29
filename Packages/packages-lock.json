@@ -40,6 +40,14 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.cinemachine": {
+      "version": "file:com.unity.cinemachine",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.test-framework": "1.1.31"
+      }
+    },
     "com.unity.cloud.gltfast": {
       "version": "6.19.0",
       "depth": 0,

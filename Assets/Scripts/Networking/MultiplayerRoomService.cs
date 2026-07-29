@@ -30,6 +30,22 @@ public class MultiplayerRoomService : MonoBehaviour
     private ISession _currentSession;
     private bool _isBusy;
 
+    public static void BindInstance(MultiplayerRoomService service)
+    {
+        if (service == null)
+        {
+            return;
+        }
+
+        if (Instance != null && Instance != service)
+        {
+            return;
+        }
+
+        Instance = service;
+        DontDestroyOnLoad(service.gameObject);
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -38,8 +54,7 @@ public class MultiplayerRoomService : MonoBehaviour
             return;
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+        BindInstance(this);
     }
 
     private void OnDestroy()

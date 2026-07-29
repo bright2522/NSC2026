@@ -29,6 +29,8 @@ public class MultiplayerRoomUI : MonoBehaviour
 
     private void Awake()
     {
+        CreateRoomSceneBootstrap.EnsureSceneReady();
+
         if (background == null)
         {
             var found = transform.parent != null
@@ -39,6 +41,17 @@ public class MultiplayerRoomUI : MonoBehaviour
                 background = found.gameObject;
             }
         }
+    }
+
+    private MultiplayerRoomService GetRoomServiceOrFail()
+    {
+        var service = CreateRoomSceneBootstrap.EnsureRoomService();
+        if (service == null)
+        {
+            HandleRoomError("ไม่พบ MultiplayerRoomService ใน scene");
+        }
+
+        return service;
     }
 
     private void OnEnable()
@@ -120,8 +133,15 @@ public class MultiplayerRoomUI : MonoBehaviour
 
     public void OnClickHost()
     {
+        CreateRoomSceneBootstrap.EnsureSceneReady();
+        var service = GetRoomServiceOrFail();
+        if (service == null)
+        {
+            return;
+        }
+
         ShowHostPanel();
-        MultiplayerRoomService.Instance?.HostRoom();
+        service.HostRoom();
     }
 
     public void OnClickJoin()
@@ -131,7 +151,14 @@ public class MultiplayerRoomUI : MonoBehaviour
 
     public void OnClickConfirmJoin()
     {
-        MultiplayerRoomService.Instance?.JoinRoom(joinCodeInput.text);
+        CreateRoomSceneBootstrap.EnsureSceneReady();
+        var service = GetRoomServiceOrFail();
+        if (service == null)
+        {
+            return;
+        }
+
+        service.JoinRoom(joinCodeInput.text);
     }
 
     public void OnClickLeave()
