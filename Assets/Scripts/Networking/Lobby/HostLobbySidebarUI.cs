@@ -83,6 +83,25 @@ public class HostLobbySidebarUI : MonoBehaviour
         HandlePlayersChanged(LobbyManager.Instance.GetPlayers());
     }
 
+    public void ForceShowForHost()
+    {
+        if (startButton != null)
+        {
+            startButton.gameObject.SetActive(true);
+            startButton.interactable = true;
+        }
+
+        if (!_sidebarVisible)
+        {
+            ShowSidebarAnimated();
+        }
+
+        if (LobbyManager.Instance != null)
+        {
+            HandlePlayersChanged(LobbyManager.Instance.GetPlayers());
+        }
+    }
+
     public void ResetSidebar()
     {
         UnbindLobbyManager();
@@ -117,28 +136,24 @@ public class HostLobbySidebarUI : MonoBehaviour
     {
         RefreshPlayerRows(players);
 
-        int namedGuests = CountNamedGuests(players);
-        if (!_sidebarVisible && namedGuests > 0)
+        int namedPlayers = CountNamedPlayers(players);
+        if (!_sidebarVisible && namedPlayers > 0)
         {
             ShowSidebarAnimated();
         }
 
         if (startButton != null)
         {
-            startButton.interactable = namedGuests > 0;
+            startButton.interactable = namedPlayers > 0;
         }
     }
 
-    private int CountNamedGuests(IReadOnlyList<LobbyPlayerState> players)
+    private int CountNamedPlayers(IReadOnlyList<LobbyPlayerState> players)
     {
         int count = 0;
-        ulong hostId = NetworkManager.Singleton != null
-            ? NetworkManager.ServerClientId
-            : 0;
-
         for (int i = 0; i < players.Count; i++)
         {
-            if (players[i].HasSubmittedName && players[i].ClientId != hostId)
+            if (players[i].HasSubmittedName)
             {
                 count++;
             }

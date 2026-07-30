@@ -14,6 +14,7 @@ public class MultiplayerRoomUI : MonoBehaviour
     [SerializeField] private TMP_Text hostRoomCodeText;
     [SerializeField] private TMP_Text hostStatusText;
     [SerializeField] private TMP_Text statusText;
+    [SerializeField] private Button enterHostRoomButton;
 
     [Header("Join")]
     [SerializeField] private TMP_InputField joinCodeInput;
@@ -26,6 +27,8 @@ public class MultiplayerRoomUI : MonoBehaviour
     private string _lastStatusMessage = string.Empty;
     private bool _initialized;
     private bool _isTransitioning;
+    private bool _nameReady;
+    private string _pendingHostCode = string.Empty;
 
     private void Awake()
     {
@@ -43,35 +46,50 @@ public class MultiplayerRoomUI : MonoBehaviour
         }
     }
 
-    private MultiplayerRoomService GetRoomServiceOrFail()
-    {
-        var service = CreateRoomSceneBootstrap.EnsureRoomService();
-        if (service == null)
-        {
-            HandleRoomError("ไม่พบ MultiplayerRoomService ใน scene");
-        }
-
-        return service;
-    }
-
     private void OnEnable()
     {
+        SubscribeBridgeEvents();
         SubscribeRoomEvents();
     }
 
     private void OnDisable()
     {
+        UnsubscribeBridgeEvents();
         UnsubscribeRoomEvents();
         ResetAllPanels();
     }
 
     private void Start()
     {
+        SubscribeBridgeEvents();
         SubscribeRoomEvents();
         SetupButtonAnimations();
+        WireEnterHostButton();
         PlayEntrance();
-        HandleRoomCodeChanged(MultiplayerRoomService.Instance?.CurrentRoomCode ?? string.Empty);
-        HandleStatusChanged("พร้อมเล่น multiplayer");
+        HandleStatusChanged("ใส่ชื่อเพื่อเริ่มเล่น");
+    }
+
+    private void WireEnterHostButton()
+    {
+        if (enterHostRoomButton == null && leaveButton != null)
+        {
+            enterHostRoomButton = leaveButton;
+        }
+
+        if (enterHostRoomButton == null)
+        {
+            return;
+        }
+
+        enterHostRoomButton.onClick.RemoveListener(OnClickEnterHostRoom);
+        enterHostRoomButton.onClick.AddListener(OnClickEnterHostRoom);
+        enterHostRoomButton.gameObject.SetActive(false);
+
+        var label = enterHostRoomButton.GetComponentInChildren<TMP_Text>();
+        if (label != null)
+        {
+            label.text = "ENTER ROOM";
+        }
     }
 
     private void SetupButtonAnimations()
@@ -85,23 +103,61 @@ public class MultiplayerRoomUI : MonoBehaviour
     private void PlayEntrance()
     {
         ResetAllPanels();
+        SetPanelActive(mainPanel, false);
         SetPanelActive(hostPanel, false);
         SetPanelActive(joinPanel, false);
+        _activePanel = null;
+        _initialized = true;
+
+        if (background == null)
+        {
+            var found = transform.Find("Background");
+            if (found != null)
+            {
+                background = found.gameObject;
+            }
+        }
 
         if (background != null)
         {
+            background.SetActive(true);
             LobbyUIAnimations.AnimateFadeIn(background, 0.35f);
         }
+    }
 
-        if (mainPanel != null)
+    public void ShowMainPanelAfterName(string displayName)
+    {
+        _nameReady = true;
+        HandleStatusChanged($"สวัสดี {displayName} — เลือก Host หรือ Join");
+        ShowMainPanel();
+    }
+
+    private void SubscribeBridgeEvents()
+    {
+#if CMPSETUP_COMPLETE
+        if (FusionLobbyBridge.Instance == null)
         {
-            mainPanel.SetActive(true);
-            LobbyUIAnimations.AnimatePanelIn(mainPanel, 0.05f, () =>
-            {
-                _activePanel = mainPanel;
-                _initialized = true;
-            });
+            return;
         }
+
+        FusionLobbyBridge.Instance.OnStatusChanged -= HandleStatusChanged;
+        FusionLobbyBridge.Instance.OnRoomError -= HandleRoomError;
+        FusionLobbyBridge.Instance.OnStatusChanged += HandleStatusChanged;
+        FusionLobbyBridge.Instance.OnRoomError += HandleRoomError;
+#endif
+    }
+
+    private void UnsubscribeBridgeEvents()
+    {
+#if CMPSETUP_COMPLETE
+        if (FusionLobbyBridge.Instance == null)
+        {
+            return;
+        }
+
+        FusionLobbyBridge.Instance.OnStatusChanged -= HandleStatusChanged;
+        FusionLobbyBridge.Instance.OnRoomError -= HandleRoomError;
+#endif
     }
 
     private void SubscribeRoomEvents()
@@ -133,10 +189,35 @@ public class MultiplayerRoomUI : MonoBehaviour
 
     public void OnClickHost()
     {
+        if (!_nameReady)
+        {
+            HandleRoomError("กรุณาใส่ชื่อก่อน");
+            return;
+        }
+
+#if CMPSETUP_COMPLETE
+        var bridge = FusionLobbyBridge.Instance;
+        if (bridge != null)
+        {
+            bridge.PrepareHostRoom();
+            _pendingHostCode = bridge.PendingRoomCode;
+            HandleRoomCodeChanged(_pendingHostCode);
+            ShowHostPanel();
+            if (enterHostRoomButton != null)
+            {
+                enterHostRoomButton.gameObject.SetActive(true);
+            }
+
+            HandleStatusChanged("แชร์รหัสนี้ → กด ENTER ROOM ก่อน → ให้เพื่อน Join ด้วยรหัสเดียวกัน");
+            return;
+        }
+#endif
+
         CreateRoomSceneBootstrap.EnsureSceneReady();
-        var service = GetRoomServiceOrFail();
+        var service = CreateRoomSceneBootstrap.EnsureRoomService();
         if (service == null)
         {
+            HandleRoomError("ไม่พบระบบสร้างห้อง");
             return;
         }
 
@@ -144,33 +225,85 @@ public class MultiplayerRoomUI : MonoBehaviour
         service.HostRoom();
     }
 
+    public void OnClickEnterHostRoom()
+    {
+        if (!_nameReady)
+        {
+            HandleRoomError("กรุณาใส่ชื่อก่อน");
+            return;
+        }
+
+#if CMPSETUP_COMPLETE
+        if (FusionLobbyBridge.Instance != null)
+        {
+            HandleStatusChanged("กำลังเข้าห้อง...");
+            FusionLobbyBridge.Instance.EnterHostedRoom();
+            return;
+        }
+#endif
+
+        HandleRoomError("ไม่พบ Fusion lobby");
+    }
+
     public void OnClickJoin()
     {
+        if (!_nameReady)
+        {
+            HandleRoomError("กรุณาใส่ชื่อก่อน");
+            return;
+        }
+
         ShowJoinPanel();
     }
 
     public void OnClickConfirmJoin()
     {
-        CreateRoomSceneBootstrap.EnsureSceneReady();
-        var service = GetRoomServiceOrFail();
-        if (service == null)
+        if (!_nameReady)
         {
+            HandleRoomError("กรุณาใส่ชื่อก่อน");
             return;
         }
 
-        service.JoinRoom(joinCodeInput.text);
+        string code = joinCodeInput != null ? joinCodeInput.text : string.Empty;
+
+#if CMPSETUP_COMPLETE
+        if (FusionLobbyBridge.Instance != null)
+        {
+            FusionLobbyBridge.Instance.JoinRoom(code);
+            return;
+        }
+#endif
+
+        CreateRoomSceneBootstrap.EnsureSceneReady();
+        var service = CreateRoomSceneBootstrap.EnsureRoomService();
+        if (service == null)
+        {
+            HandleRoomError("ไม่พบระบบเข้าห้อง");
+            return;
+        }
+
+        service.JoinRoom(code);
     }
 
     public void OnClickLeave()
     {
         MultiplayerRoomService.Instance?.LeaveRoom();
         LobbyFlowController.Instance?.ResetFlow();
-        ShowMainPanel();
+        if (_nameReady)
+        {
+            ShowMainPanel();
+        }
     }
 
     public void OnClickBack()
     {
-        ShowMainPanel();
+        if (_nameReady)
+        {
+            ShowMainPanel();
+            return;
+        }
+
+        HideAllPanels();
     }
 
     private void HandleRoomCodeChanged(string roomCode)
@@ -183,9 +316,9 @@ public class MultiplayerRoomUI : MonoBehaviour
         }
 
         bool inRoom = !string.IsNullOrEmpty(roomCode);
-        if (leaveButton != null)
+        if (enterHostRoomButton != null)
         {
-            leaveButton.gameObject.SetActive(inRoom);
+            enterHostRoomButton.gameObject.SetActive(inRoom && _nameReady);
         }
 
         if (!string.IsNullOrEmpty(roomCode) && roomCode != _lastRoomCode && hostRoomCodeText != null)
@@ -194,6 +327,7 @@ public class MultiplayerRoomUI : MonoBehaviour
         }
 
         _lastRoomCode = roomCode ?? string.Empty;
+        _pendingHostCode = _lastRoomCode;
     }
 
     private void HandleStatusChanged(string message)
@@ -237,6 +371,9 @@ public class MultiplayerRoomUI : MonoBehaviour
     {
         _isTransitioning = false;
         ResetAllPanels();
+        SetPanelActive(mainPanel, false);
+        SetPanelActive(hostPanel, false);
+        SetPanelActive(joinPanel, false);
         _activePanel = null;
     }
 
@@ -249,9 +386,9 @@ public class MultiplayerRoomUI : MonoBehaviour
     {
         TransitionToPanel(hostPanel);
 
-        if (hostStatusText != null)
+        if (hostStatusText != null && string.IsNullOrEmpty(hostStatusText.text))
         {
-            hostStatusText.text = "กำลังสร้างห้อง...";
+            hostStatusText.text = "แชร์รหัสนี้ให้เพื่อน";
         }
     }
 
@@ -279,6 +416,12 @@ public class MultiplayerRoomUI : MonoBehaviour
 
         if (_isTransitioning || _activePanel == targetPanel)
         {
+            if (targetPanel != null && !targetPanel.activeSelf)
+            {
+                targetPanel.SetActive(true);
+                _activePanel = targetPanel;
+            }
+
             return;
         }
 

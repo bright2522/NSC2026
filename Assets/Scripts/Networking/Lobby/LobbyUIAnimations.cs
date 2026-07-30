@@ -91,39 +91,33 @@ public static class LobbyUIAnimations
             return;
         }
 
-        CancelAndReset(panel);
-        ResetVisualState(panel, includeChildren: true);
+        Cancel(panel);
         panel.SetActive(true);
 
         var rect = panel.GetComponent<RectTransform>();
         var group = EnsureCanvasGroup(panel);
-        group.alpha = 0f;
-        group.interactable = false;
-        group.blocksRaycasts = false;
+        group.alpha = 1f;
+        group.interactable = true;
+        group.blocksRaycasts = true;
 
         if (rect != null)
         {
-            rect.localScale = Vector3.one * 0.94f;
-            LeanTween.scale(rect, Vector3.one, PanelInDuration)
-                .setDelay(delay)
-                .setEase(LeanTweenType.easeOutCubic);
+            rect.localScale = Vector3.one * 0.96f;
+            try
+            {
+                LeanTween.scale(rect, Vector3.one, PanelInDuration)
+                    .setDelay(delay)
+                    .setEase(LeanTweenType.easeOutCubic)
+                    .setOnComplete(() => onComplete?.Invoke());
+                return;
+            }
+            catch (Exception)
+            {
+                rect.localScale = Vector3.one;
+            }
         }
 
-        LeanTween.alphaCanvas(group, 1f, PanelInDuration)
-            .setDelay(delay)
-            .setEase(LeanTweenType.easeOutQuad)
-            .setOnComplete(() =>
-            {
-                if (panel == null)
-                {
-                    return;
-                }
-
-                group.interactable = true;
-                group.blocksRaycasts = true;
-                group.alpha = 1f;
-                onComplete?.Invoke();
-            });
+        onComplete?.Invoke();
     }
 
     public static void AnimatePanelOut(GameObject panel, Action onComplete = null)
@@ -135,25 +129,9 @@ public static class LobbyUIAnimations
         }
 
         Cancel(panel);
-
-        var group = EnsureCanvasGroup(panel);
-        group.interactable = false;
-        group.blocksRaycasts = false;
-
-        LeanTween.alphaCanvas(group, 0f, PanelOutDuration)
-            .setEase(LeanTweenType.easeInQuad)
-            .setOnComplete(() =>
-            {
-                if (panel == null)
-                {
-                    onComplete?.Invoke();
-                    return;
-                }
-
-                panel.SetActive(false);
-                ResetPanelTree(panel);
-                onComplete?.Invoke();
-            });
+        panel.SetActive(false);
+        ResetPanelTree(panel);
+        onComplete?.Invoke();
     }
 
     public static void TransitionPanels(GameObject from, GameObject to, Action onComplete = null)
@@ -304,21 +282,13 @@ public static class LobbyUIAnimations
             return;
         }
 
-        CancelAndReset(target);
+        Cancel(target);
         target.SetActive(true);
 
         var group = EnsureCanvasGroup(target);
-        group.alpha = 0f;
-        LeanTween.alphaCanvas(group, 1f, duration)
-            .setDelay(delay)
-            .setEase(LeanTweenType.easeOutQuad)
-            .setOnComplete(() =>
-            {
-                if (group != null)
-                {
-                    group.alpha = 1f;
-                }
-            });
+        group.alpha = 1f;
+        group.interactable = true;
+        group.blocksRaycasts = true;
     }
 
     public static void SetupButtonFeedback(Button button)

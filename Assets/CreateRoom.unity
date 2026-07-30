@@ -260,7 +260,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4278848010
   m_fontColor: {r: 0.039215688, g: 0.039215688, b: 0.039215688, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -273,7 +273,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -451,6 +451,82 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &115923363
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 115923365}
+  - component: {fileID: 115923364}
+  m_Layer: 0
+  m_Name: FusionConnectionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &115923364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115923363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 709e2ec5ee8746d439e7d78060dd0cf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playersInSession: []
+  CurrentEntryBeingEdited: {fileID: 0}
+  runnerPrefab: {fileID: 6867999484311217254, guid: 254323a92d7ed2b49b61bd25ef52ba87, type: 3}
+  hasEnteredGameScene: 0
+  playerPrefabYellow: {fileID: 0}
+  playerPrefabRed: {fileID: 0}
+  characterScriptableObject: {fileID: 11400000, guid: 13ec98ef0c510f044b50f42e751d5e9f, type: 2}
+  mainObject: {fileID: 0}
+  submitButton: {fileID: 0}
+  nameField: {fileID: 0}
+  characterselectionobject: {fileID: 0}
+  roomEntryPrefab: {fileID: 0}
+  roomListObject: {fileID: 0}
+  content: {fileID: 0}
+  createRoomButton: {fileID: 0}
+  NoRoomsText: {fileID: 0}
+  room_search: {fileID: 0}
+  refreshInterval: 2
+  UseCustomLocation: 0
+  CustomLocation: {x: 0, y: 0, z: 0}
+  loadingScreenScript: {fileID: 0}
+  popup: {fileID: 0}
+  gameSceneName: Rpvp
+  lobbyReturnSceneName: CreateRoom
+  additiveSceneName: 
+  menuCanvas: {fileID: 0}
+  isConnected: 0
+  _playerName: 
+  nRooms: 0
+  nPPLOnline: 0
+  region_select: {fileID: 0}
+  backButton: {fileID: 0}
+--- !u!4 &115923365
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115923363}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &178744663
 GameObject:
   m_ObjectHideFlags: 0
@@ -2401,7 +2477,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &979736351
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2927,7 +3003,55 @@ MonoBehaviour:
   nameEntryUI: {fileID: 979736352}
   hostSidebarUI: {fileID: 1939184278}
   clientWaitingPanel: {fileID: 1920401679}
+  clientWaitingText: {fileID: 0}
   lobbyManagerWaitSeconds: 5
+--- !u!1 &1203360208
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1203360210}
+  - component: {fileID: 1203360209}
+  m_Layer: 0
+  m_Name: FusionLobbyBridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1203360209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203360208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8effd26e9b508e2408038198ae3cfc38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  runnerPrefab: {fileID: 6867999484311217254, guid: 254323a92d7ed2b49b61bd25ef52ba87, type: 3}
+  gameSceneName: Rpvp
+  maxPlayers: 4
+--- !u!4 &1203360210
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203360208}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1207064165
 GameObject:
   m_ObjectHideFlags: 0
@@ -3007,7 +3131,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -3217,7 +3341,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1286175484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3336,7 +3460,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: LEAVE
+  m_text: ENTER ROOM
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1f99d8d4d4f8f124e894d4f657ead97b, type: 2}
   m_sharedMaterial: {fileID: 0}
@@ -3470,9 +3594,11 @@ MonoBehaviour:
   mainPanel: {fileID: 1286175483}
   hostPanel: {fileID: 2111139267}
   joinPanel: {fileID: 571190802}
+  background: {fileID: 32918377}
   hostRoomCodeText: {fileID: 2003023623}
   hostStatusText: {fileID: 1951667177}
   statusText: {fileID: 1863800995}
+  enterHostRoomButton: {fileID: 1946132881}
   joinCodeInput: {fileID: 178744664}
   joinButton: {fileID: 1062047850}
   hostButton: {fileID: 654237039}
@@ -3507,7 +3633,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4210966120
+  GlobalObjectIdHash: 67468274
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -3549,7 +3675,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  gameplaySceneName: Gameplay
+  gameplaySceneName: Rpvp
 --- !u!1 &1505390801
 GameObject:
   m_ObjectHideFlags: 0
@@ -4769,7 +4895,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1946132881
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4816,7 +4942,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1441381277}
         m_TargetAssemblyTypeName: MultiplayerRoomUI, Assembly-CSharp
-        m_MethodName: OnClickLeave
+        m_MethodName: OnClickEnterHostRoom
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5235,7 +5361,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -5322,7 +5448,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxPlayers: 4
-  gameplaySceneName: Gameplay
+  gameplaySceneName: Rpvp
   loadGameplaySceneOnConnect: 0
 --- !u!4 &2051374844
 Transform:
@@ -5835,3 +5961,5 @@ SceneRoots:
   - {fileID: 1559425850}
   - {fileID: 1775845265}
   - {fileID: 1488546733}
+  - {fileID: 1203360210}
+  - {fileID: 115923365}

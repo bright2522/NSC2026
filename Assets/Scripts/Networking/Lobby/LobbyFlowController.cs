@@ -1,9 +1,6 @@
-using System;
 using System.Collections;
 using TMPro;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class LobbyFlowController : MonoBehaviour
 {
@@ -19,6 +16,7 @@ public class LobbyFlowController : MonoBehaviour
     [Header("Timing")]
     [SerializeField] private float lobbyManagerWaitSeconds = 5f;
 
+    private bool _nameSubmitted;
     private bool _lobbyEntered;
 
     private void Awake()
@@ -41,28 +39,90 @@ public class LobbyFlowController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (MultiplayerRoomService.Instance != null)
-        {
-            MultiplayerRoomService.Instance.OnRoomJoined += HandleRoomJoined;
-        }
+        SubscribeRoomEvents();
     }
 
     private void OnDisable()
     {
-        if (MultiplayerRoomService.Instance != null)
-        {
-            MultiplayerRoomService.Instance.OnRoomJoined -= HandleRoomJoined;
-        }
+        UnsubscribeRoomEvents();
     }
 
     private void Start()
     {
-        if (MultiplayerRoomService.Instance != null)
+        SubscribeRoomEvents();
+        BeginNameEntry();
+    }
+
+    private void SubscribeRoomEvents()
+    {
+        if (MultiplayerRoomService.Instance == null)
         {
-            MultiplayerRoomService.Instance.OnRoomJoined += HandleRoomJoined;
+            return;
         }
 
-        HideLobbyPhase();
+        MultiplayerRoomService.Instance.OnRoomJoined -= HandleRoomJoined;
+        MultiplayerRoomService.Instance.OnRoomJoined += HandleRoomJoined;
+    }
+
+    private void UnsubscribeRoomEvents()
+    {
+        if (MultiplayerRoomService.Instance == null)
+        {
+            return;
+        }
+
+        MultiplayerRoomService.Instance.OnRoomJoined -= HandleRoomJoined;
+    }
+
+    private void BeginNameEntry()
+    {
+        _nameSubmitted = false;
+        _lobbyEntered = false;
+
+        roomUI?.HideAllPanels();
+        hostSidebarUI?.ResetSidebar();
+        HideClientWaitingPanel();
+
+        if (nameEntryUI == null)
+        {
+            nameEntryUI = FindFirstObjectByType<LobbyNameEntryUI>(FindObjectsInactive.Include);
+        }
+
+        if (nameEntryUI != null)
+        {
+            nameEntryUI.Show(OnNameSubmitted);
+            return;
+        }
+
+        Debug.LogError("[LobbyFlow] NameEntryUI missing — showing MainPanel fallback.");
+        roomUI?.ShowMainPanelAfterName("Player");
+    }
+
+    private void OnNameSubmitted(string displayName)
+    {
+        _nameSubmitted = true;
+
+#if CMPSETUP_COMPLETE
+        if (FusionLobbyBridge.Instance != null)
+        {
+            FusionLobbyBridge.Instance.SetDisplayName(displayName);
+        }
+        else
+        {
+            PlayerPrefs.SetString("MP_PLAYER_NAME", displayName);
+            PlayerPrefs.Save();
+        }
+#else
+        PlayerPrefs.SetString("MP_PLAYER_NAME", displayName);
+        PlayerPrefs.Save();
+#endif
+
+        if (LobbyManager.Instance != null)
+        {
+            LobbyManager.Instance.SubmitDisplayName(displayName);
+        }
+
+        roomUI?.ShowMainPanelAfterName(displayName);
     }
 
     private void HandleRoomJoined()
@@ -85,33 +145,21 @@ public class LobbyFlowController : MonoBehaviour
             yield return null;
         }
 
+        if (!_nameSubmitted)
+        {
+            nameEntryUI?.Show(OnNameSubmitted);
+            yield break;
+        }
+
         bool isHost = MultiplayerRoomService.Instance != null && MultiplayerRoomService.Instance.IsHost;
 
         if (isHost)
         {
             hostSidebarUI?.PrepareCenterPhase();
-        }
-        else
-        {
-            roomUI?.HideAllPanels();
-        }
-
-        nameEntryUI?.Show(OnNameSubmitted);
-    }
-
-    private void OnNameSubmitted(string displayName)
-    {
-        if (LobbyManager.Instance != null)
-        {
-            LobbyManager.Instance.SubmitDisplayName(displayName);
-        }
-
-        bool isHost = MultiplayerRoomService.Instance != null && MultiplayerRoomService.Instance.IsHost;
-        if (isHost)
-        {
             hostSidebarUI?.BindLobbyManager();
+            hostSidebarUI?.ForceShowForHost();
             HideClientWaitingPanel();
-            return;
+            yield break;
         }
 
         roomUI?.HideAllPanels();
@@ -121,15 +169,16 @@ public class LobbyFlowController : MonoBehaviour
     public void ResetFlow()
     {
         _lobbyEntered = false;
-        HideLobbyPhase();
-        roomUI?.ShowMainPanel();
-    }
-
-    private void HideLobbyPhase()
-    {
-        nameEntryUI?.Hide();
-        hostSidebarUI?.ResetSidebar();
         HideClientWaitingPanel();
+        hostSidebarUI?.ResetSidebar();
+
+        if (_nameSubmitted)
+        {
+            roomUI?.ShowMainPanel();
+            return;
+        }
+
+        BeginNameEntry();
     }
 
     private void ShowClientWaitingPanel()

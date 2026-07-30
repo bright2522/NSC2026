@@ -28,6 +28,19 @@ namespace AvocadoShark
 
         public static FusionConnection Instance;
 
+        public void Configure(NetworkRunner runner, string sceneName)
+        {
+            if (runner != null)
+            {
+                runnerPrefab = runner;
+            }
+
+            if (!string.IsNullOrWhiteSpace(sceneName))
+            {
+                gameSceneName = sceneName;
+            }
+        }
+
         [SerializeField] private NetworkRunner runnerPrefab;
         public NetworkRunner Runner { get; private set; }
 
@@ -195,8 +208,14 @@ namespace AvocadoShark
         public void CreateRoom()
         {
             PlayerPrefs.SetInt("has_pass", 0);
-            loadingScreenScript.gameObject.SetActive(true);
-            Invoke(nameof(ContinueCreateRoom), loadingScreenScript.lerpSpeed);
+            if (loadingScreenScript != null)
+            {
+                loadingScreenScript.gameObject.SetActive(true);
+                Invoke(nameof(ContinueCreateRoom), loadingScreenScript.lerpSpeed);
+                return;
+            }
+
+            ContinueCreateRoom();
         }
         private void ContinueCreateRoom()
         {
@@ -321,8 +340,14 @@ namespace AvocadoShark
 
         public void ConnectToRunner()
         {
-            loadingScreenScript.gameObject.SetActive(true);
-            Invoke(nameof(ContinueConnectToRunner), loadingScreenScript.lerpSpeed);
+            if (loadingScreenScript != null)
+            {
+                loadingScreenScript.gameObject.SetActive(true);
+                Invoke(nameof(ContinueConnectToRunner), loadingScreenScript.lerpSpeed);
+                return;
+            }
+
+            ContinueConnectToRunner();
         }
         private void ContinueConnectToRunner()
         {
@@ -342,87 +367,181 @@ namespace AvocadoShark
         }
         private void SetUpComponents()
         {
+            if (runnerPrefab == null)
+            {
+                Debug.LogError("[FusionConnection] runnerPrefab is not assigned.");
+                return;
+            }
+
+            if (Runner != null)
+            {
+                if (Runner.IsRunning)
+                {
+                    Runner.Shutdown();
+                }
+
+                Destroy(Runner.gameObject);
+                Runner = null;
+            }
+
             Runner = Instantiate(runnerPrefab);
             _recorder = Runner.GetComponentInChildren<Recorder>();
             _voiceManager = Runner.GetComponentInChildren<VoiceManager>();
             Runner.AddCallbacks(this);
         }
 
+        private static bool HasValidPhotonAppId(out string message)
+        {
+            message = null;
+            var settings = Fusion.Photon.Realtime.PhotonAppSettings.Global.AppSettings;
+            string appId = settings.AppIdFusion;
+            if (string.IsNullOrWhiteSpace(appId))
+            {
+                appId = settings.AppIdRealtime;
+            }
+
+            if (string.IsNullOrWhiteSpace(appId))
+            {
+                message =
+                    "Photon App Id ว่าง — ใส่ AppIdFusion ใน Assets/Photon/Fusion/Resources/PhotonAppSettings";
+                return false;
+            }
+
+            return true;
+        }
+
+        private static string ToFriendlyShutdownMessage(ShutdownReason reason)
+        {
+            return reason switch
+            {
+                ShutdownReason.InvalidAuthentication =>
+                    "Photon Auth ล้มเหลว — ตรวจ AppIdFusion ใน PhotonAppSettings",
+                ShutdownReason.GameClosed => "ห้องปิดแล้ว",
+                ShutdownReason.GameNotFound => "ไม่พบห้องนี้ ตรวจรหัสอีกครั้ง",
+                ShutdownReason.GameIsFull => "ห้องเต็มแล้ว",
+                ShutdownReason.ConnectionTimeout => "เชื่อมต่อ Photon หมดเวลา",
+                _ => reason.ToString()
+            };
+        }
+
         public async void JoinRoom(string sessionName)
         {
-            int buildIndex = -1;
-
-            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
-            {
-                string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
-                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
-
-                if (sceneName == gameSceneName)
-                {
-                    buildIndex = i;
-                    break;
-                }
-            }
-
-            StopCoroutine(AutoRefreshRoomList());
-            if (Runner == null)
-            {
-                SetUpComponents();
-            }
-
-            var result = await Runner.StartGame(new StartGameArgs()
-            {
-                GameMode = GameMode.Shared,
-                SessionName = sessionName,
-                Scene = SceneRef.FromIndex(buildIndex),
-                EnableClientSessionCreation = false,
-            });
-            if (result.Ok)
-                return;
-            popup.ShowPopup(result.ShutdownReason.ToString());
+            await StartSharedSession(sessionName, maxPlayers: 0, password: null, createIfMissing: false, loadGameScene: true);
         }
 
         public async void JoinRoom(string sessionName, int maxPlayers, string password = null)
         {
-            int buildIndex = -1;
+            await StartSharedSession(sessionName, maxPlayers, password, createIfMissing: true, loadGameScene: true);
+        }
 
-            // Publishes a salt + PBKDF2 hash, never the password itself: Photon sends
-            // session properties to every client browsing the lobby.
+        public async void JoinRoomStayInLobby(string sessionName, int maxPlayers, string password = null)
+        {
+            await StartSharedSession(sessionName, maxPlayers, password, createIfMissing: true, loadGameScene: false);
+        }
+
+        public async void JoinRoomStayInLobbyAsClient(string sessionName)
+        {
+            await StartSharedSession(sessionName, maxPlayers: 0, password: null, createIfMissing: false, loadGameScene: false);
+        }
+
+        public async void LoadConfiguredGameScene()
+        {
+            if (Runner == null || !Runner.IsRunning)
+            {
+                Debug.LogError("[FusionConnection] Runner is not running.");
+                return;
+            }
+
+            int buildIndex = GetSceneBuildIndex(gameSceneName);
+            if (buildIndex < 0)
+            {
+                Debug.LogError($"[FusionConnection] Game scene '{gameSceneName}' is not in Build Settings.");
+                return;
+            }
+
+            hasEnteredGameScene = false;
+            await Runner.LoadScene(SceneRef.FromIndex(buildIndex), LoadSceneMode.Single);
+        }
+
+        private async System.Threading.Tasks.Task StartSharedSession(
+            string sessionName,
+            int maxPlayers,
+            string password,
+            bool createIfMissing,
+            bool loadGameScene)
+        {
+            if (!HasValidPhotonAppId(out string authMessage))
+            {
+                Debug.LogError($"[FusionConnection] {authMessage}");
+                if (popup != null)
+                    popup.ShowPopup(authMessage);
+                return;
+            }
+
+            int buildIndex = GetSceneBuildIndex(gameSceneName);
             var sessionProperties = new Dictionary<string, SessionProperty>();
             RoomPassword.Apply(sessionProperties, password);
 
-            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+            try
             {
-                string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
-                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
-
-                if (sceneName == gameSceneName)
-                {
-                    buildIndex = i;
-                    break;
-                }
+                StopCoroutine(AutoRefreshRoomList());
+            }
+            catch
+            {
             }
 
-            StopCoroutine(AutoRefreshRoomList());
+            // Always create a fresh runner — Fusion forbids reusing a runner after StartGame.
+            SetUpComponents();
 
             if (Runner == null)
             {
-                SetUpComponents();
+                Debug.LogError("[FusionConnection] NetworkRunner could not be created.");
+                return;
             }
 
-            var result = await Runner.StartGame(new StartGameArgs()
+            if (loadGameScene && buildIndex < 0)
+            {
+                Debug.LogError($"[FusionConnection] Game scene '{gameSceneName}' is not in Build Settings.");
+                if (popup != null)
+                    popup.ShowPopup($"Scene '{gameSceneName}' missing from Build Settings");
+                return;
+            }
+
+            var args = new StartGameArgs
             {
                 GameMode = GameMode.Shared,
                 SessionName = sessionName,
-                Scene = SceneRef.FromIndex(buildIndex),
                 SessionProperties = sessionProperties,
-                PlayerCount = maxPlayers
-            });
+                EnableClientSessionCreation = createIfMissing
+            };
+
+            if (createIfMissing && maxPlayers > 0)
+            {
+                args.PlayerCount = maxPlayers;
+            }
+
+            if (loadGameScene)
+            {
+                args.Scene = SceneRef.FromIndex(buildIndex);
+            }
+
+            var result = await Runner.StartGame(args);
             if (result.Ok)
             {
                 return;
             }
-            popup.ShowPopup(result.ShutdownReason.ToString());
+
+            string friendly = ToFriendlyShutdownMessage(result.ShutdownReason);
+            if (popup != null)
+                popup.ShowPopup(friendly);
+            else
+                Debug.LogError($"[FusionConnection] Session failed: {result.ShutdownReason} ({friendly})");
+
+            if (Runner != null)
+            {
+                Destroy(Runner.gameObject);
+                Runner = null;
+            }
         }
 
         private void SpawnPlayerCharacter(NetworkRunner runner)

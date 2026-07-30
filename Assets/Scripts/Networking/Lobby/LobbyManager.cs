@@ -10,7 +10,7 @@ public class LobbyManager : NetworkBehaviour
     public static LobbyManager Instance { get; private set; }
 
     [Header("Gameplay")]
-    [SerializeField] private string gameplaySceneName = "Gameplay"; // TODO: replace when final scene name is decided
+    [SerializeField] private string gameplaySceneName = "Rpvp";
 
     public event Action<IReadOnlyList<LobbyPlayerState>> OnPlayersChanged;
     public event Action OnLocalPlayerRegistered;

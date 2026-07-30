@@ -13,22 +13,16 @@ public class LobbyNameEntryUI : MonoBehaviour
 
     private Action<string> _onConfirm;
     private bool _isVisible;
+    private bool _wired;
 
     private void Awake()
     {
-        if (confirmButton != null)
-        {
-            confirmButton.onClick.AddListener(HandleConfirm);
-            LobbyUIAnimations.SetupButtonFeedback(confirmButton);
-        }
+        EnsureWired();
+    }
 
-        if (nameInput != null)
-        {
-            nameInput.onSubmit.AddListener(_ => HandleConfirm());
-            nameInput.characterLimit = 16;
-        }
-
-        HideImmediate();
+    private void OnEnable()
+    {
+        EnsureWired();
     }
 
     private void OnDisable()
@@ -39,8 +33,39 @@ public class LobbyNameEntryUI : MonoBehaviour
         }
     }
 
+    private void EnsureWired()
+    {
+        if (_wired)
+        {
+            return;
+        }
+
+        _wired = true;
+
+        if (root == null)
+        {
+            root = gameObject;
+        }
+
+        if (confirmButton != null)
+        {
+            confirmButton.onClick.RemoveListener(HandleConfirm);
+            confirmButton.onClick.AddListener(HandleConfirm);
+            LobbyUIAnimations.SetupButtonFeedback(confirmButton);
+        }
+
+        if (nameInput != null)
+        {
+            nameInput.onSubmit.RemoveAllListeners();
+            nameInput.onSubmit.AddListener(_ => HandleConfirm());
+            nameInput.characterLimit = 16;
+        }
+    }
+
     public void Show(Action<string> onConfirm)
     {
+        EnsureWired();
+
         _onConfirm = onConfirm;
         _isVisible = true;
 
@@ -61,7 +86,7 @@ public class LobbyNameEntryUI : MonoBehaviour
 
         if (root == null)
         {
-            return;
+            root = gameObject;
         }
 
         LobbyUIAnimations.AnimatePanelIn(root, 0.05f, () =>
@@ -90,18 +115,6 @@ public class LobbyNameEntryUI : MonoBehaviour
         }
 
         LobbyUIAnimations.AnimatePanelOut(root);
-    }
-
-    private void HideImmediate()
-    {
-        _isVisible = false;
-        _onConfirm = null;
-
-        if (root != null)
-        {
-            LobbyUIAnimations.ResetPanelTree(root);
-            root.SetActive(false);
-        }
     }
 
     private void HandleConfirm()
