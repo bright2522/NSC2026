@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AppSettings:
     AppIdRealtime: 
-    AppIdFusion: 
+    AppIdFusion: 6d3d51d1-a200-4865-bcbc-7a4f27fc938a 
     AppIdQuantum: 
     AppIdChat: 
     AppIdVoice: 

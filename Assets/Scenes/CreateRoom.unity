@@ -511,7 +511,7 @@ MonoBehaviour:
     m_DisabledTrigger: Disabled
   m_Interactable: 1
   m_TargetGraphic: {fileID: 178744665}
-  m_TextViewport: {fileID: 0}
+  m_TextViewport: {fileID: 178744667}
   m_TextComponent: {fileID: 1505390802}
   m_Placeholder: {fileID: 1788759625}
   m_VerticalScrollbar: {fileID: 0}
@@ -1354,7 +1354,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &417116331
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1399,9 +1399,9 @@ MonoBehaviour:
     m_Bottom: 30
   m_ChildAlignment: 4
   m_Spacing: 15
-  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 1
+  m_ChildControlWidth: 0
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
@@ -3395,6 +3395,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1074332884}
+  - component: {fileID: 1074332885}
   m_Layer: 0
   m_Name: FusionConnectionManager
   m_TagString: Untagged
@@ -3417,6 +3418,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1074332885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1074332883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 709e2ec5ee8746d439e7d78060dd0cf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playersInSession: []
+  CurrentEntryBeingEdited: {fileID: 0}
+  runnerPrefab: {fileID: 6867999484311217254, guid: 254323a92d7ed2b49b61bd25ef52ba87, type: 3}
+  hasEnteredGameScene: 0
+  playerPrefabYellow: {fileID: 0}
+  playerPrefabRed: {fileID: 0}
+  characterScriptableObject: {fileID: 11400000, guid: 13ec98ef0c510f044b50f42e751d5e9f, type: 2}
+  mainObject: {fileID: 0}
+  submitButton: {fileID: 0}
+  nameField: {fileID: 0}
+  characterselectionobject: {fileID: 0}
+  roomEntryPrefab: {fileID: 0}
+  roomListObject: {fileID: 0}
+  content: {fileID: 0}
+  createRoomButton: {fileID: 0}
+  NoRoomsText: {fileID: 0}
+  room_search: {fileID: 0}
+  refreshInterval: 2
+  UseCustomLocation: 0
+  CustomLocation: {x: 0, y: 0, z: 0}
+  loadingScreenScript: {fileID: 0}
+  popup: {fileID: 0}
+  gameSceneName: Rpvp
+  lobbyReturnSceneName: CreateRoom
+  additiveSceneName: 
+  menuCanvas: {fileID: 0}
+  isConnected: 0
+  _playerName: 
+  nRooms: 0
+  nPPLOnline: 0
+  region_select: {fileID: 0}
+  backButton: {fileID: 0}
 --- !u!1 &1118277784
 GameObject:
   m_ObjectHideFlags: 0
@@ -3598,7 +3643,55 @@ MonoBehaviour:
   nameEntryUI: {fileID: 979736352}
   hostSidebarUI: {fileID: 1939184278}
   clientWaitingPanel: {fileID: 1920401679}
+  clientWaitingText: {fileID: 0}
   lobbyManagerWaitSeconds: 5
+--- !u!1 &1203360208
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1203360210}
+  - component: {fileID: 1203360209}
+  m_Layer: 0
+  m_Name: FusionLobbyBridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1203360209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203360208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8effd26e9b508e2408038198ae3cfc38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  runnerPrefab: {fileID: 6867999484311217254, guid: 254323a92d7ed2b49b61bd25ef52ba87, type: 3}
+  gameSceneName: Rpvp
+  maxPlayers: 4
+--- !u!4 &1203360210
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203360208}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1207064165
 GameObject:
   m_ObjectHideFlags: 0
@@ -4278,9 +4371,11 @@ MonoBehaviour:
   mainPanel: {fileID: 1286175483}
   hostPanel: {fileID: 2111139267}
   joinPanel: {fileID: 571190802}
+  background: {fileID: 32918377}
   hostRoomCodeText: {fileID: 2003023623}
   hostStatusText: {fileID: 1951667177}
   statusText: {fileID: 1863800995}
+  enterHostRoomButton: {fileID: 1946132881}
   joinCodeInput: {fileID: 178744664}
   joinButton: {fileID: 1062047850}
   hostButton: {fileID: 654237039}
@@ -5021,10 +5116,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ABC123
+  m_text: Room Code (6)
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 0}
-  m_sharedMaterial: {fileID: 0}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -7139,3 +7234,4 @@ SceneRoots:
   - {fileID: 1775845265}
   - {fileID: 1488546733}
   - {fileID: 1074332884}
+  - {fileID: 1203360210}

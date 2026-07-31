@@ -1,5 +1,8 @@
 using Unity.Netcode;
 using UnityEngine;
+#if CMPSETUP_COMPLETE
+using AvocadoShark;
+#endif
 
 public static class CreateRoomSceneBootstrap
 {
@@ -8,9 +11,39 @@ public static class CreateRoomSceneBootstrap
         ActivateIfFound<NetworkManager>();
         ActivateIfFound<LobbyFlowController>();
         ActivateIfFound<LobbyManager>();
-
+#if CMPSETUP_COMPLETE
+        EnsureFusionLobby();
+#endif
         return EnsureRoomService() != null;
     }
+
+#if CMPSETUP_COMPLETE
+    public static FusionLobbyBridge EnsureFusionLobby()
+    {
+        if (FusionLobbyBridge.Instance != null)
+        {
+            FusionLobbyBridge.Instance.EnsureFusionConnection();
+            return FusionLobbyBridge.Instance;
+        }
+
+        var bridge = Object.FindFirstObjectByType<FusionLobbyBridge>(FindObjectsInactive.Include);
+        if (bridge != null)
+        {
+            if (!bridge.gameObject.activeSelf)
+            {
+                bridge.gameObject.SetActive(true);
+            }
+
+            bridge.EnsureFusionConnection();
+            return bridge;
+        }
+
+        var go = new GameObject("FusionLobbyBridge");
+        bridge = go.AddComponent<FusionLobbyBridge>();
+        bridge.EnsureFusionConnection();
+        return bridge;
+    }
+#endif
 
     public static MultiplayerRoomService EnsureRoomService()
     {

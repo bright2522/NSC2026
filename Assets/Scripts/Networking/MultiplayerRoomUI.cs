@@ -33,15 +33,93 @@ public class MultiplayerRoomUI : MonoBehaviour
     private void Awake()
     {
         CreateRoomSceneBootstrap.EnsureSceneReady();
+        HideLegacyCreateRoomPanel();
+        EnsurePanelRefs();
+    }
 
+    private void HideLegacyCreateRoomPanel()
+    {
+        var legacy = transform.Find("CreateRoomPanel");
+        if (legacy == null && transform.parent != null)
+        {
+            legacy = transform.parent.Find("CreateRoomPanel");
+        }
+
+        if (legacy == null)
+        {
+            var found = GameObject.Find("CreateRoomPanel");
+            if (found != null)
+            {
+                legacy = found.transform;
+            }
+        }
+
+        if (legacy != null)
+        {
+            legacy.gameObject.SetActive(false);
+        }
+    }
+
+    private void EnsurePanelRefs()
+    {
         if (background == null)
         {
-            var found = transform.parent != null
-                ? transform.parent.Find("Background")
-                : transform.Find("Background");
+            var found = transform.Find("Background");
+            if (found == null && transform.parent != null)
+            {
+                found = transform.parent.Find("Background");
+            }
+
             if (found != null)
             {
                 background = found.gameObject;
+            }
+        }
+
+        if (joinCodeInput == null)
+        {
+            joinCodeInput = GetComponentInChildren<TMP_InputField>(true);
+        }
+
+        if (joinCodeInput != null)
+        {
+            joinCodeInput.characterLimit = RoomCodeGenerator.CodeLength;
+            joinCodeInput.contentType = TMP_InputField.ContentType.Alphanumeric;
+            joinCodeInput.lineType = TMP_InputField.LineType.SingleLine;
+
+            if (joinCodeInput.textViewport == null)
+            {
+                var selfRect = joinCodeInput.GetComponent<RectTransform>();
+                joinCodeInput.textViewport = selfRect;
+            }
+
+            if (joinCodeInput.textComponent == null)
+            {
+                var texts = joinCodeInput.GetComponentsInChildren<TMP_Text>(true);
+                for (int i = 0; i < texts.Length; i++)
+                {
+                    if (texts[i].gameObject.name == "Placeholder")
+                    {
+                        continue;
+                    }
+
+                    joinCodeInput.textComponent = texts[i];
+                    break;
+                }
+            }
+
+            if (joinCodeInput.placeholder == null)
+            {
+                var placeholderTransform = joinCodeInput.transform.Find("Placeholder");
+                if (placeholderTransform != null)
+                {
+                    joinCodeInput.placeholder = placeholderTransform.GetComponent<TMP_Text>();
+                }
+            }
+
+            if (joinCodeInput.placeholder is TMP_Text placeholder)
+            {
+                placeholder.text = "Room Code (6)";
             }
         }
     }
@@ -61,6 +139,7 @@ public class MultiplayerRoomUI : MonoBehaviour
 
     private void Start()
     {
+        CreateRoomSceneBootstrap.EnsureSceneReady();
         SubscribeBridgeEvents();
         SubscribeRoomEvents();
         SetupButtonAnimations();
@@ -135,6 +214,7 @@ public class MultiplayerRoomUI : MonoBehaviour
     private void SubscribeBridgeEvents()
     {
 #if CMPSETUP_COMPLETE
+        CreateRoomSceneBootstrap.EnsureFusionLobby();
         if (FusionLobbyBridge.Instance == null)
         {
             return;
@@ -196,6 +276,7 @@ public class MultiplayerRoomUI : MonoBehaviour
         }
 
 #if CMPSETUP_COMPLETE
+        CreateRoomSceneBootstrap.EnsureFusionLobby();
         var bridge = FusionLobbyBridge.Instance;
         if (bridge != null)
         {
@@ -211,8 +292,10 @@ public class MultiplayerRoomUI : MonoBehaviour
             HandleStatusChanged("แชร์รหัสนี้ → กด ENTER ROOM ก่อน → ให้เพื่อน Join ด้วยรหัสเดียวกัน");
             return;
         }
-#endif
 
+        HandleRoomError("ไม่พบ Fusion lobby — ตรวจ FusionLobbyBridge ในฉาก");
+        return;
+#else
         CreateRoomSceneBootstrap.EnsureSceneReady();
         var service = CreateRoomSceneBootstrap.EnsureRoomService();
         if (service == null)
@@ -223,6 +306,7 @@ public class MultiplayerRoomUI : MonoBehaviour
 
         ShowHostPanel();
         service.HostRoom();
+#endif
     }
 
     public void OnClickEnterHostRoom()
@@ -234,6 +318,7 @@ public class MultiplayerRoomUI : MonoBehaviour
         }
 
 #if CMPSETUP_COMPLETE
+        CreateRoomSceneBootstrap.EnsureFusionLobby();
         if (FusionLobbyBridge.Instance != null)
         {
             HandleStatusChanged("กำลังเข้าห้อง...");
@@ -264,16 +349,29 @@ public class MultiplayerRoomUI : MonoBehaviour
             return;
         }
 
+        if (joinCodeInput == null)
+        {
+            EnsurePanelRefs();
+        }
+
         string code = joinCodeInput != null ? joinCodeInput.text : string.Empty;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            HandleRoomError("กรุณาใส่รหัสห้อง 6 ตัว");
+            return;
+        }
 
 #if CMPSETUP_COMPLETE
+        CreateRoomSceneBootstrap.EnsureFusionLobby();
         if (FusionLobbyBridge.Instance != null)
         {
             FusionLobbyBridge.Instance.JoinRoom(code);
             return;
         }
-#endif
 
+        HandleRoomError("ไม่พบ Fusion lobby — ตรวจ FusionLobbyBridge ในฉาก");
+        return;
+#else
         CreateRoomSceneBootstrap.EnsureSceneReady();
         var service = CreateRoomSceneBootstrap.EnsureRoomService();
         if (service == null)
@@ -283,6 +381,7 @@ public class MultiplayerRoomUI : MonoBehaviour
         }
 
         service.JoinRoom(code);
+#endif
     }
 
     public void OnClickLeave()

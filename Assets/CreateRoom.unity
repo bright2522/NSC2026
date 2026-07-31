@@ -587,7 +587,7 @@ MonoBehaviour:
     m_DisabledTrigger: Disabled
   m_Interactable: 1
   m_TargetGraphic: {fileID: 178744665}
-  m_TextViewport: {fileID: 0}
+  m_TextViewport: {fileID: 178744667}
   m_TextComponent: {fileID: 1505390802}
   m_Placeholder: {fileID: 1788759625}
   m_VerticalScrollbar: {fileID: 0}
@@ -4116,10 +4116,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ABC123
+  m_text: Room Code (6)
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 0}
-  m_sharedMaterial: {fileID: 0}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
