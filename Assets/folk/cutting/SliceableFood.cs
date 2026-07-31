@@ -13,15 +13,15 @@ public class SliceableFood : MonoBehaviour
     [Tooltip("ให้ชิ้นที่หั่นกระเด็นไหม — ปิด = ตกนิ่ง ๆ ไม่ดีด")]
     public bool launchPieces = false;
     [Tooltip("ระยะที่ชิ้นส่วนจะขยับหลบใบมีดทางซ้าย-ขวา")]
-    public float spawnOffset = 0.015f;
+    public float spawnOffset = 0.005f;
     [Tooltip("ระยะที่ชิ้นส่วนจะยกตัวลอยเหนือเขียงนิดหน่อยในเฟรมแรกเพื่อแก้บั๊กฟิสิกส์ดีดตัว")]
-    public float antiClipYOffset = 0.02f;
+    public float antiClipYOffset = 0.005f;
     [Tooltip("แรงผลักดีดออกไปทางซ้าย (เฉพาะชิ้นซ้าย)")]
-    public float pushForce = 0.4f;
+    public float pushForce = 0.2f;
     [Tooltip("แรงดีดให้ลอยขึ้นฟ้า (เฉพาะชิ้นซ้าย)")]
-    public float bounceUpForce = 0.5f;
-    [Tooltip("แรงหมุนติ้วๆ ตอนกระเด็นให้ล้มคว่ำสมจริง")]
-    public float torqueForce = 1.0f;
+    public float bounceUpForce = 0.1f;
+    [Tooltip("แรงหมุนตอนกระเด็น")]
+    public float torqueForce = 0.0f;
     [Tooltip("รอหั่นซ้ำได้หลังหั่นล่าสุด (วินาที) — กันชิ้นดีด/หั่นซ้ำทันที")]
     public float knifeSliceCooldown = 0.4f;
 
@@ -59,14 +59,16 @@ public class SliceableFood : MonoBehaviour
 
     private void SetupColliderRelays()
     {
-        foreach (Collider col in GetComponentsInChildren<Collider>())
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        for (int i = 0; i < colliders.Length; i++)
         {
+            Collider col = colliders[i];
             if (col.GetComponent<SliceableFood>() != null)
                 continue;
 
-            SliceableTriggerRelay relay = col.gameObject.GetComponent<SliceableTriggerRelay>();
-            if (relay == null)
+            if (!col.TryGetComponent<SliceableTriggerRelay>(out var relay))
                 relay = col.gameObject.AddComponent<SliceableTriggerRelay>();
+
             relay.Initialize(this);
         }
     }
@@ -85,8 +87,7 @@ public class SliceableFood : MonoBehaviour
 
     private static bool IsKnifeChopping(Collider knifeCollider)
     {
-        KnifeMovement knife = knifeCollider.GetComponent<KnifeMovement>();
-        if (knife == null)
+        if (!knifeCollider.TryGetComponent<KnifeMovement>(out var knife))
             knife = knifeCollider.GetComponentInParent<KnifeMovement>();
 
         return knife != null && knife.IsSliceActive;
@@ -110,8 +111,9 @@ public class SliceableFood : MonoBehaviour
         GameObject upperGroup = CreateGroupRoot($"{name}_Upper");
         GameObject lowerGroup = CreateGroupRoot($"{name}_Lower");
 
-        foreach (MeshPart part in parts)
+        for (int i = 0; i < parts.Count; i++)
         {
+            MeshPart part = parts[i];
             Material crossSectionMat = part.Renderer.sharedMaterial;
             if (crossSectionMat == null)
                 continue;
@@ -195,9 +197,10 @@ public class SliceableFood : MonoBehaviour
 
     private static bool HasChildMeshes(Transform group)
     {
-        foreach (MeshFilter filter in group.GetComponentsInChildren<MeshFilter>())
+        MeshFilter[] filters = group.GetComponentsInChildren<MeshFilter>();
+        for (int i = 0; i < filters.Length; i++)
         {
-            if (filter.sharedMesh != null)
+            if (filters[i].sharedMesh != null)
                 return true;
         }
 
@@ -206,13 +209,13 @@ public class SliceableFood : MonoBehaviour
 
     private GameObject CreateGroupRoot(string rootName)
     {
-        GameObject group = new GameObject(rootName);
-        group.tag = "Sliceable";
+        GameObject group = new GameObject(rootName)
+        {
+            tag = "Sliceable"
+        };
 
         Transform groupTransform = group.transform;
         groupTransform.SetPositionAndRotation(transform.position, transform.rotation);
-        // อยู่ใต้ parent เดียวกับต้นฉบับ (เช่น station/row ของ SwipeStationSlider) ไม่ใช่ SlicedFoodManager
-        // เพื่อให้ชิ้นที่หั่นแล้วเลื่อนตามสเตชันไปด้วยตอน swipe
         groupTransform.SetParent(transform.parent, true);
         SlicedFoodManager.RegisterPiece(group);
 
@@ -226,8 +229,10 @@ public class SliceableFood : MonoBehaviour
 
     private bool HasRemainingMeshes()
     {
-        foreach (MeshFilter filter in GetComponentsInChildren<MeshFilter>())
+        MeshFilter[] filters = GetComponentsInChildren<MeshFilter>();
+        for (int i = 0; i < filters.Length; i++)
         {
+            MeshFilter filter = filters[i];
             if (filter.sharedMesh == null)
                 continue;
 
@@ -251,17 +256,18 @@ public class SliceableFood : MonoBehaviour
     private static List<MeshPart> CollectMeshParts(Transform root)
     {
         List<MeshPart> parts = new List<MeshPart>();
+        MeshFilter[] filters = root.GetComponentsInChildren<MeshFilter>();
 
-        foreach (MeshFilter filter in root.GetComponentsInChildren<MeshFilter>())
+        for (int i = 0; i < filters.Length; i++)
         {
+            MeshFilter filter = filters[i];
             if (filter.sharedMesh == null)
                 continue;
 
-            MeshRenderer renderer = filter.GetComponent<MeshRenderer>();
-            if (renderer == null)
-                continue;
-
-            parts.Add(new MeshPart(filter.gameObject, renderer));
+            if (filter.TryGetComponent<MeshRenderer>(out var renderer))
+            {
+                parts.Add(new MeshPart(filter.gameObject, renderer));
+            }
         }
 
         return parts;
@@ -271,15 +277,17 @@ public class SliceableFood : MonoBehaviour
     {
         if (obj == null) return false;
 
-        MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
-        Mesh mesh = meshFilter != null ? meshFilter.sharedMesh : null;
+        if (!obj.TryGetComponent<MeshFilter>(out var meshFilter))
+            return false;
+
+        Mesh mesh = meshFilter.sharedMesh;
         if (mesh == null || mesh.vertexCount < 4)
             return false;
 
         Vector3 scaledSize = Vector3.Scale(mesh.bounds.size, meshFilter.transform.lossyScale);
         float volume = scaledSize.x * scaledSize.y * scaledSize.z;
-        float minAxis = Mathf.Min(scaledSize.x, scaledSize.y, scaledSize.z);
-        float maxAxis = Mathf.Max(scaledSize.x, scaledSize.y, scaledSize.z);
+        float minAxis = Mathf.Min(scaledSize.x, Mathf.Min(scaledSize.y, scaledSize.z));
+        float maxAxis = Mathf.Max(scaledSize.x, Mathf.Max(scaledSize.y, scaledSize.z));
 
         return minAxis >= minAxisSize || volume >= minVolumeThreshold || maxAxis >= minAxisSize * 2f;
     }
@@ -289,33 +297,41 @@ public class SliceableFood : MonoBehaviour
         float directionX = isLeftPiece ? -1f : 1f;
         groupRoot.transform.position += new Vector3(spawnOffset * directionX, antiClipYOffset, 0f);
 
-        foreach (MeshFilter filter in groupRoot.GetComponentsInChildren<MeshFilter>())
-            EnsureCollider(filter.gameObject);
+        MeshFilter[] filters = groupRoot.GetComponentsInChildren<MeshFilter>();
+        for (int i = 0; i < filters.Length; i++)
+        {
+            EnsureCollider(filters[i].gameObject);
+        }
 
         Rigidbody rb = groupRoot.AddComponent<Rigidbody>();
-        rb.mass = 2.0f;
+        rb.mass = 5.0f;
         rb.isKinematic = false;
-        rb.constraints = RigidbodyConstraints.None;
-        rb.linearDamping = 4f;
-        rb.angularDamping = 5f;
+        
+        // 🔒 LOCK SETTINGS: ล็อกการหมุนทั้งหมด ไม่ให้เอียงล้ม + ล็อกแกน Z ไม่ให้ไถลตกหน้า/หลังเขียง
+        rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
+        
+        // 🛑 เพิ่มแรงต้านให้หยุดนิ่งรวดเร็ว
+        rb.linearDamping = 8f;
+        rb.angularDamping = 10f;
 
-        // ใส่แรงดีดเฉพาะตอนเปิด launchPieces เท่านั้น (ปิดไว้ = ตกนิ่ง ๆ)
         if (launchPieces)
         {
             if (isLeftPiece)
             {
                 float forceX = pushForce * directionX;
-                rb.AddForce(new Vector3(forceX, bounceUpForce, -0.15f), ForceMode.Impulse);
-                rb.AddTorque(new Vector3(
-                    Random.Range(-torqueForce, torqueForce),
-                    Random.Range(-torqueForce, torqueForce),
-                    Random.Range(-torqueForce, torqueForce)), ForceMode.Impulse);
+                rb.AddForce(new Vector3(forceX, bounceUpForce, 0f), ForceMode.Impulse);
+                if (torqueForce > 0f)
+                {
+                    rb.AddTorque(new Vector3(
+                        Random.Range(-torqueForce, torqueForce),
+                        Random.Range(-torqueForce, torqueForce),
+                        Random.Range(-torqueForce, torqueForce)), ForceMode.Impulse);
+                }
             }
             else
             {
                 float forceX = (pushForce * 0.2f) * directionX;
                 rb.AddForce(new Vector3(forceX, 0f, 0f), ForceMode.Impulse);
-                rb.AddTorque(new Vector3(0f, 0f, Random.Range(-torqueForce * 0.2f, torqueForce * 0.2f)), ForceMode.Impulse);
             }
         }
 
@@ -334,17 +350,21 @@ public class SliceableFood : MonoBehaviour
         sliceScript.SetupColliderRelays();
     }
 
-    // กันชน 2 กลุ่ม ไม่ให้ดันกันเอง
     private static void IgnoreCollisions(GameObject a, GameObject b)
     {
         if (a == null || b == null) return;
-        var colA = a.GetComponentsInChildren<Collider>();
-        var colB = b.GetComponentsInChildren<Collider>();
-        foreach (Collider ca in colA)
+
+        Collider[] colA = a.GetComponentsInChildren<Collider>();
+        Collider[] colB = b.GetComponentsInChildren<Collider>();
+
+        for (int i = 0; i < colA.Length; i++)
         {
+            Collider ca = colA[i];
             if (ca == null) continue;
-            foreach (Collider cb in colB)
+
+            for (int j = 0; j < colB.Length; j++)
             {
+                Collider cb = colB[j];
                 if (cb != null)
                     Physics.IgnoreCollision(ca, cb, true);
             }
@@ -353,15 +373,13 @@ public class SliceableFood : MonoBehaviour
 
     private static void EnsureCollider(GameObject piece)
     {
-        MeshFilter filter = piece.GetComponent<MeshFilter>();
-        if (filter == null || filter.sharedMesh == null)
+        if (!piece.TryGetComponent<MeshFilter>(out var filter) || filter.sharedMesh == null)
             return;
 
-        MeshCollider meshCollider = piece.GetComponent<MeshCollider>();
-        if (meshCollider == null)
+        if (!piece.TryGetComponent<MeshCollider>(out var meshCollider))
             meshCollider = piece.AddComponent<MeshCollider>();
 
-        meshCollider.sharedMesh = filter.mesh;
+        meshCollider.sharedMesh = filter.sharedMesh;
         meshCollider.convex = true;
         meshCollider.contactOffset = 0.001f;
     }

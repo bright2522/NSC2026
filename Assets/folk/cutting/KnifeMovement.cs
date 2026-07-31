@@ -27,20 +27,21 @@ public class KnifeMovement : MonoBehaviour
     private float topWorldY;
     private float bottomWorldY;
 
+    // Buffer สำหรับลด GC Allocations ตอนใช้ RaycastAll
+    private static readonly RaycastHit[] raycastHitsBuffer = new RaycastHit[16];
+
     public bool IsSliceActive { get; private set; }
     public static bool IsAnyKnifeDragging => activeKnife != null && activeKnife.isDragging;
 
     private void Awake()
     {
-        knifeCollider = GetComponent<Collider>();
-        if (knifeCollider == null)
+        if (!TryGetComponent<Collider>(out knifeCollider))
             knifeCollider = GetComponentInChildren<Collider>();
     }
 
     private void OnEnable()
     {
         instances.Add(this);
-        // 💡 รีเซ็ตสถานะเผื่อกรณี Instantiate หรือเปิดการทำงานใหม่
         isDragging = false;
         isChopping = false;
         if (activeKnife == this) activeKnife = null;
@@ -51,7 +52,6 @@ public class KnifeMovement : MonoBehaviour
         UpdateWorldYPositions();
     }
 
-    // 💡 คำนวณขอบเขต Y ใหม่ตามตำแหน่งจริงของวัตถุ
     private void UpdateWorldYPositions()
     {
         topWorldY = transform.position.y;
@@ -65,7 +65,6 @@ public class KnifeMovement : MonoBehaviour
         if (activeKnife != null && activeKnife != this)
             return;
 
-        // 💡 ค้นหากล้องหลักปัจจุบันเสมอ (รองรับกล้องใน Prefab ใหม่)
         Camera activeCamera = Camera.main;
         if (activeCamera == null || !activeCamera.enabled)
             return;
@@ -76,7 +75,7 @@ public class KnifeMovement : MonoBehaviour
         {
             if (activeKnife == null && IsTopKnifeUnderCursor(inputScreenPosition, activeCamera))
             {
-                UpdateWorldYPositions(); // 💡 อัปเดตตำแหน่ง Y ปัจจุบันอีกครั้งป้องกันค่าเพี้ยน
+                UpdateWorldYPositions();
 
                 isDragging = true;
                 activeKnife = this;
@@ -148,21 +147,24 @@ public class KnifeMovement : MonoBehaviour
             return null;
 
         Ray ray = camera.ScreenPointToRay(screenPosition);
-        RaycastHit[] hits = Physics.RaycastAll(
+        
+        // 💡 OPTIMIZATION KEY: ใช้ RaycastNonAlloc เพื่อไม่สร้าง Garbage บน Memory
+        int hitCount = Physics.RaycastNonAlloc(
             ray,
+            raycastHitsBuffer,
             Mathf.Infinity,
             Physics.AllLayers,
             QueryTriggerInteraction.Collide);
 
-        if (hits.Length == 0)
+        if (hitCount == 0)
             return null;
 
-        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        System.Array.Sort(raycastHitsBuffer, 0, hitCount, RaycastHitDistanceComparer.Instance);
 
-        for (int i = 0; i < hits.Length; i++)
+        for (int i = 0; i < hitCount; i++)
         {
-            KnifeMovement knife = hits[i].collider.GetComponentInParent<KnifeMovement>();
-            if (knife != null && knife.enabled) // 💡 ตรวจเช็กว่าสคริปต์เปิดทำงานอยู่
+            KnifeMovement knife = raycastHitsBuffer[i].collider.GetComponentInParent<KnifeMovement>();
+            if (knife != null && knife.enabled)
                 return knife;
         }
 
@@ -238,5 +240,14 @@ public class KnifeMovement : MonoBehaviour
             && Touchscreen.current.touches[0].press.wasReleasedThisFrame;
         bool mouseClick = Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame;
         return mobileTouch || mouseClick;
+    }
+
+    private class RaycastHitDistanceComparer : IComparer<RaycastHit>
+    {
+        public static readonly RaycastHitDistanceComparer Instance = new RaycastHitDistanceComparer();
+        public int Compare(RaycastHit x, RaycastHit y)
+        {
+            return x.distance.CompareTo(y.distance);
+        }
     }
 }
