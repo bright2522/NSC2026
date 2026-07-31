@@ -92,8 +92,16 @@ namespace AvocadoShark
         [HideInInspector] public int nRooms = 0;
         [HideInInspector] public int nPPLOnline = 0;
 
+        public event Action OnSharedSessionStarted;
+        public event Action<string> OnSharedSessionFailed;
+        public event Action<PlayerRef> OnSessionPlayerJoined;
+        public event Action<PlayerRef> OnSessionPlayerLeft;
+        public event Action<PlayerRef, string> OnLobbyReliableMessage;
+
         public TMP_Dropdown region_select;
         public Button backButton;
+
+        private static readonly ReliableKey LobbyReliableKey = ReliableKey.FromInts(9101, 0, 0, 0);
 
         private void Awake()
         {
@@ -528,6 +536,15 @@ namespace AvocadoShark
             var result = await Runner.StartGame(args);
             if (result.Ok)
             {
+                isConnected = true;
+                playersInSession.Clear();
+                foreach (var player in Runner.ActivePlayers)
+                {
+                    if (!playersInSession.Contains(player))
+                        playersInSession.Add(player);
+                }
+
+                OnSharedSessionStarted?.Invoke();
                 return;
             }
 
@@ -537,10 +554,28 @@ namespace AvocadoShark
             else
                 Debug.LogError($"[FusionConnection] Session failed: {result.ShutdownReason} ({friendly})");
 
+            OnSharedSessionFailed?.Invoke(friendly);
+
             if (Runner != null)
             {
                 Destroy(Runner.gameObject);
                 Runner = null;
+            }
+        }
+
+        public void SendLobbyReliableMessage(string message)
+        {
+            if (Runner == null || !Runner.IsRunning || string.IsNullOrEmpty(message))
+                return;
+
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(message);
+            ReadOnlySpan<byte> span = bytes;
+            foreach (var player in Runner.ActivePlayers)
+            {
+                if (player == Runner.LocalPlayer)
+                    continue;
+
+                Runner.SendReliableDataToPlayer(player, LobbyReliableKey, span);
             }
         }
 
@@ -600,12 +635,32 @@ namespace AvocadoShark
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key,
             ArraySegment<byte> data)
         {
+            HandleLobbyReliableData(player, key, data);
         }
 
         // Fusion 2.1 signature (reliable data now arrives as ReadOnlySpan<byte>).
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key,
             ReadOnlySpan<byte> data)
         {
+            HandleLobbyReliableData(player, key, data);
+        }
+
+        private void HandleLobbyReliableData(PlayerRef player, ReliableKey key, ArraySegment<byte> data)
+        {
+            if (!key.Equals(LobbyReliableKey) || data.Array == null || data.Count <= 0)
+                return;
+
+            string message = System.Text.Encoding.UTF8.GetString(data.Array, data.Offset, data.Count);
+            OnLobbyReliableMessage?.Invoke(player, message);
+        }
+
+        private void HandleLobbyReliableData(PlayerRef player, ReliableKey key, ReadOnlySpan<byte> data)
+        {
+            if (!key.Equals(LobbyReliableKey) || data.Length <= 0)
+                return;
+
+            string message = System.Text.Encoding.UTF8.GetString(data);
+            OnLobbyReliableMessage?.Invoke(player, message);
         }
 
         public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress)
@@ -630,11 +685,15 @@ namespace AvocadoShark
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
-            playersInSession.Add(player);
+            if (!playersInSession.Contains(player))
+                playersInSession.Add(player);
+            OnSessionPlayerJoined?.Invoke(player);
         }
 
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
         {
+            playersInSession.Remove(player);
+            OnSessionPlayerLeft?.Invoke(player);
         }
         public void OnSceneLoadDone(NetworkRunner runner)
         {

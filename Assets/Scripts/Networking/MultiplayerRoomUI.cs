@@ -22,6 +22,11 @@ public class MultiplayerRoomUI : MonoBehaviour
     [SerializeField] private Button hostButton;
     [SerializeField] private Button leaveButton;
 
+#if CMPSETUP_COMPLETE
+    [Header("Fusion Waiting")]
+    [SerializeField] private FusionLobbyWaitingUI fusionWaitingUI;
+#endif
+
     private GameObject _activePanel;
     private string _lastRoomCode = string.Empty;
     private string _lastStatusMessage = string.Empty;
@@ -35,6 +40,7 @@ public class MultiplayerRoomUI : MonoBehaviour
         CreateRoomSceneBootstrap.EnsureSceneReady();
         HideLegacyCreateRoomPanel();
         EnsurePanelRefs();
+        EnsureFusionWaitingUI();
     }
 
     private void HideLegacyCreateRoomPanel()
@@ -122,6 +128,21 @@ public class MultiplayerRoomUI : MonoBehaviour
                 placeholder.text = "Room Code (6)";
             }
         }
+    }
+
+    private void EnsureFusionWaitingUI()
+    {
+#if CMPSETUP_COMPLETE
+        if (fusionWaitingUI == null)
+        {
+            fusionWaitingUI = FindFirstObjectByType<FusionLobbyWaitingUI>(FindObjectsInactive.Include);
+        }
+
+        if (fusionWaitingUI != null)
+        {
+            fusionWaitingUI.Configure(this);
+        }
+#endif
     }
 
     private void OnEnable()
@@ -222,8 +243,10 @@ public class MultiplayerRoomUI : MonoBehaviour
 
         FusionLobbyBridge.Instance.OnStatusChanged -= HandleStatusChanged;
         FusionLobbyBridge.Instance.OnRoomError -= HandleRoomError;
+        FusionLobbyBridge.Instance.OnLobbyEntered -= HandleFusionLobbyEntered;
         FusionLobbyBridge.Instance.OnStatusChanged += HandleStatusChanged;
         FusionLobbyBridge.Instance.OnRoomError += HandleRoomError;
+        FusionLobbyBridge.Instance.OnLobbyEntered += HandleFusionLobbyEntered;
 #endif
     }
 
@@ -237,8 +260,19 @@ public class MultiplayerRoomUI : MonoBehaviour
 
         FusionLobbyBridge.Instance.OnStatusChanged -= HandleStatusChanged;
         FusionLobbyBridge.Instance.OnRoomError -= HandleRoomError;
+        FusionLobbyBridge.Instance.OnLobbyEntered -= HandleFusionLobbyEntered;
 #endif
     }
+
+#if CMPSETUP_COMPLETE
+    private void HandleFusionLobbyEntered()
+    {
+        HideAllPanels();
+        EnsureFusionWaitingUI();
+        fusionWaitingUI?.ShowWaiting();
+        HandleStatusChanged("อยู่ในห้องแล้ว");
+    }
+#endif
 
     private void SubscribeRoomEvents()
     {
@@ -271,36 +305,39 @@ public class MultiplayerRoomUI : MonoBehaviour
     {
         if (!_nameReady)
         {
-            HandleRoomError("กรุณาใส่ชื่อก่อน");
+            HandleRoomError("Enter your name first");
             return;
         }
 
 #if CMPSETUP_COMPLETE
         CreateRoomSceneBootstrap.EnsureFusionLobby();
+        EnsureFusionWaitingUI();
         var bridge = FusionLobbyBridge.Instance;
-        if (bridge != null)
+        if (bridge == null)
         {
-            bridge.PrepareHostRoom();
-            _pendingHostCode = bridge.PendingRoomCode;
-            HandleRoomCodeChanged(_pendingHostCode);
-            ShowHostPanel();
-            if (enterHostRoomButton != null)
-            {
-                enterHostRoomButton.gameObject.SetActive(true);
-            }
-
-            HandleStatusChanged("แชร์รหัสนี้ → กด ENTER ROOM ก่อน → ให้เพื่อน Join ด้วยรหัสเดียวกัน");
+            HandleRoomError("Fusion lobby missing");
             return;
         }
 
-        HandleRoomError("ไม่พบ Fusion lobby — ตรวจ FusionLobbyBridge ในฉาก");
+        if (bridge.IsConnecting || bridge.IsInSession || bridge.IsStartingGame)
+        {
+            return;
+        }
+
+        HideAllPanels();
+        fusionWaitingUI?.ShowConnecting("Creating room...");
+        bridge.PrepareHostRoom();
+        _pendingHostCode = bridge.PendingRoomCode;
+        HandleRoomCodeChanged(_pendingHostCode);
+        HandleStatusChanged("Creating room...");
+        bridge.EnterHostedRoom();
         return;
 #else
         CreateRoomSceneBootstrap.EnsureSceneReady();
         var service = CreateRoomSceneBootstrap.EnsureRoomService();
         if (service == null)
         {
-            HandleRoomError("ไม่พบระบบสร้างห้อง");
+            HandleRoomError("Room service missing");
             return;
         }
 
@@ -363,13 +400,21 @@ public class MultiplayerRoomUI : MonoBehaviour
 
 #if CMPSETUP_COMPLETE
         CreateRoomSceneBootstrap.EnsureFusionLobby();
+        EnsureFusionWaitingUI();
         if (FusionLobbyBridge.Instance != null)
         {
+            if (FusionLobbyBridge.Instance.IsConnecting || FusionLobbyBridge.Instance.IsInSession)
+            {
+                return;
+            }
+
+            HideAllPanels();
+            fusionWaitingUI?.ShowConnecting("Joining room...");
             FusionLobbyBridge.Instance.JoinRoom(code);
             return;
         }
 
-        HandleRoomError("ไม่พบ Fusion lobby — ตรวจ FusionLobbyBridge ในฉาก");
+        HandleRoomError("Fusion lobby missing");
         return;
 #else
         CreateRoomSceneBootstrap.EnsureSceneReady();
@@ -388,6 +433,9 @@ public class MultiplayerRoomUI : MonoBehaviour
     {
         MultiplayerRoomService.Instance?.LeaveRoom();
         LobbyFlowController.Instance?.ResetFlow();
+#if CMPSETUP_COMPLETE
+        fusionWaitingUI?.HideAll();
+#endif
         if (_nameReady)
         {
             ShowMainPanel();
@@ -427,6 +475,11 @@ public class MultiplayerRoomUI : MonoBehaviour
 
         _lastRoomCode = roomCode ?? string.Empty;
         _pendingHostCode = _lastRoomCode;
+    }
+
+    public void HandleExternalStatus(string message)
+    {
+        HandleStatusChanged(message);
     }
 
     private void HandleStatusChanged(string message)
@@ -474,6 +527,9 @@ public class MultiplayerRoomUI : MonoBehaviour
         SetPanelActive(hostPanel, false);
         SetPanelActive(joinPanel, false);
         _activePanel = null;
+#if CMPSETUP_COMPLETE
+        // waiting UI is managed separately
+#endif
     }
 
     public void ShowMainPanel()
