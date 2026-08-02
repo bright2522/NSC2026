@@ -7,11 +7,13 @@ public class ScoreManager : MonoBehaviour
 
     [Header("Score Settings")]
     public int currentScore = 0;
-    public int opponentScore = 0; // 🎯 เพิ่ม: คะแนนของคู่แข่ง
+    public int opponentScore = 0;
 
     [Header("UI References")]
-    public TextMeshProUGUI scoreText;          // UI คะแนนเรา
-    public TextMeshProUGUI opponentScoreText;  // 🎯 เพิ่ม: UI คะแนนคู่แข่ง
+    [Tooltip("ลาก Text แสดงคะแนนของเรามาใส่")]
+    public TextMeshProUGUI scoreText;
+    [Tooltip("ลาก Text แสดงคะแนนคู่แข่งมาใส่")]
+    public TextMeshProUGUI opponentScoreText;
 
     private void Awake()
     {
@@ -41,7 +43,6 @@ public class ScoreManager : MonoBehaviour
         Debug.Log($"<color=green>บวกคะแนน: {amount} | รวม: {currentScore}</color>");
     }
 
-    // 🎯 เพิ่ม: ฟังก์ชันอัปเดตคะแนนคู่แข่ง
     public void SetOpponentScore(int score)
     {
         opponentScore = score;
@@ -59,10 +60,8 @@ public class ScoreManager : MonoBehaviour
         currentScore = 0;
         opponentScore = 0;
         PlayerPrefs.DeleteKey("PlayerScore");
-        PlayerPrefs.DeleteKey("OpponentScore");
         UpdateScoreUI();
         UpdateOpponentScoreUI();
-        Debug.Log("<color=yellow>ล้างคะแนนเรียบร้อย เริ่มต้นที่ 0</color>");
     }
 
     public void UpdateScoreUI()
@@ -73,7 +72,6 @@ public class ScoreManager : MonoBehaviour
         }
     }
 
-    // 🎯 เพิ่ม: อัปเดตข้อความคะแนนคู่แข่ง
     public void UpdateOpponentScoreUI()
     {
         if (opponentScoreText != null)

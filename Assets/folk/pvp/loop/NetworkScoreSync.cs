@@ -1,158 +1,156 @@
 using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class NetworkScoreSync : MonoBehaviour
 {
-    [Header("Network Settings")]
-    public int networkPort = 11235;
+    [Header("Room Setup")]
+    [Tooltip("ตั้งชื่อห้องให้เหมือนกันทั้ง 2 เครื่อง (เช่น Room123)")]
+    public string roomCode = "CookingMatch01";
 
-    [Header("Player Role (ระบบจะสุ่ม/เลือกให้อัตโนมัติเมื่อเข้าซีน)")]
-    public int myPlayerID = 1;
+    [Header("Player Status (Auto Assigned)")]
+    [Tooltip("ระบบจะกำหนดให้อัตโนมัติเมื่อเข้าซีน")]
+    public int myPlayerID = 0; 
+    public bool isRoleAssigned = false;
 
-    private UdpClient udpClient;
-    private IPEndPoint remoteEndPoint;
-
+    private string deviceGuid;
     private int lastMyScore = -1;
     private int opponentScore = 0;
-    private float autoDetectTimer = 0f;
-    private bool isRoleAssigned = false;
+
+    // Server Key สำหรับเก็บข้อมูลคะแนนออนไลน์
+    private string serverBaseUrl = "https://kvdb.io/4Tz91pMvZk8s33v44xX/";
 
     void Start()
     {
-        InitNetwork();
-        // ลองส่งสัญญาณเช็กว่ามี Player 1 อยู่ในห้องหรือยัง
-        SendCheckPing();
-    }
-
-    void InitNetwork()
-    {
-        try
-        {
-            udpClient = new UdpClient(networkPort);
-            udpClient.EnableBroadcast = true;
-            remoteEndPoint = new IPEndPoint(IPAddress.Any, networkPort);
-
-            udpClient.BeginReceive(OnDataReceived, null);
-            Debug.Log($"<color=cyan>[Network] เริ่มการเชื่อมต่อ LAN บน Port {networkPort}</color>");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"[Network Error] เปิดพอร์ตไม่สำเร็จ: {e.Message}");
-        }
+        // สร้าง ID สุ่มประจำเครื่องนี้
+        deviceGuid = SystemInfo.deviceUniqueIdentifier + "_" + UnityEngine.Random.Range(1000, 9999);
+        
+        // เริ่มกระบวนการค้นหาบทบาท (P1 หรือ P2) อัตโนมัติ
+        StartCoroutine(AssignPlayerRoleRoutine());
     }
 
     void Update()
     {
-        // 💡 นับเวลา 1 วินาทีแรกเพื่อตัดสินใจว่าเครื่องนี้จะเป็น P1 หรือ P2
-        if (!isRoleAssigned)
-        {
-            autoDetectTimer += Time.deltaTime;
-            if (autoDetectTimer >= 1.0f)
-            {
-                isRoleAssigned = true;
-                Debug.Log($"<color=yellow>[Auto-Role] กำหนดบทบาทเรียบร้อย: คุณคือ Player {myPlayerID}</color>");
-            }
-        }
+        // ถ้ายังลงทะเบียน P1/P2 ไม่เสร็จ หรือไม่มี ScoreManager ให้รอแป๊บนึง
+        if (!isRoleAssigned || ScoreManager.Instance == null) return;
 
-        if (ScoreManager.Instance == null) return;
-
-        // 1. ส่งคะแนนของเราออกไป
+        // 1. ถ้าคะแนนเราเปลี่ยน ให้ส่งขึ้น Cloud
         int currentMyScore = ScoreManager.Instance.currentScore;
         if (currentMyScore != lastMyScore)
         {
             lastMyScore = currentMyScore;
-            SendScoreToNetwork(myPlayerID, currentMyScore);
+            StartCoroutine(SendScoreToCloud(myPlayerID, currentMyScore));
         }
 
-        // 2. อัปเดตคะแนนฝั่งตรงข้าม
+        // 2. อัปเดต UI คะแนนคู่แข่ง
         ScoreManager.Instance.SetOpponentScore(opponentScore);
     }
 
-    void SendCheckPing()
+    // 🎯 ระบบจัดสรรบทบาท (Host/Client) ผ่าน Cloud อัตโนมัติ
+    IEnumerator AssignPlayerRoleRoutine()
     {
-        SendRawMessage("PING_CHECK");
-    }
+        string p1Url = $"{serverBaseUrl}{roomCode}_P1_ID";
 
-    void SendScoreToNetwork(int playerID, int score)
-    {
-        SendRawMessage($"SCORE:{playerID}:{score}");
-    }
-
-    void SendRawMessage(string message)
-    {
-        if (udpClient == null) return;
-
-        try
+        // เช็กว่ามี P1 ลงทะเบียนไว้หรือยัง
+        using (UnityWebRequest www = UnityWebRequest.Get(p1Url))
         {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            IPEndPoint broadcastEP = new IPEndPoint(IPAddress.Broadcast, networkPort);
-            udpClient.Send(data, data.Length, broadcastEP);
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning($"[Network Send Error] {e.Message}");
-        }
-    }
+            yield return www.SendWebRequest();
 
-    private void OnDataReceived(IAsyncResult ar)
-    {
-        try
-        {
-            byte[] receivedBytes = udpClient.EndReceive(ar, ref remoteEndPoint);
-            string message = Encoding.UTF8.GetString(receivedBytes);
-
-            // กรณีเจอสัญญาณทักทายจากเครื่องอื่น
-            if (message == "PING_CHECK")
+            if (www.result == UnityWebRequest.Result.Success && !string.IsNullOrEmpty(www.downloadHandler.text))
             {
-                // ถ้ามีคน PING มาหาเรา และเราเข้าซีนมาก่อน (เป็น P1 อยู่แล้ว) ให้ตอบกลับไปบอกว่า "ฉันคือ P1"
-                if (myPlayerID == 1)
+                string existingP1 = www.downloadHandler.text;
+                
+                // ถ้า P1_ID ตรงกับเครื่องเรา -> เราคือ P1
+                if (existingP1 == deviceGuid)
                 {
-                    SendRawMessage("P1_ALREADY_EXISTS");
+                    myPlayerID = 1;
                 }
-            }
-            else if (message == "P1_ALREADY_EXISTS")
-            {
-                // ถ้ามีข้อความบอกว่ามี P1 อยู่แล้ว และเรายังไม่ได้ล็อก Role ให้เราเปลี่ยนตัวเองเป็น P2 ทันที!
-                if (!isRoleAssigned)
+                else
                 {
+                    // มี P1 เครื่องอื่นอยู่แล้ว -> เครื่องนี้กลายเป็น P2 ทันที
                     myPlayerID = 2;
-                    isRoleAssigned = true;
-                    Debug.Log("<color=green>[Auto-Role] พบ Player 1 ในระบบ -> กำหนดตัวเองเป็น Player 2</color>");
                 }
             }
-            // กรณีเป็นข้อมูลคะแนน
-            else if (message.StartsWith("SCORE:"))
+            else
             {
-                string[] parts = message.Split(':');
-                if (parts.Length == 3)
-                {
-                    int senderID = int.Parse(parts[1]);
-                    int senderScore = int.Parse(parts[2]);
+                // ถ้ายังไม่มี P1 ในระบบ -> บันทึกเครื่องเราเป็น P1
+                myPlayerID = 1;
+                StartCoroutine(RegisterDeviceID(p1Url, deviceGuid));
+            }
+        }
 
-                    if (senderID != myPlayerID)
+        isRoleAssigned = true;
+        Debug.Log($"<color=yellow>[Auto-Role] สำเร็จ! คุณได้รับการกำหนดเป็น Player {myPlayerID}</color>");
+
+        // เริ่มวนลูปดึงคะแนนคู่แข่ง
+        StartCoroutine(PollOpponentScoreRoutine());
+    }
+
+    IEnumerator RegisterDeviceID(string url, string id)
+    {
+        byte[] bodyData = System.Text.Encoding.UTF8.GetBytes(id);
+        using (UnityWebRequest www = new UnityWebRequest(url, "POST"))
+        {
+            www.uploadHandler = new UploadHandlerRaw(bodyData);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "text/plain");
+            yield return www.SendWebRequest();
+        }
+    }
+
+    // ลูปดึงคะแนนคู่แข่งทุกๆ 0.5 วินาที
+    IEnumerator PollOpponentScoreRoutine()
+    {
+        while (true)
+        {
+            int opponentID = (myPlayerID == 1) ? 2 : 1;
+            StartCoroutine(GetOpponentScoreFromCloud(opponentID));
+
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    IEnumerator SendScoreToCloud(int playerID, int score)
+    {
+        string url = $"{serverBaseUrl}{roomCode}_P{playerID}";
+        byte[] bodyData = System.Text.Encoding.UTF8.GetBytes(score.ToString());
+
+        using (UnityWebRequest www = new UnityWebRequest(url, "POST"))
+        {
+            www.uploadHandler = new UploadHandlerRaw(bodyData);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "text/plain");
+
+            yield return www.SendWebRequest();
+        }
+    }
+
+    IEnumerator GetOpponentScoreFromCloud(int opponentID)
+    {
+        string url = $"{serverBaseUrl}{roomCode}_P{opponentID}";
+
+        using (UnityWebRequest www = UnityWebRequest.Get(url))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                string textResult = www.downloadHandler.text;
+                if (int.TryParse(textResult, out int fetchedScore))
+                {
+                    if (fetchedScore != opponentScore)
                     {
-                        opponentScore = senderScore;
+                        opponentScore = fetchedScore;
+                        Debug.Log($"<color=orange>[Cloud Sync] ได้รับคะแนนคู่แข่ง (P{opponentID}): {opponentScore}</color>");
                     }
                 }
             }
-
-            udpClient.BeginReceive(OnDataReceived, null);
         }
-        catch (Exception) { }
     }
 
-    private void OnDestroy() { CloseNetwork(); }
-    private void OnApplicationQuit() { CloseNetwork(); }
-
-    void CloseNetwork()
+    private void OnDestroy()
     {
-        if (udpClient != null)
-        {
-            udpClient.Close();
-            udpClient = null;
-        }
+        StopAllCoroutines();
     }
 }
