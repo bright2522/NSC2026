@@ -2017,7 +2017,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1891356368451624526, guid: ecd99912520d9f74fb3722909bbf81c5, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1891356368451624526, guid: ecd99912520d9f74fb3722909bbf81c5, type: 3}
       propertyPath: m_SizeDelta.x
@@ -2109,11 +2109,11 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: ff40b5974f12a1b49b1e0992f65d17ee, type: 3}
     - target: {fileID: 3595174585757156834, guid: ecd99912520d9f74fb3722909bbf81c5, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3674667416334585036, guid: ecd99912520d9f74fb3722909bbf81c5, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4182755339852003074, guid: ecd99912520d9f74fb3722909bbf81c5, type: 3}
       propertyPath: m_Type
