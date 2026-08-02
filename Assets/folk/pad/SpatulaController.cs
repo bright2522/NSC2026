@@ -17,11 +17,11 @@ public class SpatulaController : MonoBehaviour
     private Collider spatulaCollider;
     private float stirDistanceAccumulator;
 
-    // 🎯 ตัวแปรนับคะแนนที่ได้รับจากตะหลิวชิ้นนี้
+    // 🎯 ตัวแปรนับคะแนนเฉพาะตะหลิวอันนี้ (เริ่มที่ 0 ใหม่เสมอเมื่อเริ่มสเตชัน)
     private int currentSpatulaScore = 0;
 
     [Header("Score Cap Setup")]
-    [Tooltip("คะแนนสูงสุดที่ยอมให้เก็บได้จากตะหลิว")]
+    [Tooltip("คะแนนสูงสุดที่ยอมให้เก็บได้จากตะหลิวชิ้นนี้")]
     public int maxScore = 50;
 
     [Header("ระบบล็อกกล้องเฉพาะตัว (ป้องกันเอ๋อเมื่อมีกล้องหลายตัว)")]
@@ -60,23 +60,29 @@ public class SpatulaController : MonoBehaviour
     [Header("Events")]
     [Tooltip("เรียกเมื่อใส่วัตถุดิบครบแล้ว")]
     public UnityEvent onAllPrepDone = new UnityEvent();
+    [Tooltip("เรียกเมื่อเก็บคะแนนตะหลิวครบ maxScore แล้ว")]
+    public UnityEvent onSpatulaScoreFull = new UnityEvent();
+    [Tooltip("เรียกเมื่อกดวางตะหลิวสำเร็จ (นำไปเปิดขั้นตอนถัดไปในสเตชัน)")]
+    public UnityEvent onSpatulaPutDown = new UnityEvent();
 
     void Start()
     {
-        if (customCamera != null)
-        {
-            activeCamera = customCamera;
-        }
-        else
-        {
-            activeCamera = Camera.main;
-        }
+        // 💡 1. ล้างสถานะการผัดค้างจากรอบเก่าทันที
+        PanDragCoordinator.End(this);
+        currentSpatulaScore = 0;
+        stirDistanceAccumulator = 0f;
+        isHolding = false;
+        isReturningToStart = false;
 
         initialPosition = transform.position;
         initialRotation = transform.rotation;
         lastPosition = transform.position;
         spatulaCollider = GetComponent<Collider>();
 
+        // 💡 2. ค้นหา Reference สำหรับสเตชันรอบปัจจุบัน
+        FindAndSetupReferences();
+
+        // ซ่อน UI ไว้ก่อนเมื่อเริ่มต้นสเตชัน
         if (putDownButtonObject != null) putDownButtonObject.SetActive(false);
         if (stirFrySliderObject != null) stirFrySliderObject.SetActive(false);
 
@@ -88,16 +94,45 @@ public class SpatulaController : MonoBehaviour
             tempBoundary.transform.position = transform.position;
             customBoundary = tempBoundary.transform;
         }
+    }
+
+    private void FindAndSetupReferences()
+    {
+        if (customCamera != null)
+        {
+            activeCamera = customCamera;
+        }
+        else
+        {
+            activeCamera = GetComponentInParent<Camera>();
+            if (activeCamera == null) activeCamera = Camera.main;
+        }
 
         if (stirFryManager == null)
         {
-            stirFryManager = FindFirstObjectByType<StirFryManager>();
+            stirFryManager = GetComponentInParent<StirFryManager>();
+            if (stirFryManager == null) stirFryManager = FindFirstObjectByType<StirFryManager>();
+        }
+
+        // ค้นหาปุ่มวางตะหลิวใหม่อัตโนมัติในสเตชันปัจจุบัน
+        if (putDownButtonObject == null)
+        {
+            Transform foundButton = transform.root.Find("Canvas/PutDownButton");
+            if (foundButton != null)
+            {
+                putDownButtonObject = foundButton.gameObject;
+            }
+            else
+            {
+                GameObject taggedBtn = GameObject.FindWithTag("PutDownButton");
+                if (taggedBtn != null) putDownButtonObject = taggedBtn;
+            }
         }
     }
 
     void Update()
     {
-        if (customCamera == null && activeCamera != Camera.main && Camera.main != null)
+        if (activeCamera == null)
         {
             activeCamera = Camera.main;
         }
@@ -120,9 +155,10 @@ public class SpatulaController : MonoBehaviour
         }
     }
 
+    // 💡 ตัดการเช็ก PanPrepManager ออก อนุญาตให้พร้อมจับและผัดได้ทันที
     bool CanPickupSpatula()
     {
-        return PanPrepManager.Instance != null && PanPrepManager.Instance.IsAllPrepDone;
+        return true; 
     }
 
     void TryInvokePrepDoneEvent()
@@ -136,7 +172,7 @@ public class SpatulaController : MonoBehaviour
     void UpdateSpatulaInteractable()
     {
         if (spatulaCollider == null) return;
-        spatulaCollider.enabled = isHolding || CanPickupSpatula();
+        spatulaCollider.enabled = (isHolding || CanPickupSpatula()) && !isReturningToStart;
     }
 
     void HandleFPSControl()
@@ -161,6 +197,8 @@ public class SpatulaController : MonoBehaviour
                         {
                             stirFrySliderObject.SetActive(true);
                         }
+
+                        CheckIfScoreFull();
                     }
                     return;
                 }
@@ -204,18 +242,21 @@ public class SpatulaController : MonoBehaviour
 
                     float moveDistance = Vector3.Distance(transform.position, lastPosition);
 
-                    if (moveDistance > 0.001f && stirFryManager != null)
+                    if (moveDistance > 0.001f)
                     {
-                        float progressAmount = moveDistance * progressMultiplier;
-                        stirFryManager.IncreaseProgress(progressAmount);
+                        if (stirFryManager != null)
+                        {
+                            float progressAmount = moveDistance * progressMultiplier;
+                            stirFryManager.IncreaseProgress(progressAmount);
+                        }
 
+                        // 🎯 สะสมระยะทางผัดเพื่อคิดคะแนน
                         stirDistanceAccumulator += moveDistance;
                         if (stirDistanceAccumulator >= 5f)
                         {
                             int stirPoints = Mathf.FloorToInt(stirDistanceAccumulator / 5f) * 2;
                             stirDistanceAccumulator %= 5f;
 
-                            // 🎯 เพิ่มคะแนนการผัด (จำกัดไม่เกิน 50)
                             AddCappedScore(stirPoints);
                         }
                     }
@@ -250,14 +291,12 @@ public class SpatulaController : MonoBehaviour
 
     void OnPanShakeTriggered()
     {
-        // 🎯 เพิ่มคะแนนเขย่ากระทะ (จำกัดไม่เกิน 50)
         AddCappedScore(15);
 
         if (stirFryManager != null && panShakeProgressBoost > 0f)
             stirFryManager.IncreaseProgress(panShakeProgressBoost);
     }
 
-    // 💡 ฟังก์ชันคำนวณและเพิ่มคะแนนโดยใช้ Local Tracker (ปลอดภัย ไม่ติด Error แน่นอน)
     private void AddCappedScore(int pointsToAdd)
     {
         if (currentSpatulaScore >= maxScore) return;
@@ -268,14 +307,37 @@ public class SpatulaController : MonoBehaviour
         {
             currentSpatulaScore += allowedPoints;
 
-            if (ScoreManager.Instance != null)
+            // 💡 ส่งคะแนนไปที่ ScoreManager
+            ScoreManager scoreMgr = ScoreManager.Instance != null ? ScoreManager.Instance : FindFirstObjectByType<ScoreManager>();
+
+            if (scoreMgr != null)
             {
-                ScoreManager.Instance.AddScore(allowedPoints);
+                scoreMgr.AddScore(allowedPoints);
             }
             else if (GameplayScore.Instance != null)
             {
                 GameplayScore.Instance.AddScore(allowedPoints);
             }
+
+            CheckIfScoreFull();
+        }
+    }
+
+    private void CheckIfScoreFull()
+    {
+        if (currentSpatulaScore >= maxScore)
+        {
+            if (putDownButtonObject == null)
+            {
+                FindAndSetupReferences();
+            }
+
+            if (putDownButtonObject != null)
+            {
+                putDownButtonObject.SetActive(true); // เปิดปุ่มวางตะหลิวเมื่อผัดครบ 50
+            }
+
+            onSpatulaScoreFull.Invoke();
         }
     }
 
@@ -289,7 +351,11 @@ public class SpatulaController : MonoBehaviour
             if (putDownButtonObject != null) putDownButtonObject.SetActive(false);
             if (stirFrySliderObject != null) stirFrySliderObject.SetActive(false);
 
-            Destroy(gameObject);
+            isReturningToStart = true;
+
+            if (spatulaCollider != null) spatulaCollider.enabled = false;
+
+            onSpatulaPutDown.Invoke();
         }
     }
 
