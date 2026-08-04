@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneLoader : MonoBehaviour
+public class PlayButton : MonoBehaviour
 {
     [Header("Scene Settings")]
     [SerializeField] private string sceneName = "GameScene";

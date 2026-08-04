@@ -68,10 +68,12 @@ public class FlowManager : MonoBehaviour
         ShowOnly(pageMenu);
     }
 
-    public void GoCompetition()       // ปุ่ม "แข่งขัน"
+    public void GoCompetition()
     {
         PlayerPrefs.SetInt("Setup_PlayType", 1);
-        ShowOnly(pageRoomChoice);
+        PlayerPrefs.Save();
+
+        SceneManager.LoadScene("CreateRoommain");
     }
 
     // ---------- ปุ่มเลือกห้อง ----------

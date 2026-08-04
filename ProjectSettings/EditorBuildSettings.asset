@@ -33,7 +33,7 @@ EditorBuildSettings:
     path: Assets/folk/pvp/Rpvp.unity
     guid: 8b0a4655364ad5a43b2c76afa36cb1af
   - enabled: 1
-    path: Assets/CreateRoom.unity
-    guid: 099744fb11a18734482175c300cedbe2
+    path: Assets/Scenes/CreateRoommain.unity
+    guid: 9a7c421522483db4d9b1118e06c4a423
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
