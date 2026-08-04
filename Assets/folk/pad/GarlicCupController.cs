@@ -47,6 +47,13 @@ public class GarlicCupController : MonoBehaviour
 
     void Update()
     {
+        // 🔒 ห้ามใช้ถ้วยกระเทียมระหว่างนับเวลาถอยหลังก่อนเริ่มเกม
+        if (CountdownController.IsCountdownActive)
+            return;
+        if (MultiplayerGameManager.Instance != null &&
+            (!MultiplayerGameManager.IsSpawnedReady || !MultiplayerGameManager.Instance.GameStarted))
+            return;
+
         HandleDrag();
 
         if (isSnapping && lockTarget != null)

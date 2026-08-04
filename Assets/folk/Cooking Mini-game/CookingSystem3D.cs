@@ -93,6 +93,7 @@ public class CookingSystem3D : MonoBehaviour
 
     private bool isPlaying;
     private bool hasInvokedEnd;
+    private bool waitingForIngredients;
 
     private float idealMin;
     private float idealMax;
@@ -117,11 +118,6 @@ public class CookingSystem3D : MonoBehaviour
 
     public void StartFunction()
     {
-        if (uiPanel != null)
-        {
-            uiPanel.SetActive(true);
-        }
-
         // 🍳 แสดงกระทะกลับมาเมื่อเริ่มรอบใหม่
         if (panObjectToIgnore != null)
         {
@@ -129,7 +125,17 @@ public class CookingSystem3D : MonoBehaviour
         }
 
         hasInvokedEnd = false;
-        isPlaying = true;
+
+        // 🔒 รอให้ใส่วัตถุดิบครบก่อน ค่อยเปิด UI ควบคุมไฟ (ดูสถานะจาก PanPrepManager)
+        bool prepDone = PanPrepManager.Instance != null && PanPrepManager.Instance.IsAllPrepDone;
+        waitingForIngredients = !prepDone;
+        isPlaying = prepDone;
+
+        if (uiPanel != null)
+        {
+            uiPanel.SetActive(prepDone);
+        }
+
         isBurnt = false;
         isCooked = false;
         isTimeOut = false;
@@ -160,6 +166,7 @@ public class CookingSystem3D : MonoBehaviour
 
         hasInvokedEnd = true;
         isPlaying = false;
+        waitingForIngredients = false;
 
         CancelTween(ref cookingFillTweenId);
         CancelTween(ref heatArrowTweenId);
@@ -182,6 +189,18 @@ public class CookingSystem3D : MonoBehaviour
 
     void Update()
     {
+        if (waitingForIngredients)
+        {
+            if (PanPrepManager.Instance != null && PanPrepManager.Instance.IsAllPrepDone)
+            {
+                waitingForIngredients = false;
+                isPlaying = true;
+                currentTimer = maxCookingTime;
+                if (uiPanel != null) uiPanel.SetActive(true);
+            }
+            return;
+        }
+
         if (!isPlaying || isCooked || isBurnt || isTimeOut) return;
 
         currentTimer -= Time.deltaTime;
@@ -194,10 +213,13 @@ public class CookingSystem3D : MonoBehaviour
 
         Color foodTargetColor = normalColor;
 
+        // 🥄 % การทำอาหาร (cookingProgress) จะขยับก็ต่อเมื่อกำลังผัดด้วยตะหลิวจริงๆ เท่านั้น
+        bool isStirring = SpatulaController.IsStirringNow;
+
         if (currentHeat > idealMax)
         {
-            cookingProgress += slowProgressSpeed * Time.deltaTime; 
-            burnTimer -= Time.deltaTime; 
+            if (isStirring) cookingProgress += slowProgressSpeed * Time.deltaTime;
+            burnTimer -= Time.deltaTime;
 
             float burnRatio = 1f - (burnTimer / maxBurnTime);
             foodTargetColor = Color.Lerp(normalColor, burntColor, burnRatio);
@@ -206,12 +228,12 @@ public class CookingSystem3D : MonoBehaviour
         }
         else if (currentHeat >= idealMin)
         {
-            cookingProgress += idealProgressSpeed * Time.deltaTime; 
+            if (isStirring) cookingProgress += idealProgressSpeed * Time.deltaTime;
             burnTimer = maxBurnTime;
         }
         else
         {
-            cookingProgress += slowProgressSpeed * Time.deltaTime; 
+            if (isStirring) cookingProgress += slowProgressSpeed * Time.deltaTime;
             burnTimer = maxBurnTime;
         }
 

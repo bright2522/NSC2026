@@ -255,6 +255,11 @@ public class MultiplayerGameManager : NetworkBehaviour
         }
     }
 
+    public float GetStartCountdownRemaining()
+    {
+        return StartCountdown.RemainingTime(Runner) ?? 0f;
+    }
+
     void TickStartCountdown()
     {
         if (!StartCountdown.Expired(Runner))

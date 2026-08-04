@@ -66,12 +66,46 @@ public class StationLoopManager : MonoBehaviour
         currentStationInstance = newStation;
         lastSpawnPosition = newSpawnPos;
 
+        // กันมี EventSystem ซ้อนกันหลายตัวในซีน (ทำให้ปุ่ม UI กดไม่ติด)
+        CleanupExtraEventSystems(newStation);
+
+        // รีเซ็ตสถานะ "ใส่วัตถุดิบครบแล้ว" ของสเตชันเก่า ไม่งั้นสเตชันใหม่จะหยิบตะหลิวได้ทันทีทั้งที่ยังไม่ได้ใส่อะไร
+        if (PanPrepManager.Instance != null)
+        {
+            PanPrepManager.Instance.ResetPrep();
+        }
+
         if (ScoreManager.Instance != null)
         {
             ScoreManager.Instance.UpdateScoreUI();
         }
 
         Debug.Log("<color=cyan><b>สร้างสเตชันชุดใหม่สำเร็จ! พร้อมเล่นต่อ</b></color>");
+    }
+
+    // 💡 ป้องกัน EventSystem ซ้ำซ้อน: prefab สเตชันแต่ละอันมี EventSystem ติดมาด้วย
+    // ทำให้ทุกครั้งที่ Spawn สเตชันใหม่ จะมี EventSystem เพิ่มขึ้นเรื่อยๆ จนปุ่ม UI กดไม่ติด
+    private void CleanupExtraEventSystems(GameObject keepInstance)
+    {
+        UnityEngine.EventSystems.EventSystem[] allSystems =
+            FindObjectsByType<UnityEngine.EventSystems.EventSystem>(FindObjectsSortMode.None);
+
+        UnityEngine.EventSystems.EventSystem keep = keepInstance != null
+            ? keepInstance.GetComponentInChildren<UnityEngine.EventSystems.EventSystem>(true)
+            : null;
+
+        if (keep == null && allSystems.Length > 0)
+        {
+            keep = allSystems[allSystems.Length - 1];
+        }
+
+        for (int i = 0; i < allSystems.Length; i++)
+        {
+            if (allSystems[i] != null && allSystems[i] != keep)
+            {
+                Destroy(allSystems[i].gameObject);
+            }
+        }
     }
 
     private void CleanupOldCameras()

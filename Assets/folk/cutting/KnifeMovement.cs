@@ -62,6 +62,13 @@ public class KnifeMovement : MonoBehaviour
     {
         if (isChopping) return;
 
+        // 🔒 ห้ามใช้มีดระหว่างนับเวลาถอยหลังก่อนเริ่มเกม
+        if (CountdownController.IsCountdownActive)
+            return;
+        if (MultiplayerGameManager.Instance != null &&
+            (!MultiplayerGameManager.IsSpawnedReady || !MultiplayerGameManager.Instance.GameStarted))
+            return;
+
         if (activeKnife != null && activeKnife != this)
             return;
 

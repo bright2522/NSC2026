@@ -56,6 +56,14 @@ public class PanPrepManager : MonoBehaviour
         LogStatus();
     }
 
+    public void ResetPrep()
+    {
+        eggDone = false;
+        sausageDone = false;
+        prepBonusAwarded = false;
+        Debug.Log("[PanPrep] รีเซ็ตสถานะวัตถุดิบสำหรับสเตชันใหม่");
+    }
+
     void LogStatus()
     {
         if (!IsAllPrepDone) return;

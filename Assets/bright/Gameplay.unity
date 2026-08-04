@@ -4470,6 +4470,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0043be6844522ab459fdf5c131949335, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  crossSectionOverrideMaterial: {fileID: 0}
   minVolumeThreshold: 0.005
   minAxisSize: 0.002
   launchPieces: 0
@@ -57288,6 +57289,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0043be6844522ab459fdf5c131949335, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  crossSectionOverrideMaterial: {fileID: 2100000, guid: 349ec42a675c8194796a34875a253bbc, type: 2}
   minVolumeThreshold: 0.005
   minAxisSize: 0.002
   launchPieces: 0

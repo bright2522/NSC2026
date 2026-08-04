@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public class CountdownController : MonoBehaviour
 {
+    // 🔒 true ตั้งแต่เริ่มนับถอยหลังจนกว่าจะนับจบ (ใช้ล็อกการเล่นแม้ไม่มีระบบ Multiplayer เช่นตอนเทสเดี่ยว)
+    public static bool IsCountdownActive { get; private set; }
+
     [Header("UI Reference")]
     [Tooltip("ใส่ UI Image ที่ต้องการใช้แสดงผล")]
     public Image countdownDisplay;
@@ -35,49 +38,68 @@ public class CountdownController : MonoBehaviour
 
     void Start()
     {
-        // เริ่มทำงานนับถอยหลังทันทีเมื่อเริ่มเกม
-        StartCoroutine(StartCountdown());
+        // ⏱️ ผูกกับเวลานับถอยหลังจริงของ MultiplayerGameManager (StartCountdown)
+        // แทนที่จะนับเวลาแยกของตัวเอง จะได้ตรงกับตอนที่ผู้เล่นขยับตัวได้จริง (GameStarted)
+        StartCoroutine(SyncWithServerCountdown());
     }
 
-    IEnumerator StartCountdown()
+    IEnumerator SyncWithServerCountdown()
     {
+        IsCountdownActive = true;
+
         if (countdownDisplay == null || countdownSprites.Length == 0)
         {
             Debug.LogWarning("กรุณาใส่ Countdown Display หรือ Countdown Sprites ใน Inspector ให้ครบถ้วน!");
+            IsCountdownActive = false;
             yield break;
         }
 
-        // เริ่มต้นด้วยการซ่อนรูปภาพ
         countdownDisplay.gameObject.SetActive(false);
 
-        // แสดงรูปภาพทีละรูปตามลำดับใน Array
+        // 🎬 เล่นภาพ 3, 2, 1, Ready ตามลำดับปกติเหมือนเดิมเสมอ (ไม่รอ network ตรงนี้)
         for (int i = 0; i < countdownSprites.Length; i++)
         {
-            // เปลี่ยนรูปภาพ
-            countdownDisplay.sprite = countdownSprites[i];
-            
-            // เปิดแสดงรูปภาพ
-            countdownDisplay.gameObject.SetActive(true);
-
-            // เริ่มทำเอฟเฟกต์ Pop-in โดยขยายจาก 0 ไปยัง originalScale ที่ตั้งไว้ใน Inspector
-            LeanTween.scale(rectTransform, originalScale, popInDuration)
-                     .setFrom(Vector3.zero)
-                     .setEaseOutBack(); // เพิ่มความดึ๋งๆ นุ่มนวลตอนขยายสุด
-
-            // รอเวลาตามที่กำหนดไว้ก่อนเปลี่ยนรูปถัดไป
+            ShowSprite(i);
             yield return new WaitForSeconds(delayBetweenSprites);
-
-            // ปิดแสดงรูปภาพก่อนเปลี่ยนเป็นรูปถัดไป
             countdownDisplay.gameObject.SetActive(false);
         }
 
-        // เมื่อนับถอยหลังจบ
+        // ⏱️ หลังนับจอจบแล้ว ถ้าเป็นเกมมัลติเพลเยอร์ ให้รอจนกว่า GameStarted จริงจากเซิร์ฟเวอร์
+        // (กันเคสที่ network countdown ยังไม่จบ ทำให้ค้างที่ "Ready" รอผู้เล่นคนอื่น)
+        if (MultiplayerGameManager.Instance != null)
+        {
+            countdownDisplay.sprite = countdownSprites[countdownSprites.Length - 1];
+            countdownDisplay.gameObject.SetActive(true);
+
+            while (MultiplayerGameManager.IsSpawnedReady && !MultiplayerGameManager.Instance.GameStarted)
+                yield return null;
+
+            countdownDisplay.gameObject.SetActive(false);
+        }
+
         OnCountdownFinished();
+    }
+
+    void ShowSprite(int index)
+    {
+        countdownDisplay.sprite = countdownSprites[index];
+        countdownDisplay.gameObject.SetActive(true);
+
+        LeanTween.scale(rectTransform, originalScale, popInDuration)
+                 .setFrom(Vector3.zero)
+                 .setEaseOutBack();
     }
 
     void OnCountdownFinished()
     {
+        IsCountdownActive = false;
         Debug.Log("เริ่มเกมได้!");
-        // ใส่โค้ดปลดล็อกตัวละคร หรือเริ่มสปอว์นศัตรูตรงนี้
+        // 🔓 ตัวละครถูกปลดล็อกโดย MultiplayerGameManager.GameStarted อยู่แล้ว (ดู ThirdPersonController.Update())
+    }
+
+    void OnDestroy()
+    {
+        // กันค่าค้างเป็น true ถ้าออกจากซีนกลางคันตอนกำลังนับถอยหลัง
+        IsCountdownActive = false;
     }
 }

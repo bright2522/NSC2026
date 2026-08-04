@@ -7514,8 +7514,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c962faaf17f0a9d4d97f5fb6d1bcd340, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  networkPort: 11235
+  roomCode: CookingMatch01
   myPlayerID: 1
+  isRoleAssigned: 0
 --- !u!4 &1327563312
 Transform:
   m_ObjectHideFlags: 0
@@ -9617,6 +9618,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0043be6844522ab459fdf5c131949335, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  crossSectionOverrideMaterial: {fileID: 0}
   minVolumeThreshold: 0.005
   minAxisSize: 0.002
   launchPieces: 0
@@ -10480,7 +10482,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2519443920472561685, guid: 2098c12e692cea34cb217df746aeee9d, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2689636775291701396, guid: 2098c12e692cea34cb217df746aeee9d, type: 3}
       propertyPath: m_Mesh

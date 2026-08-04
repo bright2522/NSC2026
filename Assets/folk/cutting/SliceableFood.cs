@@ -4,6 +4,10 @@ using EzySlice;
 
 public class SliceableFood : MonoBehaviour
 {
+    [Header("Cross Section")]
+    [Tooltip("Material ที่จะใช้เป็นหน้าตัดตอนหั่น (เนื้อใน) — ถ้าไม่ใส่จะใช้ material ผิวนอกเหมือนเดิม")]
+    public Material crossSectionOverrideMaterial;
+
     [Header("Slicing Optimization")]
     public float minVolumeThreshold = 0.0001f;
     [Tooltip("ชิ้นที่บางกว่านี้ (เมตร) จะถูกลบทิ้ง")]
@@ -114,7 +118,7 @@ public class SliceableFood : MonoBehaviour
         for (int i = 0; i < parts.Count; i++)
         {
             MeshPart part = parts[i];
-            Material crossSectionMat = part.Renderer.sharedMaterial;
+            Material crossSectionMat = crossSectionOverrideMaterial != null ? crossSectionOverrideMaterial : part.Renderer.sharedMaterial;
             if (crossSectionMat == null)
                 continue;
 
@@ -336,6 +340,7 @@ public class SliceableFood : MonoBehaviour
         }
 
         SliceableFood sliceScript = groupRoot.AddComponent<SliceableFood>();
+        sliceScript.crossSectionOverrideMaterial = crossSectionOverrideMaterial;
         sliceScript.minVolumeThreshold = minVolumeThreshold;
         sliceScript.minAxisSize = minAxisSize;
         sliceScript.launchPieces = launchPieces;

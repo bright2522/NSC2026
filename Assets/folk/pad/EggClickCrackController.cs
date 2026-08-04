@@ -89,6 +89,20 @@ public class EggClickCrackController : MonoBehaviour
 
     void Update()
     {
+        // 🔒 ห้ามใช้ไข่ระหว่างนับเวลาถอยหลังก่อนเริ่มเกม
+        if (CountdownController.IsCountdownActive)
+            return;
+        if (MultiplayerGameManager.Instance != null &&
+            (!MultiplayerGameManager.IsSpawnedReady || !MultiplayerGameManager.Instance.GameStarted))
+            return;
+
+        // 🎥 กันกล้องเก่าถูก Destroy ทิ้งตอนสร้างสเตชันใหม่ (StationLoopManager) แล้วยังถืออ้างอิงค้างอยู่
+        if (activeCamera == null)
+        {
+            activeCamera = customCamera != null ? customCamera : Camera.main;
+            if (activeCamera == null) return;
+        }
+
         if (isLockedInPlace && panLockTarget != null)
         {
             PanDragCoordinator.Maintain(this);

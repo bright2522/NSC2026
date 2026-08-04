@@ -64,6 +64,13 @@ public class SausageCupPourController : MonoBehaviour
 
     void Update()
     {
+        // 🔒 ห้ามใช้ถ้วยไส้กรอกระหว่างนับเวลาถอยหลังก่อนเริ่มเกม
+        if (CountdownController.IsCountdownActive)
+            return;
+        if (MultiplayerGameManager.Instance != null &&
+            (!MultiplayerGameManager.IsSpawnedReady || !MultiplayerGameManager.Instance.GameStarted))
+            return;
+
         HandleDrag();
 
         if (isSnapping && lockTarget != null)

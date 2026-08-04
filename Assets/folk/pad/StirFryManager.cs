@@ -67,6 +67,9 @@ public class StirFryManager : MonoBehaviour
 
         if (nextButtonObject != null)
             nextButtonObject.SetActive(true);
+
+        if (SwipeStationSlider.Instance != null)
+            SwipeStationSlider.Instance.SetSwipeEnabled(true);
     }
 
     public void ResetProgress()

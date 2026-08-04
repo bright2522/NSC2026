@@ -65,8 +65,19 @@ public class SwipeStationSlider : MonoBehaviour
 
     void Update()
     {
+        // 🔒 ห้ามเลื่อนสไลด์ระหว่างนับเวลาถอยหลังก่อนเริ่มเกม
+        bool locked = CountdownController.IsCountdownActive ||
+            (MultiplayerGameManager.Instance != null &&
+             (!MultiplayerGameManager.IsSpawnedReady || !MultiplayerGameManager.Instance.GameStarted));
+        if (locked)
+        {
+            if (!dragging)
+                transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * snapSpeed);
+            return;
+        }
+
         // ถ้า swipeEnabled เป็น false จะไม่รับ Input การลากเลย
-        if (swipeEnabled) 
+        if (swipeEnabled)
         {
             HandleDrag();
         }

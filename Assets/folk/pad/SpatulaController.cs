@@ -8,6 +8,9 @@ public class SpatulaController : MonoBehaviour
     private bool isReturningToStart = false;
     private bool hasInvokedPrepDoneEvent = false;
 
+    // 🍳 true เฉพาะเฟรมที่กำลังลากตะหลิวผัดจริงๆ ให้ CookingSystem3D เอาไปเช็คก่อนเพิ่ม % การทำอาหาร
+    public static bool IsStirringNow { get; private set; }
+
     // 🎥 ตัวแปรกล้องที่ใช้งานอยู่
     private Camera activeCamera;
 
@@ -132,6 +135,13 @@ public class SpatulaController : MonoBehaviour
 
     void Update()
     {
+        // 🔒 ห้ามใช้ตะหลิวระหว่างนับเวลาถอยหลังก่อนเริ่มเกม
+        if (CountdownController.IsCountdownActive)
+            return;
+        if (MultiplayerGameManager.Instance != null &&
+            (!MultiplayerGameManager.IsSpawnedReady || !MultiplayerGameManager.Instance.GameStarted))
+            return;
+
         if (activeCamera == null)
         {
             activeCamera = Camera.main;
@@ -155,10 +165,9 @@ public class SpatulaController : MonoBehaviour
         }
     }
 
-    // 💡 ตัดการเช็ก PanPrepManager ออก อนุญาตให้พร้อมจับและผัดได้ทันที
     bool CanPickupSpatula()
     {
-        return true; 
+        return PanPrepManager.Instance != null && PanPrepManager.Instance.IsAllPrepDone;
     }
 
     void TryInvokePrepDoneEvent()
@@ -177,6 +186,8 @@ public class SpatulaController : MonoBehaviour
 
     void HandleFPSControl()
     {
+        IsStirringNow = false;
+
         if (isReturningToStart || activeCamera == null) return;
 
         if (Input.GetMouseButtonDown(0))
@@ -244,6 +255,8 @@ public class SpatulaController : MonoBehaviour
 
                     if (moveDistance > 0.001f)
                     {
+                        IsStirringNow = true;
+
                         if (stirFryManager != null)
                         {
                             float progressAmount = moveDistance * progressMultiplier;
