@@ -314,6 +314,9 @@ public class MinigameFlowManager : MonoBehaviour
                 break;
 
             case MinigameFlowStep.FinalScore:
+                // ไม่มี gameplay ให้รอ — เข้าสเต็ปนี้ปุ๊บ ให้ถือว่า "รอกด Next" ทันที
+                // เพื่อให้ UI ที่ผูกกับ WaitingForNextButton โชว์ปุ่มไปหน้าสรุปคะแนนได้เลย
+                NotifyStepCompleted(0f);
                 break;
         }
     }

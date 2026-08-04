@@ -90,6 +90,8 @@ public class CookingSystem3D : MonoBehaviour
     [Header("Events")]
     public UnityEvent whenStart = new UnityEvent();
     public UnityEvent whenEnd = new UnityEvent();
+    [Tooltip("เรียกตอนอาหารสุกพอดี (ไฟเต็ม 100%) — ใช้โชว์โมเดล/texture อาหารสุก เช่น StirFriedEggs")]
+    public UnityEvent whenCooked = new UnityEvent();
 
     private bool isPlaying;
     private bool hasInvokedEnd;
@@ -549,6 +551,9 @@ public class CookingSystem3D : MonoBehaviour
 
         // 3. เสกของใหม่ใส่เข้าไปใน Spawn Parent
         SpawnCookedObject();
+
+        // 3.5 โชว์โมเดล/texture อาหารสุก (ใส่ objects ที่ต้องไม่ถูกลบใน additionalObjectsToIgnore ด้วย)
+        whenCooked?.Invoke();
 
         // 4. ปลดล็อกการปัดหน้าจอ
         if (SwipeStationSlider.Instance != null)

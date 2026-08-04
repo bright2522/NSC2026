@@ -24,8 +24,11 @@ public class SausageCupPourController : MonoBehaviour
     public Camera customCamera; 
 
     [Header("Settings")]
-    public float tiltSpeed = 400.0f; 
-    public float snapSpeed = 8.0f;     
+    public float tiltSpeed = 400.0f;
+    public float snapSpeed = 8.0f;
+
+    [Header("ระยะยกถ้วยลอยเหนือกระทะ (กันมุด/ติดขอบกระทะตอนลาก)")]
+    public float hoverHeight = 0.6f;
 
     [Header("ระบบกำหนดองศาปล่อยไส้กรอก")]
     public float pourAngleThreshold = 120.0f; 
@@ -127,7 +130,7 @@ public class SausageCupPourController : MonoBehaviour
             {
                 // เลื่อนในระนาบกล้อง (คงระยะลึกตามแกน forward ของกล้อง) — ห้ามล็อกแกน z ตรง ๆ
                 // เพราะกับกล้อง top-down แกนลึกคือ Y ถ้าล็อก z ถ้วยจะมุดลงพื้นแทนที่จะเลื่อนตามนิ้ว
-                transform.position = GetMouseWorldPos() + offset;
+                transform.position = GetMouseWorldPos() + offset + Vector3.up * hoverHeight;
             }
 
             if (Input.GetMouseButtonUp(0) && isDragging)
@@ -142,7 +145,7 @@ public class SausageCupPourController : MonoBehaviour
                     if (finalDistance < snapDistance)
                     {
                         isSnapping = true;
-                        targetSnapPosition = AlignLaterallyWith(lockTarget.position);
+                        targetSnapPosition = AlignLaterallyWith(lockTarget.position) + Vector3.up * hoverHeight;
                     }
                     else
                     {

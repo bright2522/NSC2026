@@ -54,6 +54,10 @@ public class SpatulaController : MonoBehaviour
     public StirFryManager stirFryManager;
     public float progressMultiplier = 0.5f;
 
+    [Header("ผูกกับระบบควบคุมไฟ (ถ้ามี) — ห้ามให้ปุ่มวางตะหลิวโผล่ก่อนไฟสุกจริง")]
+    [Tooltip("ถ้าใส่ไว้ ปุ่มวางตะหลิว/onSpatulaScoreFull จะรอจนกว่า CookingSystem3D.isCooked เป็น true ก่อน แม้คะแนนจะครบ maxScore แล้วก็ตาม")]
+    public CookingSystem3D linkedCookingSystem;
+
     [Header("ระบบกระทะร้อน / เขย่ากระทะ")]
     [Tooltip("ลาก PanShakeController จาก prefab กระทะมาใส่")]
     public PanShakeController panShakeController;
@@ -150,6 +154,10 @@ public class SpatulaController : MonoBehaviour
         TryInvokePrepDoneEvent();
         UpdateSpatulaInteractable();
         HandleFPSControl();
+
+        // ⏳ ถ้าคะแนนครบแล้วแต่ตอนนั้นไฟยังไม่สุก ให้คอยเช็คซ้ำทุกเฟรมจนกว่าจะสุกจริง ค่อยโชว์ปุ่มวางตะหลิว
+        if (isHolding && linkedCookingSystem != null && linkedCookingSystem.isCooked && putDownButtonObject != null && !putDownButtonObject.activeSelf)
+            CheckIfScoreFull();
 
         if (isReturningToStart)
         {
@@ -338,6 +346,8 @@ public class SpatulaController : MonoBehaviour
 
     private void CheckIfScoreFull()
     {
+        if (linkedCookingSystem != null && !linkedCookingSystem.isCooked) return;
+
         if (currentSpatulaScore >= maxScore)
         {
             if (putDownButtonObject == null)
